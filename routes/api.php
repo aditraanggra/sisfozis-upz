@@ -15,6 +15,3 @@ Route::get('/kecamatan', [\App\Http\Controllers\Api\DistrictController::class, '
 
 //Ambil data Desa
 Route::get('/desa', [\App\Http\Controllers\Api\VillageController::class, 'index']);
-
-//Ambil data Kategori Unit ZIS
-Route::apiResources('upz', UnitZisController::class);
