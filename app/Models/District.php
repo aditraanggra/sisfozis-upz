@@ -19,4 +19,10 @@ class District extends Model
     {
         return $this->hasMany(Village::class);
     }
+
+    // Relasi ke tabel unit_zis
+    public function unitzis()
+    {
+        return $this->hasMany(unitzis::class);
+    }
 }

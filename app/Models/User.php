@@ -45,4 +45,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relasi ke tabel unit_zis
+    public function unitzis()
+    {
+        return $this->hasMany(unitzis::class);
+    }
 }

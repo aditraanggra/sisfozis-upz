@@ -10,4 +10,10 @@ class UnitCategory extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'desc'];
+
+    // Relasi ke tabel unit_zis
+    public function unitzis()
+    {
+        return $this->hasMany(unitzis::class);
+    }
 }

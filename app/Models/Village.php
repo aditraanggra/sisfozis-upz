@@ -20,4 +20,10 @@ class Village extends Model
     {
         return $this->belongsTo(District::class);
     }
+
+    // Relasi ke tabel unit_zis
+    public function unitzis()
+    {
+        return $this->hasMany(unitzis::class);
+    }
 }
