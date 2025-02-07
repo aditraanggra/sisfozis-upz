@@ -6,6 +6,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/info', function () {
+// Route to display PHP configuration information
+/* Route::get('/info', function () {
     return phpinfo();
-});
+}); */
