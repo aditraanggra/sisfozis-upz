@@ -17,10 +17,10 @@ class VillageController extends Controller
      */
     public function index()
     {
-        //get all posts
-        $posts = Village::all();
+        //get all villages
+        $data = Village::all();
 
         //return collection of posts as a resource
-        return new VillageResorces(true, 'List Data Desa', $posts);
+        return new VillageResorces(true, 'List Data Desa', $data);
     }
 }

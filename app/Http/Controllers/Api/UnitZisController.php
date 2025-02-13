@@ -3,19 +3,28 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UnitZisResource;
 use Illuminate\Http\Request;
 use App\Models\UnitZis;
 
 class UnitZisController extends Controller
 {
-    //
+    /**
+     * Menampilkan daftar semua produk
+     * Method ini dipanggil ketika mengakses GET /products
+     */
     public function index()
     {
-        return response()->json(UnitZis::with(['user', 'category', 'village', 'district'])->get(), 200);
+        // Mengambil semua produk dan mengubahnya menjadi collection
+        $unit = UnitZis::all();
+
+        // Mengembalikan response dengan format yang konsisten
+        return new UnitZisResource(true, 'List Data UPZ', $unit);
     }
 
     public function store(Request $request)
     {
+        // Validasi input dari user
         $validatedData = $request->validate([
             'user_id' => 'required|exists:users,id',
             'category_id' => 'required|exists:unit_categories,id',
@@ -35,43 +44,14 @@ class UnitZisController extends Controller
             'is_verified' => 'boolean'
         ]);
 
+        // Membuat produk baru    
         $unitZis = UnitZis::create($validatedData);
 
-        return response()->json($unitZis, 201);
-    }
-
-    public function show($id)
-    {
-        $unitZis = UnitZis::with(['user', 'category', 'village', 'district'])->findOrFail($id);
-        return response()->json($unitZis, 200);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $unitZis = UnitZis::findOrFail($id);
-
-        $validatedData = $request->validate([
-            'user_id' => 'sometimes|exists:users,id',
-            'category_id' => 'sometimes|exists:unit_categories,id',
-            'village_id' => 'sometimes|exists:villages,id',
-            'district_id' => 'sometimes|exists:districts,id',
-            'no_sk' => 'sometimes|string',
-            'unit_name' => 'sometimes|string',
-            'no_register' => 'sometimes|string',
-            'unit_field' => 'sometimes|string',
-            'address' => 'sometimes|string',
-            'unit_leader' => 'sometimes|string',
-            'unit_assistant' => 'sometimes|string',
-            'unit_finance' => 'sometimes|string',
-            'operator_name' => 'sometimes|string',
-            'operator_phone' => 'sometimes|string',
-            'rice_price' => 'sometimes|integer',
-            'is_verified' => 'boolean'
-        ]);
-
-        $unitZis->update($validatedData);
-
-        return response()->json($unitZis, 200);
+        return response()->json([
+            'success' => true,
+            'data' => $unitZis,
+            'message' => 'UPZ Baru Berhasil dibuat'
+        ], 201);
     }
 
     public function destroy($id)
