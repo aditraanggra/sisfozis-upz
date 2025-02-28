@@ -31,4 +31,6 @@ return [
 
     'supports_credentials' => false,
 
+    'access_control_allow_origin' => ['https://sisfoupz.baznaskabcianjur.com/'],
+
 ];
