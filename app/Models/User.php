@@ -48,6 +48,12 @@ class User extends Authenticatable
         ];
     }
 
+    public function isAdmin(): bool
+    {
+        // Asumsi ada role 'admin' yang didefinisikan di Filament Shield
+        return $this->hasRole('super_admin');
+    }
+
     // Relasi ke tabel unit_zis
     public function unitzis()
     {

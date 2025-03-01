@@ -48,4 +48,34 @@ class UnitZis extends Model
     {
         return $this->belongsTo(District::class, 'district_id');
     }
+
+    public function zfs()
+    {
+        return $this->hasMany(Zf::class, 'unit_id');
+    }
+
+    public function zms()
+    {
+        return $this->hasMany(Zm::class, 'unit_id');
+    }
+
+    public function ifs()
+    {
+        return $this->hasMany(Ifs::class, 'unit_id');
+    }
+
+    public function fidyahs()
+    {
+        return $this->hasMany(Fidyah::class, 'unit_id');
+    }
+
+    public function donationBoxes()
+    {
+        return $this->hasMany(DonationBox::class, 'unit_id');
+    }
+
+    public function distributions()
+    {
+        return $this->hasMany(Distribution::class, 'unit_id');
+    }
 }
