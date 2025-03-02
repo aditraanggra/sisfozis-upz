@@ -4,6 +4,10 @@ use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DistributionController;
+use App\Http\Controllers\Api\DonationBoxController;
+use App\Http\Controllers\Api\FidyahController;
+use App\Http\Controllers\Api\IfsController;
 use App\Http\Controllers\Api\ZfController;
 use App\Http\Controllers\Api\ZmController;
 
@@ -34,5 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResources([
         'zf' => ZfController::class,
         'zm' => ZmController::class,
+        'ifs' => IfsController::class,
+        'fidyah' => FidyahController::class,
+        'kotak_amal' => DonationBoxController::class,
+        'pendis' => DistributionController::class,
     ]);
 });
