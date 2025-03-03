@@ -25,7 +25,6 @@ class UnitZisRequest extends FormRequest
             'unit_leader' => 'required|string|max:255',
             'unit_assistant' => 'required|string|max:255',
             'unit_finance' => 'required|string|max:255',
-            'operator_name' => 'required|string|max:255',
             'operator_phone' => 'required|string|max:255',
             'rice_price' => 'required|integer|min:0',
             'is_verified' => 'boolean'

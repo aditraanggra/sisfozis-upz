@@ -23,7 +23,6 @@ class UnitZis extends Model
         'unit_leader',
         'unit_assistant',
         'unit_finance',
-        'operator_name',
         'operator_phone',
         'rice_price',
         'is_verified'

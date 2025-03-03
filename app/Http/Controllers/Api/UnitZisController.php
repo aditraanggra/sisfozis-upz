@@ -38,7 +38,6 @@ class UnitZisController extends Controller
             'unit_leader' => 'required|string',
             'unit_assistant' => 'required|string',
             'unit_finance' => 'required|string',
-            'operator_name' => 'required|string',
             'operator_phone' => 'required|string',
             'rice_price' => 'required|integer',
             'is_verified' => 'boolean'
