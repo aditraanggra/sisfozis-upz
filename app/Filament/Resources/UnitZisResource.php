@@ -4,7 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UnitZisResource\Pages;
 use App\Filament\Resources\UnitZisResource\RelationManagers;
+use App\Models\District;
 use App\Models\UnitZis;
+use App\Models\Village;
 use Filament\Forms;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Form;
@@ -28,58 +30,83 @@ class UnitZisResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('user_id')
-                    //->relationship('users', 'name')
+                Forms\Components\Select::make('user_id')
+                    ->relationship('user', 'name')
                     ->label('Operator')
-                    //->default(fn() => auth()->id())
                     ->required(),
-                Forms\Components\TextInput::make('category_id')
-                    //->relationship('unit_category', 'name')
+                Forms\Components\Select::make('category_id')
+                    ->relationship('category', 'name')
                     ->label('Unit Kerja')
                     ->required(),
-                /* Forms\Components\Select::make('district_id')
+                Forms\Components\Select::make('district_id')
+                    ->options(fn() => District::all()->pluck('name', 'id'))
                     ->label('Kecamatan')
-                    ->relationship('district', 'name')
-                    ->searchable()
-                    ->preload()
                     ->live()
-                    ->afterStateUpdated(fn(Set $set) => $set('village_id', null))
+                    ->preload()
+                    ->searchable()
+                    ->afterStateUpdated(function (Set $set) {
+                        $set('village_id', null);
+                    })
                     ->required(),
                 Forms\Components\Select::make('village_id')
+                    ->options(
+                        fn(Get $get) =>
+                        $get('district_id')
+                            ? Village::query()
+                            ->where('district_id', $get('district_id'))
+                            ->get()
+                            ->pluck('name', 'id')
+                            : []
+                    )
                     ->label('Desa')
-                    ->options(fn(Get $get): Collection => UnitZis::query()
-                        ->where('district_id', $get('district_id'))
-                        ->pluck('name', 'id'))
-                    ->searchable()
-                    ->preload()
                     ->live()
-                    ->required(), */
+                    ->preload()
+                    ->searchable()
+                    ->required(),
                 Forms\Components\TextInput::make('no_sk')
-                    ->label('Nomor SK'),
+                    ->label('Nomor SK')
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('unit_name')
                     ->label('Nama Unit')
-                    ->required(),
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('no_register')
                     ->label('Nomor Register')
-                    //->default(fn(Get $get) => $get('village_code') . rand(1, 100))
-                    ->disabled(),
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('address')
-                    ->label('Alamat'),
+                    ->label('Alamat')
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('unit_leader')
-                    ->label('Ketua'),
+                    ->label('Ketua')
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('unit_assistant')
-                    ->label('Sekretaris'),
+                    ->label('Sekretaris')
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('unit_finance')
-                    ->label('Bendahara'),
+                    ->label('Bendahara')
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('operator_name')
-                    ->label('Nama Operator'),
+                    ->label('Nama Operator')
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('operator_phone')
-                    ->label('Nomor Telepon Operator'),
+                    ->label('Nomor Telepon Operator')
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('rice_price')
                     ->label('Harga Beras')
-                    ->numeric(),
-                Forms\Components\Checkbox::make('is_verified')
-                    ->label('Terverifikasi'),
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\Toggle::make('is_verified')
+                    ->label('Terverifikasi')
+                    ->required()
+                    ->default(false),
             ]);
     }
 
