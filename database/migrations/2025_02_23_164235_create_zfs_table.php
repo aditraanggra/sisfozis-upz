@@ -20,8 +20,7 @@ return new class extends Migration
             $table->integer('zf_amount')->default(0);
             $table->integer('total_muzakki')->default(1);
             $table->text('desc')->nullable();
-            $table->timestamps('created_at');
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 

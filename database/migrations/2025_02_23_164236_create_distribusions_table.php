@@ -25,8 +25,7 @@ return new class extends Migration
             $table->integer('beneficiary')->default(1);
             $table->integer('rice_to_amount')->default(0);
             $table->text('desc')->nullable();
-            $table->timestamps('created_at');
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 

@@ -18,8 +18,7 @@ return new class extends Migration
             $table->string('munfiq_name');
             $table->integer('amount')->default(0);
             $table->text('desc')->nullable();
-            $table->timestamps('created_at');
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 

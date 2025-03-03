@@ -19,8 +19,7 @@ return new class extends Migration
             $table->date('trx_date');
             $table->integer('amount')->default(0);
             $table->text('desc')->nullable();
-            $table->timestamps('created_at');
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 
