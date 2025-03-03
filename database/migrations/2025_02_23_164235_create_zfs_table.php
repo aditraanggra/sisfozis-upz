@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('zfs', function (Blueprint $table) {
+        Schema::create('zfs', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('unit_id')->constrained('unit_zis')->onDelete('cascade')->after('id');
             $table->date('trx_date');
             $table->string('muzakki_name');
@@ -19,6 +20,8 @@ return new class extends Migration
             $table->integer('zf_amount')->default(0);
             $table->integer('total_muzakki')->default(1);
             $table->text('desc')->nullable();
+            $table->timestamps('created_at');
+            $table->timestamp('updated_at')->nullable();
         });
     }
 

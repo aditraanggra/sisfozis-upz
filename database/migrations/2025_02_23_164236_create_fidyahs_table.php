@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('fidyahs', function (Blueprint $table) {
+        Schema::create('fidyahs', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('unit_id')->constrained('unit_zis')->onDelete('cascade')->after('id');
             $table->date('trx_date');
             $table->string('name');
             $table->integer('total_day')->default(1);
             $table->integer('amount')->default(0);
             $table->text('desc')->nullable();
+            $table->timestamps('created_at');
+            $table->timestamp('updated_at')->nullable();
         });
     }
 
