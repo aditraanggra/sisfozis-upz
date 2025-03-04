@@ -44,7 +44,7 @@ class UnitZisResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('no_register')
                             ->label('Nomor Register')
-                            ->disabled()
+                            ->readOnly()
                             //->default(fn(Get $get) => $get('village_code') . '-' . rand(1, 100))
                             ->required()
                             ->maxLength(255),
