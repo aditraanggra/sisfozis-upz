@@ -18,8 +18,17 @@ class UnitZisController extends Controller
         // Mengambil semua produk dan mengubahnya menjadi collection
         $unit = UnitZis::all();
 
+
+
         // Mengembalikan response dengan format yang konsisten
         return new UnitZisResource(true, 'List Data UPZ', $unit);
+    }
+
+    public function show($id)
+    {
+        $unitZis = UnitZis::findOrFail($id);
+
+        return new UnitZisResource(true, 'Detail Data UPZ', $unitZis);
     }
 
     public function store(Request $request)
@@ -38,7 +47,6 @@ class UnitZisController extends Controller
             'unit_leader' => 'required|string',
             'unit_assistant' => 'required|string',
             'unit_finance' => 'required|string',
-            'operator_name' => 'required|string',
             'operator_phone' => 'required|string',
             'rice_price' => 'required|integer',
             'is_verified' => 'boolean'
