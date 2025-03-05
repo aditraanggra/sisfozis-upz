@@ -26,7 +26,7 @@ class Distribution extends Model
 
     protected $casts = [
         'trx_date' => 'date',
-        'total_rice' => 'integer',
+        'total_rice' => 'float',
         'total_amount' => 'integer',
         'beneficiary' => 'integer',
         'rice_to_amount' => 'integer'

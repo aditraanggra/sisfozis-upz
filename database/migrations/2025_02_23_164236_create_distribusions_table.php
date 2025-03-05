@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('distributions', function (Blueprint $table) {
+        Schema::create('distributions', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('unit_id')->constrained('unit_zis')->onDelete('cascade')->after('id');
             $table->date('trx_date');
             $table->string('mustahik_name');
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->integer('beneficiary')->default(1);
             $table->integer('rice_to_amount')->default(0);
             $table->text('desc')->nullable();
+            $table->timestamps();
         });
     }
 
