@@ -43,7 +43,7 @@ class IfsController extends Controller
             ->paginate($request->per_page ?? 15)
             ->appends($request->query());
 
-        return IfsResource::collection($data);
+        return IfsResource::collection($data)->response()->getData(true)['data'];
     }
 
     /**

@@ -47,7 +47,7 @@ class DistributionController extends Controller
             ->paginate($request->per_page ?? 15)
             ->appends($request->query());
 
-        return DistributionResource::collection($data);
+        return DistributionResource::collection($data)->response()->getData(true)['data'];
     }
 
     /**

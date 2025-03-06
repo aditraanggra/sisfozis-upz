@@ -43,7 +43,7 @@ class ZmController extends Controller
             ->paginate($request->per_page ?? 15)
             ->appends($request->query());
 
-        return ZmResource::collection($data);
+        return ZmResource::collection($data)->response()->getData(true)['data'];
     }
 
     /**
