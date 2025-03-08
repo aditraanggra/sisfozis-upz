@@ -17,7 +17,11 @@ class UnitCategoryResource extends Resource
 {
     protected static ?string $model = UnitCategory::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static ?string $navigationGroup = 'Settings';
+
+    protected static ?string $label = 'Kategori UPZ';
 
     public static function form(Form $form): Form
     {

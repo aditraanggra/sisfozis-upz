@@ -19,7 +19,11 @@ class UnitZisResource extends Resource
 {
     protected static ?string $model = UnitZis::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office';
+
+    protected static ?string $navigationGroup = 'Settings';
+
+    protected static ?string $label = 'Daftar UPZ';
 
     public static function form(Form $form): Form
     {

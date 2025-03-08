@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DistributionController;
 use App\Http\Controllers\Api\DonationBoxController;
 use App\Http\Controllers\Api\FidyahController;
 use App\Http\Controllers\Api\IfsController;
+use App\Http\Controllers\Api\SetorZisController;
 use App\Http\Controllers\Api\ZfController;
 use App\Http\Controllers\Api\ZmController;
 
@@ -42,5 +43,6 @@ Route::middleware('auth:sanctum')->group(function () {
         'fidyah' => FidyahController::class,
         'kotak_amal' => DonationBoxController::class,
         'pendis' => DistributionController::class,
+        'setor' => SetorZisController::class,
     ]);
 });
