@@ -58,6 +58,8 @@ class AdminPanelProvider extends PanelProvider
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
             ])
             ->databaseNotifications()
-            ->databaseNotificationsPolling('30s');
+            ->databaseNotificationsPolling('30s')
+            ->brandName('SISFOZIS');
+        //->brandLogo(asset('/public/assets/img/logo.svg'));
     }
 }

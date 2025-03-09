@@ -34,6 +34,11 @@ class UnitZisResource extends Resource
                         Forms\Components\Select::make('user_id')
                             ->relationship('user', 'name')
                             ->label('Operator')
+                            ->options(function () {
+                                $usedUserIds = UnitZis::pluck('user_id')->toArray();
+                                return \App\Models\User::whereNotIn('id', $usedUserIds)->pluck('name', 'id');
+                            })
+                            ->searchable()
                             ->required(),
                         Forms\Components\TextInput::make('operator_phone')
                             ->label('Nomor Telepon Operator')
