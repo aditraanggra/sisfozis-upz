@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,7 +23,9 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         if (config('app.env') === 'production') {
-            URL::forceScheme('https');
+            Livewire::setScriptRoute(function ($handle) {
+                return 'https://sisfoupz.baznaskabcianjur.com/livewire/' . $handle;
+            });
         }
     }
 }
