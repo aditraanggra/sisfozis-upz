@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\UnitZisImporter;
 use App\Filament\Resources\UnitZisResource\Pages;
 use App\Models\District;
 use App\Models\UnitZis;
@@ -14,6 +15,7 @@ use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\ImportAction;
 
 class UnitZisResource extends Resource
 {
@@ -147,6 +149,10 @@ class UnitZisResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Operator')
                     ->sortable()
@@ -203,6 +209,10 @@ class UnitZisResource extends Resource
                     ->label('Terverifikasi')
                     ->sortable()
                     ->searchable(),
+                Tables\Columns\TextColumn::make('profile_completion')
+                    ->label('Indeks Profil')
+                    ->sortable()
+                    ->searchable(),
             ])
             ->filters([
                 //
@@ -214,6 +224,9 @@ class UnitZisResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                ImportAction::make()->importer(UnitZisImporter::class),
             ]);
     }
 

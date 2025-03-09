@@ -13,15 +13,16 @@ class UnitZisController extends Controller
      * Menampilkan daftar semua produk
      * Method ini dipanggil ketika mengakses GET /products
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Mengambil semua produk dan mengubahnya menjadi collection
-        $unit = UnitZis::all();
+        // Mengambil user yang sedang login
+        $user = $request->user();
 
-
+        // Mengambil semua unitZis yang berelasi dengan user yang sedang login
+        $units = UnitZis::where('user_id', $user->id)->get();
 
         // Mengembalikan response dengan format yang konsisten
-        return new UnitZisResource(true, 'List Data UPZ', $unit);
+        return new UnitZisResource(true, 'List Data UPZ', $units);
     }
 
     public function show($id)

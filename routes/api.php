@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\IfsController;
 use App\Http\Controllers\Api\SetorZisController;
 use App\Http\Controllers\Api\ZfController;
 use App\Http\Controllers\Api\ZmController;
+use App\Http\Controllers\Api\UnitZisController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -30,7 +31,7 @@ Route::apiResource('/desa', \App\Http\Controllers\Api\VillageController::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::apiResource('/unit-zis', \App\Http\Controllers\Api\UnitZisController::class);
+//Route::apiResource('/unit-zis', \App\Http\Controllers\Api\UnitZisController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -44,5 +45,6 @@ Route::middleware('auth:sanctum')->group(function () {
         'kotak_amal' => DonationBoxController::class,
         'pendis' => DistributionController::class,
         'setor' => SetorZisController::class,
+        'unit-zis' => UnitZisController::class,
     ]);
 });

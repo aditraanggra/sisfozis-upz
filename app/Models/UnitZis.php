@@ -25,7 +25,8 @@ class UnitZis extends Model
         'unit_finance',
         'operator_phone',
         'rice_price',
-        'is_verified'
+        'is_verified',
+        'profile_completion'
     ];
 
     public function user()
