@@ -132,6 +132,13 @@ class UnitZisResource extends Resource
                             ->label('Terverifikasi')
                             ->required()
                             ->default(false),
+                        Forms\Components\TextInput::make('profile_completion')
+                            ->label('Indeks Profil')
+                            ->numeric()
+                            ->required()
+                            ->maxLength(255)
+                            ->minValue(0)
+                            ->maxValue(100),
                     ])
             ]);
     }
