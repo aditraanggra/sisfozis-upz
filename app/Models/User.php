@@ -57,6 +57,6 @@ class User extends Authenticatable
     // Relasi ke tabel unit_zis
     public function unitzis()
     {
-        return $this->hasMany(unitzis::class);
+        return $this->belongsTo(unitzis::class);
     }
 }
