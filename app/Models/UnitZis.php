@@ -18,7 +18,6 @@ class UnitZis extends Model
         'no_sk',
         'unit_name',
         'no_register',
-        'unit_field',
         'address',
         'unit_leader',
         'unit_assistant',

@@ -20,7 +20,6 @@ class UnitZisRequest extends FormRequest
             'no_sk' => 'required|string|max:255',
             'unit_name' => 'required|string|max:255',
             'no_register' => 'required|string|max:255|unique:unit_zis,no_register,' . $this->id,
-            'unit_field' => 'required|string|max:255',
             'address' => 'required|string',
             'unit_leader' => 'required|string|max:255',
             'unit_assistant' => 'required|string|max:255',

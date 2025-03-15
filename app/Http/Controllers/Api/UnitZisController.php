@@ -51,7 +51,6 @@ class UnitZisController extends Controller
             'no_sk' => 'required|string',
             'unit_name' => 'required|string',
             'no_register' => 'required|string',
-            'unit_field' => 'required|string',
             'address' => 'required|string',
             'unit_leader' => 'required|string',
             'unit_assistant' => 'required|string',
