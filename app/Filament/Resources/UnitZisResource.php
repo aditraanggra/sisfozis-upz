@@ -25,6 +25,8 @@ class UnitZisResource extends Resource
 
     protected static ?string $navigationGroup = 'Settings';
 
+    // protected static ?int $navigationSort = ;
+
     protected static ?string $label = 'Daftar UPZ';
 
     public static function form(Form $form): Form

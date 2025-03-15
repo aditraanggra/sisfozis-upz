@@ -51,8 +51,8 @@ class UserResource extends Resource
             ->columns([
                 //
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
-                Tables\Columns\TextColumn::make('name')->label('Name')->sortable(),
-                Tables\Columns\TextColumn::make('email')->label('Email')->sortable(),
+                Tables\Columns\TextColumn::make('name')->label('Name')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('email')->label('Email')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->label('Role')
                     ->sortable()
