@@ -22,6 +22,14 @@ class UnitZisController extends Controller
         $units = UnitZis::where('user_id', $user->id)->get();
 
         // Mengembalikan response dengan format yang konsisten
+        if ($units->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data UPZ Tidak Tersedia',
+                'data' => []
+            ], 200);
+        }
+
         return new UnitZisResource(true, 'List Data UPZ', $units);
     }
 
