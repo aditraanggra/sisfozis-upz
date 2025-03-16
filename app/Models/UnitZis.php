@@ -77,4 +77,9 @@ class UnitZis extends Model
     {
         return $this->hasMany(Distribution::class, 'unit_id');
     }
+
+    public function rekapZis()
+    {
+        return $this->hasMany(RekapZis::class, 'unit_id');
+    }
 }
