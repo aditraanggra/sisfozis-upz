@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Ifs;
 use App\Services\RekapZisService;
+use App\Jobs\UpdateRekapitulasiJob;
 
 class IfsObserver
 {
@@ -20,7 +21,7 @@ class IfsObserver
     public function created(Ifs $ifs): void
     {
         //
-        $this->rekapzisService->updateDailyRekapitulasi($ifs->trx_date, $ifs->unit_id);
+        $this->dispatchUpdateJob($ifs);
     }
 
     /**
@@ -31,8 +32,10 @@ class IfsObserver
         //
         if ($ifs->isDirty('trx_date') || $ifs->isDirty('unit_id')) {
             $oldDate = $ifs->getOriginal('trx_date');
-            $this->rekapzisService->updateDailyRekapitulasi($oldDate, $ifs->unit_id);
+            UpdateRekapitulasiJob::dispatch($oldDate, $ifs->unit_id);
         }
+
+        $this->dispatchUpdateJob($ifs);
     }
 
     /**
@@ -41,7 +44,7 @@ class IfsObserver
     public function deleted(Ifs $ifs): void
     {
         //
-        $this->rekapzisService->updateDailyRekapitulasi($ifs->trx_date, $ifs->unit_id);
+        $this->dispatchUpdateJob($ifs);
     }
 
     /**
@@ -50,7 +53,7 @@ class IfsObserver
     public function restored(Ifs $ifs): void
     {
         //
-        $this->rekapzisService->updateDailyRekapitulasi($ifs->trx_date, $ifs->unit_id);
+        $this->dispatchUpdateJob($ifs);
     }
 
     /**
@@ -59,6 +62,14 @@ class IfsObserver
     public function forceDeleted(Ifs $ifs): void
     {
         //
-        $this->rekapzisService->updateDailyRekapitulasi($ifs->trx_date, $ifs->unit_id);
+        $this->dispatchUpdateJob($ifs);
+    }
+
+    /**
+     * Dispatch job untuk update rekapitulasi
+     */
+    private function dispatchUpdateJob(Ifs $ifs): void
+    {
+        UpdateRekapitulasiJob::dispatch($ifs->trx_date, $ifs->unit_id);
     }
 }

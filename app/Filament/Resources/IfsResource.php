@@ -93,7 +93,8 @@ class IfsResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('trx_date', 'asc');
     }
 
     public static function getRelations(): array
