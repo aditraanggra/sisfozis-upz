@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Zf;
 use App\Services\RekapZisService;
+use App\Jobs\UpdateRekapitulasiJob;
 
 class ZfObserver
 {
@@ -20,7 +21,7 @@ class ZfObserver
     public function created(Zf $zf): void
     {
         //
-        $this->rekapzisService->updateDailyRekapitulasi($zf->trx_date, $zf->unit_id);
+        $this->dispatchUpdateJob($zf);
     }
 
     /**
@@ -31,8 +32,10 @@ class ZfObserver
         //
         if ($zf->isDirty('trx_date') || $zf->isDirty('unit_id')) {
             $oldDate = $zf->getOriginal('trx_date');
-            $this->rekapzisService->updateDailyRekapitulasi($oldDate, $zf->unit_id);
+            UpdateRekapitulasiJob::dispatch($oldDate, $zf->unit_id);
         }
+
+        $this->dispatchUpdateJob($zf);
     }
 
     /**
@@ -41,7 +44,7 @@ class ZfObserver
     public function deleted(Zf $zf): void
     {
         //
-        $this->rekapzisService->updateDailyRekapitulasi($zf->trx_date, $zf->unit_id);
+        $this->dispatchUpdateJob($zf);
     }
 
     /**
@@ -50,7 +53,7 @@ class ZfObserver
     public function restored(Zf $zf): void
     {
         //
-        $this->rekapzisService->updateDailyRekapitulasi($zf->trx_date, $zf->unit_id);
+        $this->dispatchUpdateJob($zf);
     }
 
     /**
@@ -59,6 +62,14 @@ class ZfObserver
     public function forceDeleted(Zf $zf): void
     {
         //
-        $this->rekapzisService->updateDailyRekapitulasi($zf->trx_date, $zf->unit_id);
+        $this->dispatchUpdateJob($zf);
+    }
+
+    /**
+     * Dispatch job untuk update rekapitulasi
+     */
+    private function dispatchUpdateJob(Zf $zf): void
+    {
+        UpdateRekapitulasiJob::dispatch($zf->trx_date, $zf->unit_id);
     }
 }
