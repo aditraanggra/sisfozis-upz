@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Models\Zf;
 use App\Services\RekapZisService;
-use App\Jobs\UpdateRekapitulasiJob;
+use App\Jobs\UpdateRekapZis;
 
 class ZfObserver
 {
@@ -32,7 +32,7 @@ class ZfObserver
         //
         if ($zf->isDirty('trx_date') || $zf->isDirty('unit_id')) {
             $oldDate = $zf->getOriginal('trx_date');
-            UpdateRekapitulasiJob::dispatch($oldDate, $zf->unit_id);
+            UpdateRekapZis::dispatch($oldDate, $zf->unit_id);
         }
 
         $this->dispatchUpdateJob($zf);
@@ -70,6 +70,6 @@ class ZfObserver
      */
     private function dispatchUpdateJob(Zf $zf): void
     {
-        UpdateRekapitulasiJob::dispatch($zf->trx_date, $zf->unit_id);
+        UpdateRekapZis::dispatch($zf->trx_date, $zf->unit_id);
     }
 }

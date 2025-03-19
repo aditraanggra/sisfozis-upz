@@ -3,17 +3,16 @@
 namespace App\Observers;
 
 use App\Models\Distribution;
-use App\Services\RekapPendisService;
-use App\Jobs\UpdateRekapPendis;
+use App\Services\RekapHakAmilService;
 
-class PendisObserver
+class HakAmilObserver
 {
 
-    protected $rekapPendisService;
+    protected $rekapHakAmilService;
 
-    public function __construct(RekapPendisService $rekapPendisService)
+    public function __construct(RekapHakAmilService $rekapHakAmilService)
     {
-        $this->rekapPendisService = $rekapPendisService;
+        $this->rekapHakAmilService = $rekapHakAmilService;
     }
     /**
      * Handle the Distribution "created" event.
@@ -21,7 +20,7 @@ class PendisObserver
     public function created(Distribution $distribution): void
     {
         //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
     }
 
     /**
@@ -30,7 +29,7 @@ class PendisObserver
     public function updated(Distribution $distribution): void
     {
         //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
     }
 
     /**
@@ -39,7 +38,7 @@ class PendisObserver
     public function deleted(Distribution $distribution): void
     {
         //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
     }
 
     /**
@@ -48,7 +47,7 @@ class PendisObserver
     public function restored(Distribution $distribution): void
     {
         //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
     }
 
     /**
@@ -57,12 +56,11 @@ class PendisObserver
     public function forceDeleted(Distribution $distribution): void
     {
         //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
     }
 
     /* private function dispatchUpdateJob(Distribution $distribution): void
     {
-        UpdateRekapPendis::dispatch($distribution->trx_date, $distribution->unit_id);
-    } 
-        */
+        UpdateRekapHakAmil::dispatch($distribution->trx_date, $distribution->unit_id);
+    } */
 }
