@@ -11,7 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Services\RekapZisService;
-use Carbon\Carbon;
+use App\Services\RekapPendisService;
 
 class UpdateRekapitulasiJob implements ShouldQueue
 {
@@ -36,8 +36,9 @@ class UpdateRekapitulasiJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle(RekapZisService $rekapitulasiService)
+    public function handle(RekapZisService $rekapitulasiService, RekapPendisService $rekapPendisService)
     {
         $rekapitulasiService->updateDailyRekapitulasi($this->date, $this->unitId);
+        $rekapPendisService->updateDailyRekapPendis($this->date, $this->unitId);
     }
 }

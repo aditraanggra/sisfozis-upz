@@ -15,7 +15,6 @@ class DistributionResource extends BaseTransactionResource
             'total_rice' => $this->total_rice,
             'total_amount' => $this->total_amount,
             'beneficiary' => $this->beneficiary,
-            'rice_to_amount' => $this->rice_to_amount
         ]);
     }
 }

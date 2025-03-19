@@ -84,10 +84,6 @@ class RekapZisService
      */
     protected function updatePeriodicRekapitulasi(Carbon $date, $unitId)
     {
-        // Update rekapitulasi mingguan
-        $startOfWeek = $date->copy()->startOfWeek();
-        $endOfWeek = $date->copy()->endOfWeek();
-
         // Update rekapitulasi bulanan
         $this->updateMonthlyRekapitulasi($date->month, $date->year, $unitId);
 

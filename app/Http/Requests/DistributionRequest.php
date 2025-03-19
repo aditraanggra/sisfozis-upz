@@ -12,10 +12,9 @@ class DistributionRequest extends BaseTransactionRequest
             'fund_type' => 'required|string|max:255',
             'asnaf' => 'required|string|max:255',
             'program' => 'required|string|max:255',
-            'total_rice' => 'required|integer|min:0',
+            'total_rice' => 'required|numeric|min:0',
             'total_amount' => 'required|integer|min:0',
             'beneficiary' => 'required|integer|min:1',
-            'rice_to_amount' => 'required|integer|min:0'
         ]);
     }
 }
