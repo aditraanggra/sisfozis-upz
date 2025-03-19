@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Distribution;
 use App\Models\Zf;
 use App\Models\Zm;
 use App\Models\Ifs;
@@ -9,6 +10,7 @@ use App\Models\RekapZis;
 use App\Observers\ZfObserver;
 use App\Observers\ZmObserver;
 use App\Observers\IfsObserver;
+use App\Observers\PendisObserver;
 use App\Observers\RekapZisObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
@@ -37,5 +39,6 @@ class AppServiceProvider extends ServiceProvider
         Zm::observe(ZmObserver::class);
         Ifs::observe(IfsObserver::class);
         RekapZis::observe(RekapZisObserver::class);
+        Distribution::observe(PendisObserver::class);
     }
 }

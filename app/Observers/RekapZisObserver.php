@@ -52,5 +52,6 @@ class RekapZisObserver
     {
         // Optionally handle deletion - you might want to delete the corresponding allocation record
         // or recalculate without this record's contribution
+        $this->rekapAlokasiService->processAllocation($rekapZis);
     }
 }

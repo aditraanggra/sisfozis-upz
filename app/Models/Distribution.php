@@ -20,7 +20,6 @@ class Distribution extends Model
         'total_rice',
         'total_amount',
         'beneficiary',
-        'rice_to_amount',
         'desc'
     ];
 
@@ -29,7 +28,6 @@ class Distribution extends Model
         'total_rice' => 'float',
         'total_amount' => 'integer',
         'beneficiary' => 'integer',
-        'rice_to_amount' => 'integer'
     ];
 
     public function unit()
