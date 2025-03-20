@@ -35,7 +35,7 @@ class DonationBoxController extends Controller
             ->paginate($request->per_page ?? 15)
             ->appends($request->query());
 
-        return DonationBoxResource::collection($data)->response()->getData(true)['data'];
+        return DonationBoxResource::collection($data)->response()->getData(true);
     }
 
     /**

@@ -43,7 +43,7 @@ class SetorZisController extends Controller
             ->paginate($request->per_page ?? 15)
             ->appends($request->query());
 
-        return SetorZisResource::collection($data)->response()->getData(true)['data'];
+        return SetorZisResource::collection($data)->response()->getData(true);
     }
 
     /**

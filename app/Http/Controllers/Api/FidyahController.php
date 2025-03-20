@@ -43,7 +43,7 @@ class FidyahController extends Controller
             ->paginate($request->per_page ?? 15)
             ->appends($request->query());
 
-        return FidyahResource::collection($data)->response()->getData(true)['data'];
+        return FidyahResource::collection($data)->response()->getData(true);
     }
 
     /**

@@ -43,7 +43,7 @@ class ZfController extends Controller
             ->paginate($request->per_page ?? 15)
             ->appends($request->query());
 
-        return ZfResource::collection($data)->response()->getData(true)['data'];
+        return ZfResource::collection($data)->response()->getData(true);
     }
 
     /**
