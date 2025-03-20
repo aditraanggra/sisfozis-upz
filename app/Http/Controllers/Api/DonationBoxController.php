@@ -31,9 +31,9 @@ class DonationBoxController extends Controller
             $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
         }
 
-        $data = $query->latest('trx_date')
-            ->paginate($request->per_page ?? 15)
-            ->appends($request->query());
+        $data = $query->latest('trx_date')->get();
+        /* ->paginate($request->per_page ?? 15)
+            ->appends($request->query()); */
 
         return DonationBoxResource::collection($data)->response()->getData(true);
     }

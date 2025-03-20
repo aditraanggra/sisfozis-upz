@@ -39,10 +39,10 @@ class SetorZisController extends Controller
             $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
         }
 
-        $data = $query->latest('trx_date')
-            ->paginate($request->per_page ?? 15)
+        $data = $query->latest('trx_date')->get();
+        /* ->paginate($request->per_page ?? 15)
             ->appends($request->query());
-
+ */
         return SetorZisResource::collection($data)->response()->getData(true);
     }
 

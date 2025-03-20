@@ -56,8 +56,8 @@ class RekapPendisResource extends JsonResource
                 ],
             ],
             't_pm' => (int) $this->t_pm,
-            'created_at' => $this->created_at->toIso8601String(),
-            'updated_at' => $this->updated_at->toIso8601String(),
+            /* 'created_at' => $this->created_at->toIso8601String(),
+            'updated_at' => $this->updated_at->toIso8601String(), */
         ];
     }
 }

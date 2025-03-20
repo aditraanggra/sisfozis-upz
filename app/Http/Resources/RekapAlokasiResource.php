@@ -53,8 +53,8 @@ class RekapAlokasiResource extends JsonResource
                 'zf_amount' => (int) $this->hak_op_zf_amount,
                 'zf_rice' => (float) $this->hak_op_zf_rice,
             ],
-            'created_at' => $this->created_at->toIso8601String(),
-            'updated_at' => $this->updated_at->toIso8601String(),
+            /* 'created_at' => $this->created_at->toIso8601String(),
+            'updated_at' => $this->updated_at->toIso8601String(), */
         ];
     }
 }

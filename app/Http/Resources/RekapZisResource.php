@@ -32,8 +32,8 @@ class RekapZisResource extends JsonResource
             'total_zm_muzakki' => (int) $this->total_zm_muzakki,
             'total_ifs_amount' => (int) $this->total_ifs_amount,
             'total_ifs_munfiq' => (int) $this->total_ifs_munfiq,
-            'created_at' => $this->created_at->toIso8601String(),
-            'updated_at' => $this->updated_at->toIso8601String(),
+            /* 'created_at' => $this->created_at->toIso8601String(),
+            'updated_at' => $this->updated_at->toIso8601String(), */
         ];
     }
 }

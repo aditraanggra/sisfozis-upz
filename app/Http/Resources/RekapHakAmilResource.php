@@ -31,8 +31,8 @@ class RekapHakAmilResource extends JsonResource
                 'ifs' => (int) $this->t_pendis_ha_ifs,
             ],
             't_pm' => (int) $this->t_pm,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            /* 'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at, */
         ];
     }
 }

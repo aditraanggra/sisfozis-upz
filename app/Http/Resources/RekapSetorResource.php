@@ -29,8 +29,8 @@ class RekapSetorResource extends JsonResource
             't_setor_zf_rice' => $this->t_setor_zf_rice,
             't_setor_zm' => $this->t_setor_zm,
             't_setor_ifs' => $this->t_setor_ifs,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            /* 'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at, */
         ];
     }
 }
