@@ -41,7 +41,15 @@ class RekapZisController extends Controller
         $rekapZis = $query->orderBy($sortField, $sortOrder)
             ->paginate($request->input('per_page', 15));
 
-        return RekapZisResource::collection($rekapZis);
+        return response()->json([
+            'data' => RekapZisResource::collection($rekapZis),
+            'meta' => [
+                'total' => $rekapZis->total(),
+                'per_page' => $rekapZis->perPage(),
+                'current_page' => $rekapZis->currentPage(),
+                'total_pages' => $rekapZis->lastPage()
+            ]
+        ]);
     }
 
     /**

@@ -40,7 +40,15 @@ class RekapPendisController extends Controller
         $rekapPendis = $query->orderBy($sortField, $sortOrder)
             ->paginate($request->input('per_page', 15));
 
-        return RekapPendisResource::collection($rekapPendis);
+        return response()->json([
+            'data' => RekapPendisResource::collection($rekapPendis),
+            'meta' => [
+                'total' => $rekapPendis->total(),
+                'per_page' => $rekapPendis->perPage(),
+                'current_page' => $rekapPendis->currentPage(),
+                'total_pages' => $rekapPendis->lastPage()
+            ]
+        ]);
     }
 
     /**

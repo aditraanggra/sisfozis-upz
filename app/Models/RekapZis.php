@@ -34,6 +34,6 @@ class RekapZis extends Model
 
     public function unit()
     {
-        return $this->belongsTo('App\Models\UnitZis', 'unit_id');
+        return $this->belongsTo(UnitZis::class, 'unit_id');
     }
 }

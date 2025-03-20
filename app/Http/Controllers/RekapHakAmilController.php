@@ -41,7 +41,15 @@ class RekapHakAmilController extends Controller
         $rekapHakAmil = $query->orderBy($sortField, $sortOrder)
             ->paginate($request->input('per_page', 15));
 
-        return RekapHakAmilResource::collection($rekapHakAmil);
+        return response()->json([
+            'data' => RekapHakAmilResource::collection($rekapHakAmil),
+            'meta' => [
+                'total' => $rekapHakAmil->total(),
+                'per_page' => $rekapHakAmil->perPage(),
+                'current_page' => $rekapHakAmil->currentPage(),
+                'total_pages' => $rekapHakAmil->lastPage()
+            ]
+        ]);
     }
 
     /**

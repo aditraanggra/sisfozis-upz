@@ -41,6 +41,16 @@ class RekapAlokasiController extends Controller
             ->paginate($request->input('per_page', 15));
 
         return RekapAlokasiResource::collection($rekapAlokasi);
+
+        return response()->json([
+            'data' => RekapAlokasiResource::collection($rekapAlokasi),
+            'meta' => [
+                'total' => $rekapAlokasi->total(),
+                'per_page' => $rekapAlokasi->perPage(),
+                'current_page' => $rekapAlokasi->currentPage(),
+                'total_pages' => $rekapAlokasi->lastPage()
+            ]
+        ]);
     }
 
     /**
