@@ -33,7 +33,7 @@ class RebuildRekapitulasi extends Command
      * @param RekapZisService $rekapitulasiService
      * @return int
      */
-    public function handle(RekapZisService $rekapitulasiService)
+    public function handle(RekapZisService $rekapitulasiZis)
     {
         $unitOption = $this->option('unit');
         $startDate = $this->option('start') ? Carbon::parse($this->option('start')) : Carbon::now()->subMonth();
@@ -63,17 +63,17 @@ class RebuildRekapitulasi extends Command
             while ($currentDate <= $endDate) {
                 // Update rekapitulasi harian
                 if ($periode === 'all' || $periode === 'harian') {
-                    $rekapitulasiService->updateDailyRekapitulasi($currentDate, $unit->id);
+                    $rekapitulasiZis->updateDailyRekapitulasi($currentDate, $unit->id);
                 }
 
                 // Pada hari terakhir bulan, update rekapitulasi bulanan
                 if (($periode === 'all' || $periode === 'bulanan') && $currentDate->day === $currentDate->daysInMonth) {
-                    $rekapitulasiService->updateMonthlyRekapitulasi($currentDate->month, $currentDate->year, $unit->id);
+                    $rekapitulasiZis->updateMonthlyRekapitulasi($currentDate->month, $currentDate->year, $unit->id);
                 }
 
                 // Pada hari terakhir tahun, update rekapitulasi tahunan
                 if (($periode === 'all' || $periode === 'tahunan') && $currentDate->month === 12 && $currentDate->day === 31) {
-                    $rekapitulasiService->updateYearlyRekapitulasi($currentDate->year, $unit->id);
+                    $rekapitulasiZis->updateYearlyRekapitulasi($currentDate->year, $unit->id);
                 }
 
                 $currentDate->addDay();
