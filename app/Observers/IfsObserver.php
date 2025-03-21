@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Models\Ifs;
 use App\Services\RekapZisService;
-use App\Jobs\UpdateRekapitulasiJob;
+use App\Jobs\UpdateRekapZis;
 
 class IfsObserver
 {
@@ -32,7 +32,7 @@ class IfsObserver
         //
         if ($ifs->isDirty('trx_date') || $ifs->isDirty('unit_id')) {
             $oldDate = $ifs->getOriginal('trx_date');
-            UpdateRekapitulasiJob::dispatch($oldDate, $ifs->unit_id);
+            UpdateRekapZis::dispatch($oldDate, $ifs->unit_id);
         }
 
         $this->dispatchUpdateJob($ifs);
@@ -70,6 +70,6 @@ class IfsObserver
      */
     private function dispatchUpdateJob(Ifs $ifs): void
     {
-        UpdateRekapitulasiJob::dispatch($ifs->trx_date, $ifs->unit_id);
+        UpdateRekapZis::dispatch($ifs->trx_date, $ifs->unit_id);
     }
 }
