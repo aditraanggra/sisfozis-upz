@@ -28,7 +28,7 @@ class RekapZisObserver
      */
     public function created(RekapZis $rekapZis)
     {
-        $this->rekapAlokasiService->processAllocation($rekapZis);
+        $this->rekapAlokasiService->updateDailyRekapAlokasi($rekapZis->trx_date, $rekapZis->unit_id);
     }
 
     /**
@@ -39,7 +39,11 @@ class RekapZisObserver
      */
     public function updated(RekapZis $rekapZis)
     {
-        $this->rekapAlokasiService->processAllocation($rekapZis);
+
+        if ($rekapZis->isDirty('trx_date') || $rekapZis->isDirty('unit_id')) {
+            $oldDate = $rekapZis->getOriginal('trx_date');
+            $this->rekapAlokasiService->updateDailyRekapAlokasi($oldDate, $rekapZis->unit_id);
+        }
     }
 
     /**
@@ -52,6 +56,6 @@ class RekapZisObserver
     {
         // Optionally handle deletion - you might want to delete the corresponding allocation record
         // or recalculate without this record's contribution
-        $this->rekapAlokasiService->processAllocation($rekapZis);
+        $this->rekapAlokasiService->updateDailyRekapAlokasi($rekapZis->trx_date, $rekapZis->unit_id);
     }
 }
