@@ -52,7 +52,7 @@ class RekapAlokasiService
             $alokasiPendisIfs = $totalKelolaIfs * 0.875;
 
             $hakOpZfAmount = $totalSetorZfAmount * 0.05;
-            $hakOpZfRice = $totalSetorZfAmount * 0.05;
+            $hakOpZfRice = $totalSetorZfRice * 0.05;
 
             // Update or create rekap_alokasi record
             $rekapAlokasi = RekapAlokasi::updateOrCreate(
