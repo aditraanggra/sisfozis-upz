@@ -2,10 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Services\RekapAlokasiService;
-use App\Models\RekapZis;
-use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class RebuildRekapAlokasi extends Command
 {
@@ -14,77 +12,67 @@ class RebuildRekapAlokasi extends Command
      *
      * @var string
      */
-    protected $signature = 'alokasi:rebuild 
-                            {--unit=all : ID unit atau "all" untuk semua unit} 
-                            {--start= : Tanggal mulai format Y-m-d} 
-                            {--end= : Tanggal akhir format Y-m-d}
-                            {--periode=all : Periode yang ingin dibangun (harian, mingguan, bulanan, tahunan, all)}';
+    protected $signature = 'alokasi:rebuild {unit_id? : The unit ID to rebuild} {period? : The period to rebuild}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Membangun ulang tabel rekapitulasi Alokasi ZIS untuk periode tertentu';
+    protected $description = 'Rebuild rekap alokasi data based on rekap zis data';
 
     /**
      * Execute the console command.
      *
-     * @param RekapAlokasiService $rekapitulasiService
+     * @param RekapAlokasiService $rekapAlokasiService
      * @return int
      */
-    public function handle(RekapAlokasiService $rekapitulasiAlokasi)
+    public function handle(RekapAlokasiService $rekapAlokasiService)
     {
-        $unitOption = $this->option('unit');
-        $startDate = $this->option('start') ? Carbon::parse($this->option('start')) : Carbon::now()->subMonth();
-        $endDate = $this->option('end') ? Carbon::parse($this->option('end')) : Carbon::now();
-        $periode = $this->option('periode');
+        $unitId = $this->argument('unit_id');
+        $period = $this->argument('period');
 
-        $this->info("Membangun ulang rekapitulasi dari {$startDate->format('Y-m-d')} sampai {$endDate->format('Y-m-d')}");
+        $this->info('Starting rekap alokasi rebuild process...');
 
-        // Tentukan unit yang akan dihitung
-        $units = $unitOption === 'all'
-            ? RekapZis::all()
-            : RekapZis::where('id', $unitOption)->get();
+        try {
+            if ($unitId && $period) {
+                // Rebuild specific unit_id and period
+                $this->info("Rebuilding rekap alokasi for unit_id: {$unitId}, period: {$period}");
 
-        if ($units->isEmpty()) {
-            $this->error("Unit tidak ditemukan!");
+                $rekapAlokasi = $rekapAlokasiService->updateOrCreateRekapAlokasi($unitId, $period);
+
+                $this->info("Successfully rebuilt rekap alokasi ID: {$rekapAlokasi->id}");
+
+                return 0;
+            } else {
+                // Rebuild all rekap alokasi records
+                $this->info('Rebuilding all rekap alokasi records...');
+
+                $results = $rekapAlokasiService->rebuildAllRekapAlokasi();
+
+                $successCount = count(array_filter($results, function ($result) {
+                    return $result['status'] === 'success';
+                }));
+
+                $errorCount = count($results) - $successCount;
+
+                $this->info("Rebuild completed. Successful: {$successCount}, Failed: {$errorCount}");
+
+                if ($errorCount > 0) {
+                    $this->error('Some records failed to rebuild:');
+                    foreach ($results as $result) {
+                        if ($result['status'] === 'error') {
+                            $this->error("Unit ID: {$result['unit_id']}, Period: {$result['period']} - {$result['message']}");
+                        }
+                    }
+                    return 1;
+                }
+
+                return 0;
+            }
+        } catch (\Exception $e) {
+            $this->error('Error rebuilding rekap alokasi: ' . $e->getMessage());
             return 1;
         }
-
-        $bar = $this->output->createProgressBar(count($units) * $startDate->diffInDays($endDate) + 1);
-        $bar->start();
-
-        foreach ($units as $unit) {
-            $this->info("\nMemproses Unit: {$unit->name}");
-
-            // Loop melalui setiap hari dalam rentang tanggal
-            $currentDate = clone $startDate;
-            while ($currentDate <= $endDate) {
-                // Update rekapitulasi harian
-                if ($periode === 'all' || $periode === 'harian') {
-                    $rekapitulasiAlokasi->updateDailyRekapAlokasi($currentDate, $unit->id);
-                }
-
-                // Pada hari terakhir bulan, update rekapitulasi bulanan
-                if (($periode === 'all' || $periode === 'bulanan') && $currentDate->day === $currentDate->daysInMonth) {
-                    $rekapitulasiAlokasi->updateMonthlyRekapAlokasi($currentDate->month, $currentDate->year, $unit->id);
-                }
-
-                // Pada hari terakhir tahun, update rekapitulasi tahunan
-                if (($periode === 'all' || $periode === 'tahunan') && $currentDate->month === 12 && $currentDate->day === 31) {
-                    $rekapitulasiAlokasi->updateYearlyRekapAlokasi($currentDate->year, $unit->id);
-                }
-
-                $currentDate->addDay();
-                $bar->advance();
-            }
-        }
-
-        $bar->finish();
-        $this->newLine(2);
-        $this->info('Rekapitulasi berhasil dibangun ulang!');
-
-        return 0;
     }
 }

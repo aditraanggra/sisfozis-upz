@@ -3,23 +3,10 @@
 namespace App\Observers;
 
 use App\Models\RekapZis;
-use App\Services\RekapAlokasiService;
+use App\Jobs\UpdateRekapAlokasi;
 
 class RekapZisObserver
 {
-    protected $rekapAlokasiService;
-
-    /**
-     * Create a new observer instance.
-     *
-     * @param RekapAlokasiService $rekapAlokasiService
-     * @return void
-     */
-    public function __construct(RekapAlokasiService $rekapAlokasiService)
-    {
-        $this->rekapAlokasiService = $rekapAlokasiService;
-    }
-
     /**
      * Handle the RekapZis "created" event.
      *
@@ -28,7 +15,7 @@ class RekapZisObserver
      */
     public function created(RekapZis $rekapZis)
     {
-        $this->rekapAlokasiService->updateDailyRekapAlokasi($rekapZis->trx_date, $rekapZis->unit_id);
+        $this->dispatchUpdateJob($rekapZis);
     }
 
     /**
@@ -39,11 +26,7 @@ class RekapZisObserver
      */
     public function updated(RekapZis $rekapZis)
     {
-
-        if ($rekapZis->isDirty('trx_date') || $rekapZis->isDirty('unit_id')) {
-            $oldDate = $rekapZis->getOriginal('trx_date');
-            $this->rekapAlokasiService->updateDailyRekapAlokasi($oldDate, $rekapZis->unit_id);
-        }
+        $this->dispatchUpdateJob($rekapZis);
     }
 
     /**
@@ -54,8 +37,45 @@ class RekapZisObserver
      */
     public function deleted(RekapZis $rekapZis)
     {
-        // Optionally handle deletion - you might want to delete the corresponding allocation record
-        // or recalculate without this record's contribution
-        $this->rekapAlokasiService->updateDailyRekapAlokasi($rekapZis->trx_date, $rekapZis->unit_id);
+        // When a rekap_zis record is deleted, we might want to remove the corresponding 
+        // rekap_alokasi record or update it to reflect zero values
+        $this->dispatchUpdateJob($rekapZis);
+    }
+
+    /**
+     * Handle the RekapZis "restored" event.
+     *
+     * @param  \App\Models\RekapZis  $rekapZis
+     * @return void
+     */
+    public function restored(RekapZis $rekapZis)
+    {
+        $this->dispatchUpdateJob($rekapZis);
+    }
+
+    /**
+     * Handle the RekapZis "force deleted" event.
+     *
+     * @param  \App\Models\RekapZis  $rekapZis
+     * @return void
+     */
+    public function forceDeleted(RekapZis $rekapZis)
+    {
+        // Similar to deleted event handling
+        $this->dispatchUpdateJob($rekapZis);
+    }
+
+    /**
+     * Dispatch the update job
+     *
+     * @param RekapZis $rekapZis
+     * @return void
+     */
+    private function dispatchUpdateJob(RekapZis $rekapZis)
+    {
+        UpdateRekapAlokasi::dispatch(
+            $rekapZis->unit_id,
+            $rekapZis->period
+        );
     }
 }

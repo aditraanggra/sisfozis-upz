@@ -1,345 +1,150 @@
 <?php
-// File: app/Services/RekapAlokasiService.php
+
 namespace App\Services;
 
-use App\Models\RekapAlokasi;
 use App\Models\RekapZis;
-use Carbon\Carbon;
+use App\Models\RekapAlokasi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Collection;
 
 class RekapAlokasiService
 {
     /**
-     * Update rekapitulasi alokasi harian untuk tanggal dan unit tertentu
-     * 
-     * @param string|Carbon $date
+     * Update or create rekap alokasi based on rekap zis data
+     *
      * @param int $unitId
+     * @param string $period
      * @return RekapAlokasi
      */
-    public function updateDailyRekapAlokasi($date, $unitId)
+    public function updateOrCreateRekapAlokasi(int $unitId, string $period): RekapAlokasi
     {
         try {
-            $startDate = Carbon::parse($date)->startOfDay();
-            $endDate = Carbon::parse($date)->endOfDay();
+            DB::beginTransaction();
 
-            // Get RekapZis data for the same period
+            // Get rekap_zis data
             $rekapZis = RekapZis::where('unit_id', $unitId)
-                ->where('periode', 'harian')
-                ->where('periode_date', $startDate->format('Y-m-d'))
+                ->where('period', $period)
                 ->first();
 
             if (!$rekapZis) {
-                throw new \Exception('RekapZis data not found for this period');
+                throw new \Exception("RekapZis record not found for unit_id: {$unitId} and period: {$period}");
             }
 
-            // Calculate allocation data
-            $allocationData = $this->calculateAllocationData($rekapZis);
+            // Calculate allocation values based on the formulas
+            $totalSetorZfAmount = $rekapZis->total_zf_amount * 0.3;
+            $totalSetorZfRice = $rekapZis->total_zf_rice * 0.3;
+            $totalSetorZm = $rekapZis->total_zm_amount * 0.3;
+            $totalSetorIfs = $rekapZis->total_ifs_amount * 0.3;
 
-            // Save or update allocation
-            $rekapitulasi = RekapAlokasi::updateOrCreate(
+            $totalKelolaZfAmount = $rekapZis->total_zf_amount * 0.7;
+            $totalKelolaZfRice = $rekapZis->total_zf_rice * 0.7;
+            $totalKelolaZm = $rekapZis->total_zm_amount * 0.7;
+            $totalKelolaIfs = $rekapZis->total_ifs_amount * 0.7;
+
+            $hakAmilZfAmount = $totalKelolaZfAmount * 0.125;
+            $hakAmilZfRice = $totalKelolaZfRice * 0.125;
+            $hakAmilZm = $totalKelolaZm * 0.125;
+            $hakAmilIfs = $totalKelolaIfs * 0.125;
+
+            $alokasiPendisZfAmount = $totalKelolaZfAmount * 0.875;
+            $alokasiPendisZfRice = $totalKelolaZfRice * 0.875;
+            $alokasiPendisZm = $totalKelolaZm * 0.875;
+            $alokasiPendisIfs = $totalKelolaIfs * 0.875;
+
+            $hakOpZfAmount = $totalSetorZfAmount * 0.05;
+            $hakOpZfRice = $totalSetorZfAmount * 0.05;
+
+            // Update or create rekap_alokasi record
+            $rekapAlokasi = RekapAlokasi::updateOrCreate(
                 [
                     'unit_id' => $unitId,
-                    'periode' => 'harian',
-                    'periode_date' => $startDate->format('Y-m-d'),
+                    'periode' => $period,
                 ],
-                $allocationData
+                [
+                    'periode_date' => $rekapZis->period_date,
+                    'total_setor_zf_amount' => $totalSetorZfAmount,
+                    'total_setor_zf_rice' => $totalSetorZfRice,
+                    'total_setor_zm' => $totalSetorZm,
+                    'total_setor_ifs' => $totalSetorIfs,
+                    'total_kelola_zf_amount' => $totalKelolaZfAmount,
+                    'total_kelola_zf_rice' => $totalKelolaZfRice,
+                    'total_kelola_zm' => $totalKelolaZm,
+                    'total_kelola_ifs' => $totalKelolaIfs,
+                    'hak_amil_zf_amount' => $hakAmilZfAmount,
+                    'hak_amil_zf_rice' => $hakAmilZfRice,
+                    'hak_amil_zm' => $hakAmilZm,
+                    'hak_amil_ifs' => $hakAmilIfs,
+                    'alokasi_pendis_zf_amount' => $alokasiPendisZfAmount,
+                    'alokasi_pendis_zf_rice' => $alokasiPendisZfRice,
+                    'alokasi_pendis_zm' => $alokasiPendisZm,
+                    'alokasi_pendis_ifs' => $alokasiPendisIfs,
+                    'hak_op_zf_amount' => $hakOpZfAmount,
+                    'hak_op_zf_rice' => $hakOpZfRice,
+                ]
             );
 
-            // Update weekly, monthly, and yearly allocation if needed
-            $this->updatePeriodicRekapitulasi($startDate, $unitId);
-
-            return $rekapitulasi;
+            DB::commit();
+            return $rekapAlokasi;
         } catch (\Exception $e) {
-            Log::error('Error updating rekapitulasi alokasi: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error updating rekap alokasi: ' . $e->getMessage());
             throw $e;
         }
     }
 
     /**
-     * Update rekapitulasi mingguan, bulanan, dan tahunan
-     * 
-     * @param Carbon $date
-     * @param int $unitId
-     */
-    protected function updatePeriodicRekapitulasi(Carbon $date, $unitId)
-    {
-        // Update rekapitulasi bulanan
-        $this->updateMonthlyRekapAlokasi($date->month, $date->year, $unitId);
-
-        // Update rekapitulasi tahunan
-        $this->updateYearlyRekapAlokasi($date->year, $unitId);
-    }
-
-    /**
-     * Update rekapitulasi bulanan
-     * 
-     * @param int $month
-     * @param int $year
-     * @param int $unitId
-     * @return RekapAlokasi
-     */
-    public function updateMonthlyRekapAlokasi($month, $year, $unitId)
-    {
-        try {
-            $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
-            $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth()->endOfDay();
-
-            // Get RekapZis data for the same period
-            $rekapZis = RekapZis::where('unit_id', $unitId)
-                ->where('periode', 'bulanan')
-                ->where('periode_date', $startDate->format('Y-m-01'))
-                ->first();
-
-            if (!$rekapZis) {
-                throw new \Exception('RekapZis data not found for this period');
-            }
-
-            // Calculate allocation data
-            $allocationData = $this->calculateAllocationData($rekapZis);
-
-            // Save or update allocation
-            $rekapitulasi = RekapAlokasi::updateOrCreate(
-                [
-                    'unit_id' => $unitId,
-                    'periode' => 'bulanan',
-                    'periode_date' => $startDate->format('Y-m-01'),
-                ],
-                $allocationData
-            );
-
-            return $rekapitulasi;
-        } catch (\Exception $e) {
-            Log::error('Error updating monthly rekapitulasi alokasi: ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Update rekapitulasi tahunan
-     * 
-     * @param int $year
-     * @param int $unitId
-     * @return RekapAlokasi
-     */
-    public function updateYearlyRekapAlokasi($year, $unitId)
-    {
-        try {
-            $startDate = Carbon::createFromDate($year, 1, 1)->startOfDay();
-            $endDate = Carbon::createFromDate($year, 12, 31)->endOfDay();
-
-            // Get RekapZis data for the same period
-            $rekapZis = RekapZis::where('unit_id', $unitId)
-                ->where('periode', 'tahunan')
-                ->where('periode_date', $startDate->format('Y-01-01'))
-                ->first();
-
-            if (!$rekapZis) {
-                throw new \Exception('RekapZis data not found for this period');
-            }
-
-            // Calculate allocation data
-            $allocationData = $this->calculateAllocationData($rekapZis);
-
-            // Save or update allocation
-            $rekapitulasi = RekapAlokasi::updateOrCreate(
-                [
-                    'unit_id' => $unitId,
-                    'periode' => 'tahunan',
-                    'periode_date' => $startDate->format('Y-01-01'),
-                ],
-                $allocationData
-            );
-
-            return $rekapitulasi;
-        } catch (\Exception $e) {
-            Log::error('Error updating yearly rekapitulasi alokasi: ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Menghitung data alokasi berdasarkan data RekapZis
-     * 
-     * @param RekapZis $rekapZis
+     * Update all rekap alokasi records
+     *
      * @return array
      */
-    protected function calculateAllocationData(RekapZis $rekapZis)
+    public function rebuildAllRekapAlokasi(): array
     {
-        return [
-            'total_setor_zf_amount' => $rekapZis->total_zf_amount * 0.3,
-            'total_setor_zf_rice' => $rekapZis->total_zf_rice * 0.3,
-            'total_setor_zm' => $rekapZis->total_zm_amount * 0.3,
-            'total_setor_ifs' => $rekapZis->total_ifs_amount * 0.3,
-            'total_kelola_zf_amount' => $rekapZis->total_zf_amount * 0.7,
-            'total_kelola_zf_rice' => $rekapZis->total_zf_rice * 0.7,
-            'total_kelola_zm' => $rekapZis->total_zm_amount * 0.7,
-            'total_kelola_ifs' => $rekapZis->total_ifs_amount * 0.7,
-            'hak_amil_zf_amount' => $rekapZis->total_zf_amount * 0.7 * 0.125,
-            'hak_amil_zf_rice' => $rekapZis->total_zf_rice * 0.7 * 0.125,
-            'hak_amil_zm' => $rekapZis->total_zm_amount * 0.7 * 0.125,
-            'hak_amil_ifs' => $rekapZis->total_ifs_amount * 0.7 * 0.2,
-            'alokasi_pendis_zf_amount' => $rekapZis->total_zf_amount * 0.7 * 0.875,
-            'alokasi_pendis_zf_rice' => $rekapZis->total_zf_rice * 0.7 * 0.875,
-            'alokasi_pendis_zm' => $rekapZis->total_zm_amount * 0.7 * 0.875,
-            'alokasi_pendis_ifs' => $rekapZis->total_ifs_amount * 0.7 * 0.8,
-            'hak_op_zf_amount' => $rekapZis->total_zf_amount * 0.3 * 0.05,
-            'hak_op_zf_rice' => $rekapZis->total_zf_rice * 0.3 * 0.05,
-        ];
-    }
+        $results = [];
+        $rekapZisRecords = RekapZis::all();
 
-    /**
-     * Get rekap alokasi by ID
-     *
-     * @param int $id
-     * @return RekapAlokasi|null
-     */
-    public function getRekapAlokasiById(int $id): ?RekapAlokasi
-    {
-        return RekapAlokasi::with('unit')->find($id);
-    }
+        foreach ($rekapZisRecords as $rekapZis) {
+            try {
+                // Ensure both unit_id and period are not null before calling updateOrCreateRekapAlokasi
+                if ($rekapZis->unit_id !== null && $rekapZis->period !== null) {
+                    $rekapAlokasi = $this->updateOrCreateRekapAlokasi(
+                        (int)$rekapZis->unit_id,
+                        (string)$rekapZis->period
+                    );
 
-    /**
-     * Get rekap alokasi by periode
-     *
-     * @param string $periode
-     * @return Collection
-     */
-    public function getRekapAlokasiByPeriode(string $periode): Collection
-    {
-        return RekapAlokasi::with('unit')
-            ->where('periode', $periode)
-            ->get();
-    }
-
-    /**
-     * Get rekap alokasi by unit ID
-     *
-     * @param int $unitId
-     * @return Collection
-     */
-    public function getRekapAlokasiByUnitId(int $unitId): Collection
-    {
-        return RekapAlokasi::with('unit')
-            ->where('unit_id', $unitId)
-            ->get();
-    }
-
-    /**
-     * Delete rekap alokasi
-     *
-     * @param int $id
-     * @return bool
-     */
-    public function deleteRekapAlokasi(int $id): bool
-    {
-        try {
-            $rekapAlokasi = RekapAlokasi::find($id);
-
-            if (!$rekapAlokasi) {
-                return false;
-            }
-
-            return $rekapAlokasi->delete();
-        } catch (\Exception $e) {
-            Log::error('Error deleting rekapitulasi alokasi: ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Process allocations for all units in a period
-     *
-     * @param string $periode
-     * @param string $periodeDate
-     * @return Collection
-     */
-    public function processAllocationsByPeriode(string $periode, string $periodeDate): Collection
-    {
-        try {
-            $rekapZisCollection = RekapZis::where('periode', $periode)
-                ->where('periode_date', $periodeDate)
-                ->get();
-
-            $results = collect();
-
-            foreach ($rekapZisCollection as $rekapZis) {
-                $allocationData = $this->calculateAllocationData($rekapZis);
-
-                $rekapAlokasi = RekapAlokasi::updateOrCreate(
-                    [
+                    $results[] = [
                         'unit_id' => $rekapZis->unit_id,
-                        'periode' => $periode,
-                        'periode_date' => $periodeDate,
-                    ],
-                    $allocationData
-                );
+                        'periode' => $rekapZis->period,
+                        'status' => 'success'
+                    ];
+                } else {
+                    // Log and record error for records with null values
+                    $errorMessage = 'Missing required data: ' .
+                        ($rekapZis->unit_id === null ? 'unit_id is null' : '') .
+                        ($rekapZis->period === null ? 'period is null' : '');
 
-                $results->push($rekapAlokasi);
+                    Log::error("Cannot update rekap alokasi: {$errorMessage} for rekap_zis ID: {$rekapZis->id}");
+
+                    $results[] = [
+                        'id' => $rekapZis->id,
+                        'unit_id' => $rekapZis->unit_id,
+                        'periode' => $rekapZis->period,
+                        'status' => 'error',
+                        'message' => $errorMessage
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::error("Error updating rekap alokasi for rekap_zis ID: {$rekapZis->id}, Error: {$e->getMessage()}");
+
+                $results[] = [
+                    'id' => $rekapZis->id,
+                    'unit_id' => $rekapZis->unit_id ?? 'unknown',
+                    'periode' => $rekapZis->period ?? 'unknown',
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ];
             }
-
-            return $results;
-        } catch (\Exception $e) {
-            Log::error('Error processing allocations by periode: ' . $e->getMessage());
-            throw $e;
         }
-    }
 
-    /**
-     * Calculate total allocation summary
-     *
-     * @param string $periode
-     * @param string $periodeDate
-     * @return array
-     */
-    public function calculateAllocationSummary(string $periode, string $periodeDate): array
-    {
-        try {
-            $records = RekapAlokasi::where('periode', $periode)
-                ->where('periode_date', $periodeDate)
-                ->get();
-
-            $summary = [
-                'total_setor_zf_amount' => $records->sum('total_setor_zf_amount') ?? 0,
-                'total_setor_zf_rice' => $records->sum('total_setor_zf_rice') ?? 0,
-                'total_setor_zm' => $records->sum('total_setor_zm') ?? 0,
-                'total_setor_ifs' => $records->sum('total_setor_ifs') ?? 0,
-                'total_kelola_zf_amount' => $records->sum('total_kelola_zf_amount') ?? 0,
-                'total_kelola_zf_rice' => $records->sum('total_kelola_zf_rice') ?? 0,
-                'total_kelola_zm' => $records->sum('total_kelola_zm') ?? 0,
-                'total_kelola_ifs' => $records->sum('total_kelola_ifs') ?? 0,
-                'hak_amil_zf_amount' => $records->sum('hak_amil_zf_amount') ?? 0,
-                'hak_amil_zf_rice' => $records->sum('hak_amil_zf_rice') ?? 0,
-                'hak_amil_zm' => $records->sum('hak_amil_zm') ?? 0,
-                'hak_amil_ifs' => $records->sum('hak_amil_ifs') ?? 0,
-                'alokasi_pendis_zf_amount' => $records->sum('alokasi_pendis_zf_amount') ?? 0,
-                'alokasi_pendis_zf_rice' => $records->sum('alokasi_pendis_zf_rice') ?? 0,
-                'alokasi_pendis_zm' => $records->sum('alokasi_pendis_zm') ?? 0,
-                'alokasi_pendis_ifs' => $records->sum('alokasi_pendis_ifs') ?? 0,
-                'hak_op_zf_amount' => $records->sum('hak_op_zf_amount') ?? 0,
-                'hak_op_zf_rice' => $records->sum('hak_op_zf_rice') ?? 0,
-            ];
-
-            return $summary;
-        } catch (\Exception $e) {
-            Log::error('Error calculating allocation summary: ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Get all rekap alokasi data
-     *
-     * @return Collection
-     */
-    public function getAllRekapAlokasi(): Collection
-    {
-        try {
-            return RekapAlokasi::with('unit')->get();
-        } catch (\Exception $e) {
-            Log::error('Error getting all rekapitulasi alokasi: ' . $e->getMessage());
-            throw $e;
-        }
+        return $results;
     }
 }
