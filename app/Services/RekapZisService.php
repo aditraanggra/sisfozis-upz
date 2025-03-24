@@ -28,7 +28,7 @@ class RekapZisService
             // Data ZF
             $zfData = Zf::where('unit_id', $unitId)
                 ->whereBetween('trx_date', [$startDate, $endDate])
-                ->selectRaw('COUNT(DISTINCT muzakki_name) as total_muzakki, 
+                ->selectRaw('SUM(total_muzakki) as total_muzakki, 
                             SUM(zf_rice) as total_rice, 
                             SUM(zf_amount) as total_amount')
                 ->first();
@@ -108,7 +108,7 @@ class RekapZisService
             // Data ZF Bulanan
             $zfData = Zf::where('unit_id', $unitId)
                 ->whereBetween('trx_date', [$startDate, $endDate])
-                ->selectRaw('COUNT(DISTINCT muzakki_name) as total_muzakki, 
+                ->selectRaw('SUM(total_muzakki) as total_muzakki, 
                             SUM(zf_rice) as total_rice, 
                             SUM(zf_amount) as total_amount')
                 ->first();
@@ -168,7 +168,7 @@ class RekapZisService
             // Data ZF Tahunan
             $zfData = Zf::where('unit_id', $unitId)
                 ->whereBetween('trx_date', [$startDate, $endDate])
-                ->selectRaw('COUNT(DISTINCT muzakki_name) as total_muzakki, 
+                ->selectRaw('SUM(total_muzakki) as total_muzakki, 
                             SUM(zf_rice) as total_rice, 
                             SUM(zf_amount) as total_amount')
                 ->first();

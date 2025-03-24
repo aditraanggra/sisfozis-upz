@@ -44,12 +44,12 @@ class RekapAlokasiService
             $hakAmilZfAmount = $totalKelolaZfAmount * 0.125;
             $hakAmilZfRice = $totalKelolaZfRice * 0.125;
             $hakAmilZm = $totalKelolaZm * 0.125;
-            $hakAmilIfs = $totalKelolaIfs * 0.125;
+            $hakAmilIfs = $totalKelolaIfs * 0.2;
 
             $alokasiPendisZfAmount = $totalKelolaZfAmount * 0.875;
             $alokasiPendisZfRice = $totalKelolaZfRice * 0.875;
             $alokasiPendisZm = $totalKelolaZm * 0.875;
-            $alokasiPendisIfs = $totalKelolaIfs * 0.875;
+            $alokasiPendisIfs = $totalKelolaIfs * 0.8;
 
             $hakOpZfAmount = $totalSetorZfAmount * 0.05;
             $hakOpZfRice = $totalSetorZfRice * 0.05;
