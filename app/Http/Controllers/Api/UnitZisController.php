@@ -19,7 +19,10 @@ class UnitZisController extends Controller
         $user = $request->user();
 
         // Mengambil semua unitZis yang berelasi dengan user yang sedang login
-        $units = UnitZis::where('user_id', $user->id)->get();
+        // Tambahkan eager loading untuk village dan district
+        $units = UnitZis::where('user_id', $user->id)
+            ->with(['village', 'district'])
+            ->get();
 
         // Mengembalikan response dengan format yang konsisten
         if ($units->isEmpty()) {
@@ -35,7 +38,8 @@ class UnitZisController extends Controller
 
     public function show($id)
     {
-        $unitZis = UnitZis::findOrFail($id);
+        // Tambahkan eager loading untuk village dan district
+        $unitZis = UnitZis::with(['village', 'district'])->findOrFail($id);
 
         return new UnitZisResource(true, 'Detail Data UPZ', $unitZis);
     }
@@ -63,11 +67,10 @@ class UnitZisController extends Controller
         // Membuat produk baru    
         $unitZis = UnitZis::create($validatedData);
 
-        return response()->json([
-            'success' => true,
-            'data' => $unitZis,
-            'message' => 'UPZ Baru Berhasil dibuat'
-        ], 201);
+        // Load relasi setelah membuat unitZis
+        $unitZis->load(['village', 'district']);
+
+        return new UnitZisResource(true, 'UPZ Baru Berhasil dibuat', $unitZis);
     }
 
     public function destroy($id)
