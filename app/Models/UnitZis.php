@@ -102,4 +102,9 @@ class UnitZis extends Model
     {
         return $this->hasMany(RekapSetor::class, 'unit_id');
     }
+
+    public function rekapUnit()
+    {
+        return $this->hasMany(RekapUnit::class, 'unit_id');
+    }
 }

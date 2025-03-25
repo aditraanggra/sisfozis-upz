@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UnitZisResource;
 use Illuminate\Http\Request;
 use App\Models\UnitZis;
+use App\Http\Requests\UnitZisRequest;
 
 class UnitZisController extends Controller
 {
@@ -71,6 +72,19 @@ class UnitZisController extends Controller
         $unitZis->load(['village', 'district']);
 
         return new UnitZisResource(true, 'UPZ Baru Berhasil dibuat', $unitZis);
+    }
+
+    public function update(UnitZisRequest $request, $id)
+    {
+        $unitZis = UnitZis::findOrFail($id);
+        $validatedData = $request->validated(); // Sekarang bisa menggunakan validated()
+
+        $unitZis->update($validatedData);
+
+        return response()->json([
+            'message' => 'Data berhasil diupdate',
+            'data' => $unitZis
+        ], 200);
     }
 
     public function destroy($id)
