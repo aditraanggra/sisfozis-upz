@@ -18,11 +18,11 @@ class RekapZisResource extends Resource
 {
     protected static ?string $model = RekapZis::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
-    protected static ?string $navigationGroup = 'Rekapitulasi';
+    protected static ?string $navigationGroup = 'Rekapitulasi Per Unit';
 
-    protected static ?string $label = 'Rekap ZIS';
+    protected static ?string $label = 'Rekap ZIS per UPZ';
 
     public static function form(Form $form): Form
     {
@@ -66,12 +66,15 @@ class RekapZisResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('district.name')
                     ->label('Kecamatan')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('village.name')
                     ->label('Desa')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('unit.unit_name')
                     ->label('Unit')
+                    ->searchable()
                     ->sortable(),
                 /*  Tables\Columns\TextColumn::make('period')
                     ->badge()
@@ -121,16 +124,17 @@ class RekapZisResource extends Resource
                     ])
             ])
             ->defaultSort('district.name', 'asc')
-            ->groups([
+            /* ->groups([
                 Tables\Grouping\Group::make('district.name')
                     ->label('Kecamatan')
                     ->collapsible(),
                 Tables\Grouping\Group::make('village.name')
                     ->label('Desa')
                     ->collapsible()
-            ])
+            ]) */
             ->actions([])
-            ->bulkActions([]);
+            ->bulkActions([])
+            ->recordUrl(null);
     }
 
     public static function getEloquentQuery(): Builder
@@ -155,5 +159,10 @@ class RekapZisResource extends Resource
             'create' => Pages\CreateRekapZis::route('/create'),
             'edit' => Pages\EditRekapZis::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
     }
 }
