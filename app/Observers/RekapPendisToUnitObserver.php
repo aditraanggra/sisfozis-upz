@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\RekapPendis;
 use App\Jobs\UpdateRekapUnit;
+use Illuminate\Support\Facades\Log;
 
 class RekapPendisToUnitObserver
 {
@@ -62,9 +63,24 @@ class RekapPendisToUnitObserver
      */
     private function dispatchUpdateJob(RekapPendis $RekapPendis)
     {
-        UpdateRekapUnit::dispatch(
-            $RekapPendis->unit_id,
-            $RekapPendis->period
-        );
+        try {
+            // Validasi tambahan
+            if (!$RekapPendis->unit_id) {
+                Log::warning("Cannot dispatch UpdateRekapUnit: Missing unit_id");
+                return;
+            }
+
+            if (!$RekapPendis->periode) {
+                Log::warning("Cannot dispatch UpdateRekapUnit: Missing periode for unit {$RekapPendis->unit_id}");
+                return;
+            }
+
+            UpdateRekapUnit::dispatch(
+                $RekapPendis->unit_id,
+                $RekapPendis->periode
+            );
+        } catch (\Exception $e) {
+            Log::error("Error dispatching UpdateRekapUnit: " . $e->getMessage());
+        }
     }
 }
