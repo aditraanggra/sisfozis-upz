@@ -53,76 +53,90 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total')
                     ->label('Total ZIS')
                     ->getStateUsing(function ($record) {
-                        return
-                            $record->rekapZis->sum('total_zf_amount') +
-                            $record->rekapZis->sum('total_zm_amount') +
-                            $record->rekapZis->sum('total_ifs_amount');
+                        return $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_zf_amount') +
+                            $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_zm_amount') +
+                            $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_ifs_amount');
                     })
-                    ->numeric()
-                    ->sortable(query: function ($query) {
-                        return $query->orderByRaw(
-                            '(COALESCE(rekap_zis_total_zf_amount_sum, 0) + ' .
-                                'COALESCE(rekap_zis_total_zm_amount_sum, 0) + ' .
-                                'COALESCE(rekap_zis_total_ifs_amount_sum, 0)) ' .
-                                'DESC'
-                        );
-                    }),
+                    ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zf_rice')
                     ->label('Zakat Fitrah (Beras)')
                     ->getStateUsing(function ($record) {
-                        return $record->rekapZis->sum('total_zf_rice');
+                        return $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_zf_rice');
                     })
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zf_amount')
                     ->label('Zakat Fitrah (Uang)')
                     ->getStateUsing(function ($record) {
-                        return $record->rekapZis->sum('total_zf_amount');
+                        return $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_zf_amount');
                     })
-                    ->numeric()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('total_zf_muzakki')
-                    ->label('Muzakki ZF')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis->sum('total_zf_muzakki');
-                    })
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zm_amount')
                     ->label('Zakat Mal')
                     ->getStateUsing(function ($record) {
-                        return $record->rekapZis->sum('total_zm_amount');
+                        return $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_zm_amount');
                     })
-                    ->numeric()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('total_zm_muzakki')
-                    ->label('Muzakki ZM')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis->sum('total_zm_muzakki');
-                    })
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_ifs_amount')
                     ->label('Infak Sedekah')
                     ->getStateUsing(function ($record) {
-                        return $record->rekapZis->sum('total_ifs_amount');
+                        return $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_ifs_amount');
                     })
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
+
+                Tables\Columns\TextColumn::make('total_zf_muzakki')
+                    ->label('Muzakki ZF')
+                    ->getStateUsing(function ($record) {
+                        return $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_zf_muzakki');
+                    })
+                    ->numeric(),
+
+                Tables\Columns\TextColumn::make('total_zm_muzakki')
+                    ->label('Muzakki ZM')
+                    ->getStateUsing(function ($record) {
+                        return $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_zm_muzakki');
+                    })
+                    ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_ifs_munfiq')
                     ->label('Munfiq')
                     ->getStateUsing(function ($record) {
-                        return $record->rekapZis->sum('total_ifs_munfiq');
+                        return $record->rekapZis
+                            ->where('period', 'tahunan')
+                            ->where('period_date', '2025-01-01')
+                            ->sum('total_ifs_munfiq');
                     })
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
             ])
             ->filters([
                 //

@@ -121,6 +121,13 @@ class RekapZisResource extends Resource
                         'harian' => 'Harian',
                         'bulanan' => 'Bulanan',
                         'tahunan' => 'Tahunan',
+                    ]),
+                Tables\Filters\SelectFilter::make('period_date')
+                    ->label('Tahun')
+                    ->default('2025-01-01')
+                    ->options([
+                        '2025-01-01' => '2025',
+                        '2024-01-01' => '2024',
                     ])
             ])
             ->defaultSort('district.name', 'asc')
