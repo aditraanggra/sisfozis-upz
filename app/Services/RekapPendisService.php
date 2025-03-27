@@ -141,10 +141,10 @@ class RekapPendisService
         return Distribution::where('unit_id', $unitId)
             ->whereBetween('trx_date', [$startDate, $endDate])
             ->selectRaw("
-                SUM(CASE WHEN fund_type='zakat fitrah' AND total_amount > 0 THEN total_amount ELSE 0 END) as total_zf_amount,
-                SUM(CASE WHEN fund_type='zakat fitrah' AND total_rice > 0 THEN total_rice ELSE 0 END) as total_zf_rice, 
-                SUM(CASE WHEN fund_type='zakat mal' THEN total_amount ELSE 0 END) as total_zm, 
-                SUM(CASE WHEN fund_type='infak' THEN total_amount ELSE 0 END) as total_ifs, 
+                SUM(CASE WHEN fund_type='zakat fitrah' AND asnaf <> 'amil' AND total_amount > 0 THEN total_amount ELSE 0 END) as total_zf_amount,
+                SUM(CASE WHEN fund_type='zakat fitrah' AND asnaf <> 'amil' AND total_rice > 0 THEN total_rice ELSE 0 END) as total_zf_rice, 
+                SUM(CASE WHEN fund_type='zakat mal' AND asnaf <> 'amil' THEN total_amount ELSE 0 END) as total_zm, 
+                SUM(CASE WHEN fund_type='infak' AND asnaf <> 'amil' THEN total_amount ELSE 0 END) as total_ifs, 
                 SUM(CASE WHEN asnaf='fakir' AND total_amount > 0 THEN total_amount ELSE 0 END) as total_fakir_amount,
                 SUM(CASE WHEN asnaf='miskin' AND total_amount > 0 THEN total_amount ELSE 0 END) as total_miskin_amount,
                 SUM(CASE WHEN asnaf='fisabililah' AND total_amount > 0 THEN total_amount ELSE 0 END) as total_fisabililah_amount,
