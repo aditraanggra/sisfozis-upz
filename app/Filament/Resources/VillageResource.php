@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\VillageExporter;
 use App\Filament\Resources\VillageResource\Pages;
 use App\Filament\Resources\VillageResource\RelationManagers;
 use App\Models\Village;
@@ -161,6 +162,10 @@ class VillageResource extends Resource
             ])
             ->bulkActions([
                 //
+            ])
+            ->headerActions([
+                Tables\Actions\ExportAction::make()
+                    ->exporter(VillageExporter::class)
             ])
             ->recordUrl(null);
     }
