@@ -107,4 +107,9 @@ class UnitZis extends Model
     {
         return $this->hasMany(RekapUnit::class, 'unit_id');
     }
+
+    public function setorZis()
+    {
+        return $this->hasMany(setorZis::class, 'unit_id');
+    }
 }

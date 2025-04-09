@@ -40,4 +40,28 @@ class SetorZis extends Model
     {
         return $this->belongsTo(UnitZis::class, 'unit_id');
     }
+
+    public function district()
+    {
+        return $this->hasOneThrough(
+            District::class,  // Model tujuan akhir
+            UnitZis::class,    // Model perantara
+            'id',              // Foreign key di model perantara (unit_zis)
+            'id',              // Foreign key di model tujuan akhir (kecamatan)
+            'unit_id',     // Local key di model asal (rekap_zis)
+            'district_id'     // Local key di model perantara (unit_zis)
+        );
+    }
+
+    public function village()
+    {
+        return $this->hasOneThrough(
+            Village::class,  // Model tujuan akhir
+            UnitZis::class,    // Model perantara
+            'id',              // Foreign key di model perantara (unit_zis)
+            'id',              // Foreign key di model tujuan akhir (kecamatan)
+            'unit_id',     // Local key di model asal (rekap_zis)
+            'village_id'     // Local key di model perantara (unit_zis)
+        );
+    }
 }

@@ -38,4 +38,9 @@ class Village extends Model
             'id'               // Local key di model perantara (unit_zis)
         );
     }
+
+    public function setorZis()
+    {
+        return $this->hasMany(setorZis::class, 'unit_id');
+    }
 }

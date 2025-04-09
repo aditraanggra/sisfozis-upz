@@ -13,6 +13,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
+
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Blade;
 
 class VillageResource extends Resource
 {
@@ -153,7 +157,14 @@ class VillageResource extends Resource
                                 ->whereYear('period_date', 2025)
                                 ->get()
                         ]);
-                    })
+                    }),
+
+                Tables\Actions\Action::make('pdf')
+                    ->label('PDF')
+                    ->color('success')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(fn(Model $record) => route('village.pdf', $record))
+                    ->openUrlInNewTab()
             ])
             ->groups([
                 Tables\Grouping\Group::make('district.name')
