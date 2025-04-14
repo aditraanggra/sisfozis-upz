@@ -79,42 +79,46 @@
     <table>
         <thead>
             <tr>
-                <th rowspan="2">No</th>
-                <th rowspan="2">Unit Pengumpul Zakat (UPZ)</th>
-                <th colspan="3">Zakat Fitrah</th>
-                <th colspan="2">Zakat Mal</th>
-                <th colspan="2">Infak Sedekah</th>
-                <th rowspan="2">Total ZIS</th>
+                <th rowspan="3">No</th>
+                <th rowspan="3">Unit Pengumpul Zakat (UPZ)</th>
+                <th colspan="5">Zakat Fitrah</th>
+                <th rowspan="3">Zakat Mal</th>
+                <th rowspan="3">Infak Sedekah</th>
+                <th rowspan="3">Total ZIS</th>
             </tr>
             <tr>
-                <th>Beras</th>
-                <th>Uang</th>
-                <th>Muzakki</th>
-                <th>Nominal</th>
-                <th>Muzakki</th>
-                <th>Nominal</th>
-                <th>Munfiq</th>
+                <th>Beras (Kg)</th>
+                <th>Harga Beras (Rp)</th>
+                <th>Beras Diuangkan (Rp)</th>
+                <th>Uang (Rp)</th>
+                <th>Total Zakat Fitrah (Rp)</th>
+            </tr>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3=1x2</th>
+                <th>4</th>
+                <th>5=3+4</th>
             </tr>
         </thead>
         <tbody>
             @php $no = 1; @endphp
             @foreach($rekapZis as $rekap)
+            @php
+            $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
+            $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
+            @endphp
             <tr>
                 <td>{{ $no++ }}</td>
                 <td>{{ $rekap->unit->unit_name }}</td>
                 <td>{{ number_format($rekap->total_zf_rice, 2) }}</td>
+                <td>{{ number_format($rekap->unit->rice_price, 2) }}</td>
+                <td>{{ number_format($total_zf_rice_value, 2) }}</td>
                 <td>{{ number_format($rekap->total_zf_amount, 2) }}</td>
-                <td>{{ number_format($rekap->total_zf_muzakki) }}</td>
+                <td>{{ number_format($total_zf, 2) }}</td>
                 <td>{{ number_format($rekap->total_zm_amount, 2) }}</td>
-                <td>{{ number_format($rekap->total_zm_muzakki) }}</td>
                 <td>{{ number_format($rekap->total_ifs_amount, 2) }}</td>
-                <td>{{ number_format($rekap->total_ifs_munfiq) }}</td>
-                <td>
-                    {{ number_format(
-                    $rekap->total_zf_amount +
-                    $rekap->total_zm_amount +
-                    $rekap->total_ifs_amount, 2) }}
-                </td>
+                <td>{{ number_format($total_zf + $rekap->total_zm_amount + $rekap->total_ifs_amount, 2) }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -123,32 +127,38 @@
             <tr class="bold">
                 <td colspan="2">Total Penerimaan</td>
                 <td>{{ number_format($rekapZis->sum('total_zf_rice'), 2) }}</td>
+                <td></td>
+                <td>{{ number_format($rekapZis->sum(function($rekap) {
+            return $rekap->total_zf_rice * $rekap->unit->rice_price;
+        }), 2) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_zf_amount'), 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_zf_muzakki')) }}</td>
+                <td>{{ number_format($rekapZis->sum(function($rekap) {
+            return $rekap->total_zf_amount + ($rekap->total_zf_rice * $rekap->unit->rice_price);
+        }), 2) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_zm_amount'), 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_zm_muzakki')) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_ifs_amount'), 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_ifs_munfiq')) }}</td>
-                <td>{{ number_format(
-                    $rekapZis->sum('total_zf_amount') +
-                    $rekapZis->sum('total_zm_amount') +
-                    $rekapZis->sum('total_ifs_amount'), 2) }}</td>
+                <td>{{ number_format($rekapZis->sum(function($rekap) {
+            return ($rekap->total_zf_amount + ($rekap->total_zf_rice * $rekap->unit->rice_price)) + 
+                   $rekap->total_zm_amount + $rekap->total_ifs_amount;
+        }), 2) }}</td>
             </tr>
-        </tfoot>
-        <tfoot>
             <tr class="bold">
                 <td colspan="2">Total Setor (30%)</td>
                 <td>{{ number_format($rekapZis->sum('total_zf_rice')*0.3, 2) }}</td>
+                <td></td>
+                <td>{{ number_format($rekapZis->sum(function($rekap) {
+            return $rekap->total_zf_rice * $rekap->unit->rice_price;
+        })*0.3, 2) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_zf_amount')*0.3, 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_zf_muzakki')) }}</td>
+                <td>{{ number_format($rekapZis->sum(function($rekap) {
+            return $rekap->total_zf_amount + ($rekap->total_zf_rice * $rekap->unit->rice_price);
+        })*0.3, 2) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_zm_amount')*0.3, 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_zm_muzakki')) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_ifs_amount')*0.3, 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_ifs_munfiq')) }}</td>
-                <td>{{ number_format(
-                    $rekapZis->sum('total_zf_amount')*0.3 +
-                    $rekapZis->sum('total_zm_amount')*0.3 +
-                    $rekapZis->sum('total_ifs_amount')*0.3, 2) }}</td>
+                <td>{{ number_format($rekapZis->sum(function($rekap) {
+            return ($rekap->total_zf_amount + ($rekap->total_zf_rice * $rekap->unit->rice_price)) + 
+                   $rekap->total_zm_amount + $rekap->total_ifs_amount;
+        })*0.3, 2) }}</td>
             </tr>
         </tfoot>
         @endif
@@ -157,7 +167,6 @@
     <table class="signature" width="100%">
         <tr>
             <td><span class="italic">tanggal</span></td>
-            <td>Mengetahui</td>
             <td>Dibuat oleh</td>
             <td>Diperiksa oleh</td>
             <td>Disahkan oleh</td>
@@ -170,7 +179,6 @@
         </tr>
         <tr>
             <td></td>
-            <td><span class="italic">Kepala Desa</span></td>
             <td><span class="italic">Bendahara</span></td>
             <td><span class="italic">Sekretaris</span></td>
             <td><span class="italic">Ketua</span></td>
