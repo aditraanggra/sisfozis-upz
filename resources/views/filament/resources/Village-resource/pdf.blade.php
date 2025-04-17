@@ -74,7 +74,7 @@
         BERBASIS SISFOZIS
     </div>
 
-    <div class="unit-title">Unit Pengumpul Zakat (UPZ) Desa {{ $record->name }}</div>
+    <div class="unit-title">Unit Pengumpul Zakat (UPZ) Desa {{ $record->name }} | Kecamatan {{$record->district->name}}</div>
 
     <table>
         <thead>
@@ -103,7 +103,7 @@
         </thead>
         <tbody>
             @php $no = 1; @endphp
-            @foreach($rekapZis as $rekap)
+            @foreach($rekapZis->sortBy('unit.category_id') as $rekap)
             @php
             $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
             $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;

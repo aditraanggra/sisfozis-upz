@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Model;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Tables\Enums\ActionsPosition;
 use Illuminate\Support\Facades\Blade;
 
 class VillageResource extends Resource
@@ -160,12 +161,12 @@ class VillageResource extends Resource
                     }),
 
                 Tables\Actions\Action::make('pdf')
-                    ->label('PDF')
+                    ->label('Rekap ZIS')
                     ->color('success')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->url(fn(Model $record) => route('village.pdf', $record))
                     ->openUrlInNewTab()
-            ])
+            ], position: ActionsPosition::BeforeColumns)
             ->groups([
                 Tables\Grouping\Group::make('district.name')
                     ->label('Kecamatan')
