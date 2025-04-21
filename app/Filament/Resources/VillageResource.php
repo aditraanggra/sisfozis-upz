@@ -48,12 +48,12 @@ class VillageResource extends Resource
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Desa')
-                    ->searchable()
+                    ->searchable(isIndividual: true)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('district.name')
                     ->label('Kecamatan')
-                    ->searchable()
+                    ->searchable(isIndividual: true)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('total')

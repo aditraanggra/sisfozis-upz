@@ -65,6 +65,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return str_ends_with($this->email, '@sisfoupz.org')
             || str_ends_with($this->email, '@timsisfo.com')
-            || str_ends_with($this->email, '@monitoring.com');
+            || str_ends_with($this->email, '@monitoring.com')
+            || str_ends_with($this->email, '@gmail.com');
     }
 }

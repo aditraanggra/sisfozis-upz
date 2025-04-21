@@ -166,11 +166,11 @@ class UnitZisResource extends Resource
                 Tables\Columns\TextColumn::make('district.name')
                     ->label('Kecamatan')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(isIndividual: true),
                 Tables\Columns\TextColumn::make('village.name')
                     ->label('Desa')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(isIndividual: true),
                 Tables\Columns\TextColumn::make('no_sk')
                     ->label('Nomor SK')
                     ->sortable()
