@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\ZmImporter;
 use App\Filament\Resources\ZmResource\Pages;
 use App\Filament\Resources\ZmResource\RelationManagers;
 use App\Models\Zm;
@@ -14,6 +15,7 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\ImportAction; // Ensure this is the correct namespace for ImportAction
 
 class ZmResource extends Resource
 {
@@ -62,6 +64,10 @@ class ZmResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('unit.no_register')
+                    ->label('No Register')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('unit.unit_name')
                     ->label('Unit')
                     ->searchable()
@@ -88,6 +94,10 @@ class ZmResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(ZmImporter::class)
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

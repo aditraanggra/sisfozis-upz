@@ -80,6 +80,7 @@
         <thead>
             <tr>
                 <th rowspan="3">No</th>
+                <th rowspan="3">No Register</th>
                 <th rowspan="3">Unit Pengumpul Zakat (UPZ)</th>
                 <th colspan="5">Zakat Fitrah</th>
                 <th rowspan="3">Zakat Mal</th>
@@ -110,6 +111,7 @@
             @endphp
             <tr>
                 <td>{{ $no++ }}</td>
+                <td>{{ $rekap->unit->no_register }}</td>
                 <td>{{ $rekap->unit->unit_name }}</td>
                 <td>{{ number_format($rekap->total_zf_rice, 2) }}</td>
                 <td>{{ number_format($rekap->unit->rice_price, 2) }}</td>
@@ -128,6 +130,7 @@
                 <td colspan="2">Total Penerimaan</td>
                 <td>{{ number_format($rekapZis->sum('total_zf_rice'), 2) }}</td>
                 <td></td>
+                <td></td>
                 <td>{{ number_format($rekapZis->sum(function($rekap) {
             return $rekap->total_zf_rice * $rekap->unit->rice_price;
         }), 2) }}</td>
@@ -145,6 +148,7 @@
             <tr class="bold">
                 <td colspan="2">Total Setor (30%)</td>
                 <td>{{ number_format($rekapZis->sum('total_zf_rice')*0.3, 2) }}</td>
+                <td></td>
                 <td></td>
                 <td>{{ number_format($rekapZis->sum(function($rekap) {
             return $rekap->total_zf_rice * $rekap->unit->rice_price;

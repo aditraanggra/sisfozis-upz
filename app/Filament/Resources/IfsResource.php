@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\IfsImporter;
 use App\Filament\Resources\IfsResource\Pages;
 use App\Filament\Resources\IfsResource\RelationManagers;
 use App\Models\Ifs;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -65,9 +67,13 @@ class IfsResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('unit.no_register')
+                    ->label('Unit')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('unit.unit_name')
                     ->label('Unit')
-                    ->numeric()
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('trx_date')
                     ->label('Tanggal Transaksi')
@@ -88,6 +94,10 @@ class IfsResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(IfsImporter::class)
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

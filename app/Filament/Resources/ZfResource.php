@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\ZfImporter;
 use App\Filament\Resources\ZfResource\Pages;
 use App\Filament\Resources\ZfResource\RelationManagers;
 use App\Models\Zf;
@@ -11,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Count;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -67,9 +69,13 @@ class ZfResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('unit.no_register')
+                    ->label('No Register')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('unit.unit_name')
                     ->label('Unit')
-                    ->numeric()
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('trx_date')
                     ->label('Tanggal Transaksi')
@@ -100,6 +106,10 @@ class ZfResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(ZfImporter::class)
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
