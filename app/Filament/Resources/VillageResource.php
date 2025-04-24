@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Model;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\ActionsPosition;
 use Illuminate\Support\Facades\Blade;
 
@@ -148,24 +149,25 @@ class VillageResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->label('Detail')
-                    ->modalHeading(fn($record) => "Detail Rekap ZIS Desa {$record->name}")
-                    ->modalContent(function ($record) {
-                        return view('filament.resources.Village-resource.view', [
-                            'record' => $record,
-                            'rekapZis' => $record->rekapZis()->where('period', 'tahunan')
-                                ->whereYear('period_date', 2025)
-                                ->get()
-                        ]);
-                    }),
+                ActionGroup::make([
 
-                Tables\Actions\Action::make('pdf')
-                    ->label('Rekap ZIS')
-                    ->color('success')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->url(fn(Model $record) => route('village.pdf', $record))
-                    ->openUrlInNewTab()
+                    Tables\Actions\Action::make('pdf')
+                        ->label('Rekap DKM')
+                        ->color('success')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->url(fn(Model $record) => route('village.pdf', $record))
+                        ->openUrlInNewTab(),
+
+                    Tables\Actions\Action::make('pdf')
+                        ->label('Rekap Hak OP')
+                        ->color('info')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->url(fn(Model $record) => route('village.pdf', $record))
+                        ->openUrlInNewTab()
+                ])
+                    ->icon('heroicon-o-cloud-arrow-down')
+                    ->size('lg')
+
             ], position: ActionsPosition::BeforeColumns)
             ->groups([
                 Tables\Grouping\Group::make('district.name')
@@ -179,7 +181,8 @@ class VillageResource extends Resource
                 Tables\Actions\ExportAction::make()
                     ->exporter(VillageExporter::class)
             ])
-            ->recordUrl(null);
+            ->recordUrl(null)
+            ->defaultPaginationPageOption(25);
     }
 
     public static function getEloquentQuery(): Builder
