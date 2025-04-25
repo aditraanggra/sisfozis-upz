@@ -115,7 +115,11 @@
             <tr class="bold">
                 <td colspan="2">Total Penerimaan</td>
                 <td></td>
-                <td></td>
+                <td>{{ number_format($rekapZis->sum(function($rekap) {
+                    $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
+                    $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
+                    return $total_zf * 0.3;
+                }), 2) }}</td>
                 <td>{{ number_format($rekapZis->sum(function($rekap) {
                     $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
                     $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
