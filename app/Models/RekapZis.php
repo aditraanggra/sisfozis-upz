@@ -60,4 +60,10 @@ class RekapZis extends Model
             'village_id'     // Local key di model perantara (unit_zis)
         );
     }
+
+    // Di model Rekap (misalnya RekapZis)
+    public function zf()
+    {
+        return $this->hasMany(Zf::class, 'unit_id', 'unit_id');
+    }
 }

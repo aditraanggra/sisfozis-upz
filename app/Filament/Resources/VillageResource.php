@@ -162,7 +162,7 @@ class VillageResource extends Resource
                         ->label('Rekap Hak OP')
                         ->color('info')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->url(fn(Model $record) => route('village.pdf', $record))
+                        ->url(fn(Model $record) => route('op.pdf', $record))
                         ->openUrlInNewTab()
                 ])
                     ->icon('heroicon-o-cloud-arrow-down')
