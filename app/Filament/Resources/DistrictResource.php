@@ -22,7 +22,7 @@ class DistrictResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
-    protected static ?string $navigationGroup = 'Kecamatan & Desa';
+    protected static ?string $navigationGroup = 'KECAMATAN & DESA';
 
     protected static ?string $label = 'Rekap ZIS Per Kecamatan';
 

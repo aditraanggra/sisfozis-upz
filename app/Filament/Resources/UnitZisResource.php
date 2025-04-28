@@ -23,7 +23,7 @@ class UnitZisResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup = 'Settings';
+    protected static ?string $navigationGroup = 'UNIT PENGUMPUL ZAKAT (UPZ)';
 
     // protected static ?int $navigationSort = ;
 

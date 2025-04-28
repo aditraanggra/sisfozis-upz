@@ -23,7 +23,7 @@ class ZfResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-moon';
 
-    protected static ?string $navigationGroup = 'Penerimaan ZIS';
+    protected static ?string $navigationGroup = 'TRANSAKSI ZIS';
 
     protected static ?string $label = 'Zakat Fitrah';
 

@@ -23,7 +23,7 @@ class ZmResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
 
-    protected static ?string $navigationGroup = 'Penerimaan ZIS';
+    protected static ?string $navigationGroup = 'TRANSAKSI ZIS';
 
     protected static ?string $label = 'Zakat Mal';
 

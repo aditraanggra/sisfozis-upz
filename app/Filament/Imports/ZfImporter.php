@@ -27,7 +27,7 @@ class ZfImporter extends Importer
             ImportColumn::make('zf_rice')
                 ->requiredMapping()
                 ->numeric()
-                ->rules(['required', 'integer']),
+                ->rules(['required', 'numeric']),
             ImportColumn::make('zf_amount')
                 ->requiredMapping()
                 ->numeric()
