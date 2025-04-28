@@ -83,6 +83,7 @@
                 <th rowspan="2">Unit Pengumpul Zakat (UPZ)</th>
                 <th colspan="1">Setor ZF (30%)</th>
                 <th colspan="1">Hak OP (5%)</th>
+                <th rowspan="2">Jumlah Muzakki</th>
                 <th rowspan="2">Total Transaksi ZF</th>
             </tr>
             <tr>
@@ -106,6 +107,7 @@
                 <td>{{ $rekap->unit->unit_name }}</td>
                 <td>{{ number_format($setor_zf, 2) }}</td>
                 <td>{{ number_format($hak_op, 2) }}</td>
+                <td>{{ $rekap->total_zf_muzakki }}</td>
                 <td>{{ $jml_baris_transaksi }}</td>
             </tr>
             @endforeach
@@ -126,7 +128,10 @@
                     $setor_zf = $total_zf * 0.3;
                     return $setor_zf * 0.05;
                 }), 2) }}</td>
-                <td></td>
+                <td>{{ $rekapZis->sum('total_zf_muzakki') }}</td>
+                <td>{{ $rekapZis->sum(function($rekap) {
+                    return $rekap->zf->count();
+                }) }}</td>
             </tr>
         </tfoot>
         @endif
