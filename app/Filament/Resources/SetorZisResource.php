@@ -20,6 +20,8 @@ class SetorZisResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationGroup = 'REKAP UPZ';
+
     public static function form(Form $form): Form
     {
         return $form

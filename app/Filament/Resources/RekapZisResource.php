@@ -20,7 +20,7 @@ class RekapZisResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
-    protected static ?string $navigationGroup = 'Rekapitulasi Per Unit';
+    protected static ?string $navigationGroup = 'REKAP UPZ';
 
     protected static ?string $label = 'Rekap ZIS per UPZ';
 
