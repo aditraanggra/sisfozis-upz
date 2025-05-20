@@ -16,6 +16,7 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Models\UnitZis;
 
 class IfsResource extends Resource
 {
@@ -32,10 +33,12 @@ class IfsResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('unit_id')
-                    ->label('Unit')
                     ->relationship('unit', 'unit_name')
-                    ->required()
-                    ->numeric(),
+                    ->getOptionLabelFromRecordUsing(fn(UnitZis $record) =>
+                    "{$record->no_register}-{$record->unit_name}")
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Forms\Components\DatePicker::make('trx_date')
                     ->label('Tanggal Transaksi')
                     ->native()

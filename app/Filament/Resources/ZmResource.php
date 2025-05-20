@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Imports\ZmImporter;
 use App\Filament\Resources\ZmResource\Pages;
 use App\Filament\Resources\ZmResource\RelationManagers;
+use App\Models\UnitZis;
 use App\Models\Zm;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -33,6 +34,10 @@ class ZmResource extends Resource
             ->schema([
                 Forms\Components\Select::make('unit_id')
                     ->relationship('unit', 'unit_name')
+                    ->getOptionLabelFromRecordUsing(fn(UnitZis $record) =>
+                    "{$record->no_register}-{$record->unit_name}")
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 Forms\Components\DatePicker::make('trx_date')
                     ->native()
