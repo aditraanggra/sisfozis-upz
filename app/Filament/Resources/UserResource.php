@@ -18,7 +18,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
-    protected static ?string $navigationGroup = 'UNIT PENGUMPUL ZAKAT (UPZ)';
+    protected static ?string $navigationGroup = 'Filament Shield';
 
     protected static ?string $label = 'User';
 

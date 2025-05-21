@@ -24,7 +24,9 @@ class IfsResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';
 
-    protected static ?string $navigationGroup = 'TRANSAKSI ZIS';
+    protected static ?string $navigationGroup = 'Rekap & Transaksi';
+
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $label = 'Infak Sedekah';
 

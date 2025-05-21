@@ -26,7 +26,9 @@ class VillageResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
-    protected static ?string $navigationGroup = 'KECAMATAN & DESA';
+    protected static ?string $navigationGroup = 'Unit Pengumpul Zakat (UPZ)';
+
+    protected static ?int $navigationSort = 6;
 
     protected static ?string $label = 'Rekap ZIS Per Desa';
 
