@@ -18,7 +18,7 @@ class RekapZisResource extends Resource
 {
     protected static ?string $model = RekapZis::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bolt';
+    protected static ?string $navigationIcon = 'heroicon-o-document-check';
 
     protected static ?string $navigationGroup = 'Rekap & Transaksi';
 

@@ -24,7 +24,7 @@ class VillageResource extends Resource
 {
     protected static ?string $model = Village::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bolt';
+    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
 
     protected static ?string $navigationGroup = 'Unit Pengumpul Zakat (UPZ)';
 

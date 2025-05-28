@@ -20,7 +20,7 @@ class DistrictResource extends Resource
 {
     protected static ?string $model = District::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bolt';
+    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
 
     protected static ?string $navigationGroup = 'Unit Pengumpul Zakat (UPZ)';
 
