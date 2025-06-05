@@ -62,7 +62,6 @@ class AllZisOverview extends BaseWidget
                 //->description('Total Penerimaan Zakat Fitrah Uang')
                 //->descriptionIcon('heroicon-m-banknotes')
 
-                ->chart(\App\Models\Zf::pluck('zf_amount')->toArray())
                 ->color('primary'),
             Stat::make(
                 'Total Penerimaan Zakat Mal',
@@ -85,7 +84,6 @@ class AllZisOverview extends BaseWidget
             )
                 //->description('Total Penerimaan Zakat Mal')
                 //->descriptionIcon('heroicon-m-banknotes')
-                ->chart(\App\Models\Zm::pluck('amount')->toArray())
                 ->color('primary'),
             Stat::make(
                 'Total Penerimaan Infaq/Shodaqoh',
@@ -108,7 +106,6 @@ class AllZisOverview extends BaseWidget
             )
                 //->description('Total Penerimaan Infaq/Shodaqoh')
                 //->descriptionIcon('heroicon-m-banknotes')
-                ->chart(\App\Models\Ifs::pluck('amount')->toArray())
                 ->color('primary'),
         ];
     }
