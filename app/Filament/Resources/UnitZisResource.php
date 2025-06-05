@@ -168,11 +168,11 @@ class UnitZisResource extends Resource
                 Tables\Columns\TextColumn::make('district.name')
                     ->label('Kecamatan')
                     ->sortable()
-                    ->searchable(isIndividual: true),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('village.name')
                     ->label('Desa')
                     ->sortable()
-                    ->searchable(isIndividual: true),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('no_sk')
                     ->label('Nomor SK')
                     ->sortable()
@@ -220,6 +220,50 @@ class UnitZisResource extends Resource
             ])
             ->filters([
                 //
+                Tables\Filters\SelectFilter::make('category_id')
+                    ->label('Kategori UPZ')
+                    ->options([
+                        4 => 'DKM',
+                        3 => 'Desa',
+                        2 => 'Kecamatan',
+                    ]),
+                Tables\Filters\SelectFilter::make('district_id')
+                    ->label('Kecamatan')
+                    ->options([
+                        1 => 'AGRABINTA',
+                        2 => 'LELES',
+                        3 => 'SINDANGBARANG',
+                        4 => 'CIDAUN',
+                        5 => 'NARINGGUL',
+                        6 => 'CIBINONG',
+                        7 => 'CIKADU',
+                        8 => 'TANGGEUNG',
+                        9 => 'PASIRKUDA',
+                        10 => 'KADUPANDAK',
+                        11 => 'CIJATI',
+                        12 => 'TAKOKAK',
+                        13 => 'SUKANAGARA',
+                        14 => 'PAGELARAN',
+                        15 => 'CAMPAKA',
+                        16 => 'CAMPAKAMULYA',
+                        17 => 'CIBEBER',
+                        18 => 'WARUNGKONDANG',
+                        19 => 'GEKBRONG',
+                        20 => 'CILAKU',
+                        21 => 'SUKALUYU',
+                        22 => 'BOJONGPICUNG',
+                        23 => 'HAURWANGI',
+                        24 => 'CIRANJANG',
+                        25 => 'MANDE',
+                        26 => 'KARANGTENGAH',
+                        27 => 'CIANJUR',
+                        28 => 'CUGENANG',
+                        29 => 'PACET',
+                        30 => 'CIPANAS',
+                        31 => 'SUKARESMI',
+                        32 => 'CIKALONGKULON',
+                    ])
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
