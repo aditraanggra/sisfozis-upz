@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ZfResource\Pages;
 use App\Filament\Resources\ZfResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ListZfs extends ListRecords
 {
@@ -13,7 +14,17 @@ class ListZfs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            \EightyNine\ExcelImport\ExcelImportAction::make()
+                ->visible(fn() => Auth::user() && Auth::user()->email === 'sa01@sisfoupz.org')
+                ->sampleExcel(
+                    sampleData: [
+                        ['unit_id' => 1, 'trx_date' => '2025-03-28', 'zf_rice' => 0, 'zf_amount' => 38000, 'total_muzakki' => 1, 'muzakki_name' => 'John Doe', 'desc' => 'Contoh Transaksi'],
+                        ['unit_id' => 1, 'trx_date' => '2025-03-29', 'zf_rice' => 0.5, 'zf_amount' => 0, 'total_muzakki' => 1, 'muzakki_name' => 'Jane Doe', 'desc' => 'Contoh Transaksi 2'],
+                    ],
+                    fileName: 'template_zf.xlsx',
+                    sampleButtonLabel: 'Download Sample',
+                ),
+            //Actions\CreateAction::make(),
         ];
     }
 
