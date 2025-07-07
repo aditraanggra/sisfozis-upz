@@ -110,9 +110,8 @@ class ZfResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->headerActions([
-                ImportAction::make()
-                    ->importer(ZfImporter::class)
-            ])
+                /*  ImportAction::make()
+                    ->importer(ZfImporter::class) */])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

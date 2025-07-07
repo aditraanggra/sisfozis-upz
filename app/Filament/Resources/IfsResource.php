@@ -101,9 +101,8 @@ class IfsResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->headerActions([
-                ImportAction::make()
-                    ->importer(IfsImporter::class)
-            ])
+                /*  ImportAction::make()
+                    ->importer(IfsImporter::class) */])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

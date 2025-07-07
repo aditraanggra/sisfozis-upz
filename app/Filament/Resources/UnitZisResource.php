@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\ImportAction;
+use Illuminate\Database\Eloquent\Builder;
 
 class UnitZisResource extends Resource
 {
@@ -224,46 +225,32 @@ class UnitZisResource extends Resource
                     ->label('Kategori UPZ')
                     ->options([
                         4 => 'DKM',
-                        3 => 'Desa',
+                        3 => 'Desa/Kelurahan',
                         2 => 'Kecamatan',
                     ]),
-                Tables\Filters\SelectFilter::make('district_id')
-                    ->label('Kecamatan')
-                    ->options([
-                        1 => 'AGRABINTA',
-                        2 => 'LELES',
-                        3 => 'SINDANGBARANG',
-                        4 => 'CIDAUN',
-                        5 => 'NARINGGUL',
-                        6 => 'CIBINONG',
-                        7 => 'CIKADU',
-                        8 => 'TANGGEUNG',
-                        9 => 'PASIRKUDA',
-                        10 => 'KADUPANDAK',
-                        11 => 'CIJATI',
-                        12 => 'TAKOKAK',
-                        13 => 'SUKANAGARA',
-                        14 => 'PAGELARAN',
-                        15 => 'CAMPAKA',
-                        16 => 'CAMPAKAMULYA',
-                        17 => 'CIBEBER',
-                        18 => 'WARUNGKONDANG',
-                        19 => 'GEKBRONG',
-                        20 => 'CILAKU',
-                        21 => 'SUKALUYU',
-                        22 => 'BOJONGPICUNG',
-                        23 => 'HAURWANGI',
-                        24 => 'CIRANJANG',
-                        25 => 'MANDE',
-                        26 => 'KARANGTENGAH',
-                        27 => 'CIANJUR',
-                        28 => 'CUGENANG',
-                        29 => 'PACET',
-                        30 => 'CIPANAS',
-                        31 => 'SUKARESMI',
-                        32 => 'CIKALONGKULON',
+                Tables\Filters\Filter::make('location')
+                    ->form([
+                        Forms\Components\Select::make('district_id')
+                            ->label('Kecamatan')
+                            ->options(District::all()->pluck('name', 'id'))
+                            ->afterStateUpdated(fn(Forms\Set $set) => $set('village_id', null))
+                            ->live()
+                            ->searchable(),
+
+                        Forms\Components\Select::make('village_id')
+                            ->label('Desa/Kelurahan')
+                            ->options(function (Forms\Get $get) {
+                                return $get('district_id')
+                                    ? Village::where('district_id', $get('district_id'))->pluck('name', 'id')
+                                    : [];
+                            })
+                            ->searchable(),
                     ])
-                    ->searchable(),
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['district_id'], fn($q) => $q->where('district_id', $data['district_id']))
+                            ->when($data['village_id'], fn($q) => $q->where('village_id', $data['village_id']));
+                    })
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ZfResource\Pages;
 
 use App\Filament\Resources\ZfResource;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +16,7 @@ class ListZfs extends ListRecords
     {
         return [
             \EightyNine\ExcelImport\ExcelImportAction::make()
-                ->visible(fn() => Auth::user() && Auth::user()->email === 'sa01@sisfoupz.org')
+                ->visible(fn() => User::currentIsSuperAdmin())
                 ->sampleExcel(
                     sampleData: [
                         ['unit_id' => 1, 'trx_date' => '2025-03-28', 'zf_rice' => 0, 'zf_amount' => 38000, 'total_muzakki' => 1, 'muzakki_name' => 'John Doe', 'desc' => 'Contoh Transaksi'],

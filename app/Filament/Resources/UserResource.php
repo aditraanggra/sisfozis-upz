@@ -60,6 +60,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')->label('Email')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->label('Role')
+                    ->searchable()
                     ->sortable()
                     ->formatStateUsing(fn(string $state): string => ucwords(str_replace('_', ' ', $state))),
             ])

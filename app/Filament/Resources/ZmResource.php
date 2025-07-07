@@ -103,9 +103,8 @@ class ZmResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->headerActions([
-                ImportAction::make()
-                    ->importer(ZmImporter::class)
-            ])
+                /* ImportAction::make()
+                    ->importer(ZmImporter::class) */])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
