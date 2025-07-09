@@ -22,12 +22,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
-    protected static ?string $navigationGroup = null;
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app()->getLocale() === 'id' ? 'Pelindung' : 'Filament Shield';
-    }
+    protected static ?string $navigationGroup = 'Manajemen Pengguna';
 
     protected static ?string $label = 'User';
 
