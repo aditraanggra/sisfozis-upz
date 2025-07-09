@@ -13,6 +13,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use OpenSpout\Writer\AutoFilter;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class RekapZisResource extends Resource
 {
@@ -148,7 +150,26 @@ class RekapZisResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+
+        $query = parent::getEloquentQuery();
+        $user = Auth::user();
+
+        if (User::currentIsUpzKecamatan() && $user->district_id) {
+            $query->whereHas('unit', function ($q) use ($user) {
+                $q->where('district_id', $user->district_id);
+            });
+        } elseif (User::currentIsUpzDesa() && $user->village_id) {
+            $query->whereHas('unit', function ($q) use ($user) {
+                $q->where('village_id', $user->village_id);
+            });
+        } elseif (User::currentIsSuperAdmin()) {
+            // Super admin can see everything, no filter applied
+        } else {
+            // Default: restrict to nothing
+            $query->whereRaw('1 = 0');
+        }
+
+        return $query
             ->where('period', 'tahunan')
             ->whereYear('period_date', 2025)
             ->with(['district', 'unit']);

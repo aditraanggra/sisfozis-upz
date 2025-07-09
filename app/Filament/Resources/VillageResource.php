@@ -19,6 +19,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\ActionsPosition;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class VillageResource extends Resource
 {
@@ -189,7 +191,14 @@ class VillageResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+        $query = parent::getEloquentQuery();
+        $user = Auth::user();
+
+        if (User::currentIsUpzKecamatan() && $user->district_id) {
+            $query->where('district_id', $user->district_id);
+        }
+
+        return $query
             ->withSum('rekapZis', 'total_zf_rice')
             ->withSum('rekapZis', 'total_zf_amount')
             ->withSum('rekapZis', 'total_zf_muzakki')

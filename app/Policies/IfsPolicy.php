@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use App\Models\Ifs;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class RolePolicy
+class IfsPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class RolePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_shield::role');
+        return $user->can('view_any_ifs');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Role $role): bool
+    public function view(User $user, Ifs $ifs): bool
     {
-        return $user->can('view_shield::role');
+        return $user->can('view_ifs');
     }
 
     /**
@@ -31,23 +31,23 @@ class RolePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_shield::role');
+        return $user->can('create_ifs');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Role $role): bool
+    public function update(User $user, Ifs $ifs): bool
     {
-        return $user->can('update_shield::role');
+        return $user->can('update_ifs');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Role $role): bool
+    public function delete(User $user, Ifs $ifs): bool
     {
-        return $user->can('delete_shield::role');
+        return $user->can('delete_ifs');
     }
 
     /**
@@ -55,15 +55,15 @@ class RolePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_shield::role');
+        return $user->can('delete_any_ifs');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Role $role): bool
+    public function forceDelete(User $user, Ifs $ifs): bool
     {
-        return $user->can('{{ ForceDelete }}');
+        return $user->can('force_delete_ifs');
     }
 
     /**
@@ -71,15 +71,15 @@ class RolePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('{{ ForceDeleteAny }}');
+        return $user->can('force_delete_any_ifs');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Role $role): bool
+    public function restore(User $user, Ifs $ifs): bool
     {
-        return $user->can('{{ Restore }}');
+        return $user->can('restore_ifs');
     }
 
     /**
@@ -87,15 +87,15 @@ class RolePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('{{ RestoreAny }}');
+        return $user->can('restore_any_ifs');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Role $role): bool
+    public function replicate(User $user, Ifs $ifs): bool
     {
-        return $user->can('{{ Replicate }}');
+        return $user->can('replicate_ifs');
     }
 
     /**
@@ -103,6 +103,6 @@ class RolePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('{{ Reorder }}');
+        return $user->can('reorder_ifs');
     }
 }

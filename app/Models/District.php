@@ -42,4 +42,9 @@ class District extends Model
     {
         return $this->hasMany(setorZis::class, 'unit_id');
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }

@@ -7,6 +7,7 @@ use App\Filament\Resources\UnitZisResource\Pages;
 use App\Models\District;
 use App\Models\UnitZis;
 use App\Models\Village;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Form;
@@ -17,6 +18,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class UnitZisResource extends Resource
 {
@@ -270,6 +272,26 @@ class UnitZisResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+
+        $query = parent::getEloquentQuery();
+        $user = Auth::user();
+
+        if (User::currentIsUpzKecamatan() && $user->district_id) {
+            $query->where('district_id', $user->district_id);
+        } elseif (User::currentIsUpzDesa() && $user->village_id) {
+            $query->where('village_id', $user->village_id);
+        } elseif (User::currentIsSuperAdmin()) {
+            // Super admin can see everything, no filter applied
+        } else {
+            // Default: restrict to nothing
+            $query->whereRaw('1 = 0');
+        }
+
+        return $query;
     }
 
     public static function getPages(): array

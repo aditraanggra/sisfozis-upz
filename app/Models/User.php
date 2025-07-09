@@ -26,6 +26,8 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'district_id',
+        'village_id',
     ];
 
     /**
@@ -61,33 +63,24 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasRole('super_admin');
     }
 
+    public function isUpzKecamatan(): bool
+    {
+        return $this->hasRole('upz_kecamatan');
+    }
+
+    public function isUpzDesa(): bool
+    {
+        return $this->hasRole('upz_desa');
+    }
+
     // Relasi ke tabel unit_zis
     public function unitZis()
     {
-        return $this->belongsTo(unitZis::class);
+        return $this->belongsTo(unitZis::class, 'unit_id');
     }
-    /* public function canAccessPanel(\Filament\Panel $panel): bool
-    {
-        return str_ends_with($this->email, '@sisfoupz.org')
-            || str_ends_with($this->email, '@timsisfo.com')
-            || str_ends_with($this->email, '@monitoring.com')
-            || str_ends_with($this->email, '@gmail.com');
-    } */
 
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
-        /* $allowedDomains = [
-            '@sisfoupz.org',
-            '@timsisfo.com',
-            '@monitoring.com'
-        ];
-
-        foreach ($allowedDomains as $domain) {
-            if (str_ends_with($this->email, $domain)) {
-                return true;
-            }
-        } */
-
         // Atau gunakan role-based access
         return $this->hasRole([
             'super_admin',
@@ -104,7 +97,8 @@ class User extends Authenticatable implements FilamentUser
      */
     public static function current(): ?self
     {
-        return Auth::user();
+        $user = Auth::user();
+        return $user instanceof self ? $user : null;
     }
 
     /**
@@ -123,5 +117,33 @@ class User extends Authenticatable implements FilamentUser
     {
         $user = self::current();
         return $user ? $user->isAdmin() : false;
+    }
+
+    /**
+     * Check if current user is admin
+     */
+    public static function currentIsUpzKecamatan(): bool
+    {
+        $user = self::current();
+        return $user ? $user->isUpzKecamatan() : false;
+    }
+
+    /**
+     * Check if current user is admin
+     */
+    public static function currentIsUpzDesa(): bool
+    {
+        $user = self::current();
+        return $user ? $user->isUpzDesa() : false;
+    }
+
+    public function village()
+    {
+        return $this->belongsTo(Village::class, 'village_id');
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class, 'district_id');
     }
 }
