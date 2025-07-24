@@ -63,6 +63,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasRole('super_admin');
     }
 
+    public function isTimSisfo(): bool
+    {
+        return $this->hasRole('tim_sisfo');
+    }
+
     public function isUpzKecamatan(): bool
     {
         return $this->hasRole('upz_kecamatan');
@@ -108,6 +113,15 @@ class User extends Authenticatable implements FilamentUser
     {
         $user = self::current();
         return $user ? $user->isSuperAdmin() : false;
+    }
+
+    /**
+     * Check if current user is super admin
+     */
+    public static function currentIsTimSisfo(): bool
+    {
+        $user = self::current();
+        return $user ? $user->isTimSisfo() : false;
     }
 
     /**

@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 //Widgets\AccountWidget::class,
                 //Widgets\FilamentInfoWidget::class,
-                TotalZisOverview::class,
+                //TotalZisOverview::class,
                 AllZisOverview::class,
             ])
             ->middleware([
@@ -62,7 +62,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
-            ->brandName('SISFOZIS');
+            ->brandName('SISFOZIS')
+            ->sidebarCollapsibleOnDesktop(true);
         //->brandLogo(asset('/public/assets/img/logo.svg'));
     }
 }

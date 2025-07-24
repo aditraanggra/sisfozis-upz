@@ -284,7 +284,7 @@ class UnitZisResource extends Resource
             $query->where('district_id', $user->district_id);
         } elseif (User::currentIsUpzDesa() && $user->village_id) {
             $query->where('village_id', $user->village_id);
-        } elseif (User::currentIsSuperAdmin()) {
+        } elseif (User::currentIsSuperAdmin() || User::currentIsTimSisfo()) {
             // Super admin can see everything, no filter applied
         } else {
             // Default: restrict to nothing
