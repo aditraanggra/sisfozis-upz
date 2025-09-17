@@ -2,15 +2,20 @@
 
 namespace App\Filament\Resources;
 
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Exports\DistrictExporter;
 use App\Filament\Resources\DistrictResource\Pages;
 use App\Filament\Resources\DistrictResource\RelationManagers;
 use App\Models\District;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Enums\ActionsPosition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ExportAction; // Ensure this is the correct namespace for ExportAction
@@ -140,18 +145,20 @@ class DistrictResource extends Resource
             ])
             ->filters([])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->label('Detail')
-                    ->modalHeading(fn($record) => "Detail Rekap ZIS Kecamatan {$record->name}")
-                    ->modalContent(function ($record) {
-                        return view('filament.resources.district-resource.view', [
-                            'record' => $record,
-                            'rekapZis' => $record->rekapZis()->where('period', 'tahunan')
-                                ->whereYear('period_date', 2025)
-                                ->get()
-                        ]);
-                    })
-            ])
+                ActionGroup::make([
+
+                    Tables\Actions\Action::make('pdf')
+                        ->label('Report DKM/RT/RW')
+                        ->color('success')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->url(fn(Model $record) => route('report.pdf', $record))
+                        ->openUrlInNewTab(),
+
+                ])
+                    ->icon('heroicon-o-cloud-arrow-down')
+                    ->size('lg')
+
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 //
             ])
@@ -165,7 +172,14 @@ class DistrictResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+        $query = parent::getEloquentQuery();
+        $user = Auth::user();
+
+        if (User::currentIsUpzKecamatan() && $user->district_id) {
+            $query->where('district_id', $user->district_id);
+        }
+
+        return $query
             ->withSum('rekapZis', 'total_zf_rice')
             ->withSum('rekapZis', 'total_zf_amount')
             ->withSum('rekapZis', 'total_zf_muzakki')

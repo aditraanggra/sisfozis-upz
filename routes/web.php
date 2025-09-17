@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\District;
 use Illuminate\Support\Facades\Route;
 use App\Models\Village;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -17,6 +18,11 @@ Route::get('/', function () {
 Route::get('/rekap-zis/{village}/pdf', function (Village $village) {
     $rekapZis = $village->rekapZis()
         ->where('period', 'tahunan')
+        ->where(function ($query) {
+            $query->where('total_zf_amount', '>', 0)
+                ->orWhere('total_zm_amount', '>', 0)
+                ->orWhere('total_ifs_amount', '>', 0);
+        })
         ->whereYear('period_date', 2025)
         ->get();
 
@@ -33,6 +39,11 @@ Route::get('/rekap-zis/{village}/pdf', function (Village $village) {
 Route::get('/rekap-zis/{village}/op', function (Village $village) {
     $rekapZis = $village->rekapZis()
         ->where('period', 'tahunan')
+        ->where(function ($query) {
+            $query->where('total_zf_amount', '>', 0)
+                ->orWhere('total_zm_amount', '>', 0)
+                ->orWhere('total_ifs_amount', '>', 0);
+        })
         ->whereYear('period_date', 2025)
         ->get();
 
@@ -45,3 +56,25 @@ Route::get('/rekap-zis/{village}/op', function (Village $village) {
 
     return $pdf->stream('Rekap-ZIS-' . str_replace(' ', '-', $village->name) . '.pdf');
 })->name('op.pdf');
+
+Route::get('/rekap-zis/{district}/report', function (District $district) {
+    $rekapZis = $district->rekapZis()
+        ->where('period', 'tahunan')
+        ->where('category_id', 4)
+        ->where(function ($query) {
+            $query->where('total_zf_amount', '>', 0)
+                ->orWhere('total_zm_amount', '>', 0)
+                ->orWhere('total_ifs_amount', '>', 0);
+        })
+        ->whereYear('period_date', 2025)
+        ->get();
+
+    $pdf = Pdf::loadHtml(
+        Blade::render('filament.resources.district-resource.report', [
+            'record' => $district,
+            'rekapZis' => $rekapZis,
+        ])
+    )->setPaper('a4', 'landscape');
+
+    return $pdf->stream('Rekap-ZIS-' . str_replace(' ', '-', $district->name) . '.pdf');
+})->name('report.pdf');
