@@ -99,7 +99,7 @@
         </thead>
         <tbody>
             @php $no = 1; @endphp
-            @foreach($rekapZis->sortBy('unit.category_id') as $rekap)
+            @foreach($rekapZis->sortBy('unit.village_id') as $rekap)
             @php
             $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
             $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
