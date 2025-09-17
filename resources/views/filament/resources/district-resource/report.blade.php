@@ -109,7 +109,7 @@
                 <td>{{ $rekap->unit->no_register }}</td>
                 <td>{{ $rekap->unit->unit_name }}</td>
                 <td>{{ $rekap->unit->village->name }}</td>
-                <td>{{ number_format($rekap->total_zf_amount, 2) }}</td>
+                <td>{{ number_format($total_zf, 2) }}</td>
                 <td>{{ number_format($rekap->total_zf_muzakki) }}</td>
                 <td>{{ number_format($rekap->total_zm_amount, 2) }}</td>
                 <td>{{ number_format($rekap->total_zm_muzakki) }}</td>
@@ -125,7 +125,9 @@
                 <td colspan="2">Total Penerimaan</td>
                 <td></td>
                 <td></td>
-                <td>{{ number_format($rekapZis->sum('total_zf_amount'), 2) }}</td>
+                <td>{{ number_format($rekapZis->sum(function($rekap) {
+            return $rekap->total_zf_amount + ($rekap->total_zf_rice * $rekap->unit->rice_price);
+        }), 2) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_zf_muzakki')) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_zm_amount'), 2) }}</td>
                 <td>{{ number_format($rekapZis->sum('total_zm_muzakki')) }}</td>
