@@ -148,7 +148,7 @@ class DistrictResource extends Resource
                 ActionGroup::make([
 
                     Tables\Actions\Action::make('pdf')
-                        ->label('Report DKM/RT/RW')
+                        ->label('Report UPZ DKM/RT/RW')
                         ->color('success')
                         ->icon('heroicon-o-arrow-down-tray')
                         ->url(fn(Model $record) => route('report.pdf', $record))

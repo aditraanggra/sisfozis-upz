@@ -76,5 +76,5 @@ Route::get('/rekap-zis/{district}/report', function (District $district) {
         ])
     )->setPaper('a4', 'landscape');
 
-    return $pdf->stream('Rekap-ZIS-' . str_replace(' ', '-', $district->name) . '.pdf');
+    return $pdf->stream('Rekap UPZ Masjid Se-Kecamatan ' . str_replace(' ', '-', $district->name) . '.pdf');
 })->name('report.pdf');
