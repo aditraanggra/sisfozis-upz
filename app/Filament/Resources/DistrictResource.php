@@ -3,11 +3,14 @@
 namespace App\Filament\Resources;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Filament\Exports\DistrictExporter;
 use App\Filament\Resources\DistrictResource\Pages;
 use App\Filament\Resources\DistrictResource\RelationManagers;
 use App\Models\District;
 use App\Models\User;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Collection;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +23,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ExportAction; // Ensure this is the correct namespace for ExportAction
 use Filament\Tables\Actions\ExportAction as ActionsExportAction;
+use Filament\Tables\Columns\Summarizers\Count;
+use Filament\Tables\Columns\Summarizers\Sum;
 
 class DistrictResource extends Resource
 {
@@ -33,12 +38,79 @@ class DistrictResource extends Resource
 
     protected static ?string $label = 'Rekap ZIS Per Kecamatan';
 
+    protected const REKAP_PERIOD = 'tahunan';
+
+    protected const REKAP_PERIOD_DATE = '2025-01-01';
+
+    protected const TOTAL_ALIAS = 'total_zis_value';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 //
             ]);
+    }
+
+    protected static function filteredRekap(District $district): Collection
+    {
+        $rekap = $district->relationLoaded('rekapZis')
+            ? $district->rekapZis
+            : $district->rekapZis()->get();
+
+        return $rekap
+            ->where('period', static::REKAP_PERIOD)
+            ->where('period_date', static::REKAP_PERIOD_DATE)
+            ->values();
+    }
+
+    protected static function summarizeRekapColumn(QueryBuilder $districtQuery, string $column): float
+    {
+        $expressions = [
+            'total_zf_rice' => 'COALESCE(rekap_zis.total_zf_rice, 0)',
+            'total_zf_amount' => 'COALESCE(rekap_zis.total_zf_amount, 0)',
+            'total_zm_amount' => 'COALESCE(rekap_zis.total_zm_amount, 0)',
+            'total_ifs_amount' => 'COALESCE(rekap_zis.total_ifs_amount, 0)',
+            'total_zf_muzakki' => 'COALESCE(rekap_zis.total_zf_muzakki, 0)',
+            'total_zm_muzakki' => 'COALESCE(rekap_zis.total_zm_muzakki, 0)',
+            'total_ifs_munfiq' => 'COALESCE(rekap_zis.total_ifs_munfiq, 0)',
+        ];
+
+        if (! array_key_exists($column, $expressions)) {
+            return 0.0;
+        }
+
+        return static::summarizeExpression($districtQuery, $expressions[$column]);
+    }
+
+    protected static function summarizeTotal(QueryBuilder $districtQuery): float
+    {
+        $expression = implode(' + ', [
+            'COALESCE(rekap_zis.total_zf_amount, 0)',
+            'COALESCE(rekap_zis.total_zm_amount, 0)',
+            'COALESCE(rekap_zis.total_ifs_amount, 0)',
+            'COALESCE(rekap_zis.total_zf_rice, 0) * COALESCE(unit_zis.rice_price, 0)',
+        ]);
+
+        return static::summarizeExpression($districtQuery, $expression);
+    }
+
+    protected static function summarizeExpression(QueryBuilder $districtQuery, string $expression): float
+    {
+        $baseQuery = clone $districtQuery;
+
+        $summary = DB::query()
+            ->fromSub($baseQuery, 'districts')
+            ->leftJoin('unit_zis', 'unit_zis.district_id', '=', 'districts.id')
+            ->leftJoin('rekap_zis', function ($join) {
+                $join->on('rekap_zis.unit_id', '=', 'unit_zis.id')
+                    ->where('rekap_zis.period', static::REKAP_PERIOD)
+                    ->where('rekap_zis.period_date', static::REKAP_PERIOD_DATE);
+            })
+            ->selectRaw("COALESCE(SUM({$expression}), 0) as aggregate")
+            ->value('aggregate');
+
+        return (float) $summary;
     }
 
     public static function table(Table $table): Table
@@ -57,95 +129,86 @@ class DistrictResource extends Resource
 
                 Tables\Columns\TextColumn::make('total')
                     ->label('Total ZIS')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_zf_amount') +
-                            $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_zm_amount') +
-                            $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_ifs_amount');
+                    ->getStateUsing(function (District $record) {
+                        $prefetchedTotal = $record->{static::TOTAL_ALIAS} ?? null;
+
+                        if ($prefetchedTotal !== null) {
+                            return (float) $prefetchedTotal;
+                        }
+
+                        $rekap = static::filteredRekap($record);
+
+                        $cashTotal = (float) $rekap->sum('total_zf_amount')
+                            + (float) $rekap->sum('total_zm_amount')
+                            + (float) $rekap->sum('total_ifs_amount');
+
+                        $riceValue = (float) $rekap->sum(function ($item) {
+                            $riceAmount = (float) ($item->total_zf_rice ?? 0);
+                            $ricePrice = (float) ($item->unit?->rice_price ?? 0);
+
+                            return $riceAmount * $ricePrice;
+                        });
+
+                        return $cashTotal + $riceValue;
                     })
-                    ->numeric(),
+                    ->numeric()
+                    ->sortable(
+                        true,
+                        fn(Builder $query, string $direction): Builder => $query->orderBy(static::TOTAL_ALIAS, $direction)
+                    ),
 
                 Tables\Columns\TextColumn::make('total_zf_rice')
                     ->label('Zakat Fitrah (Beras)')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_zf_rice');
+                    ->getStateUsing(function (District $record) {
+                        return static::filteredRekap($record)->sum('total_zf_rice');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zf_amount')
                     ->label('Zakat Fitrah (Uang)')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_zf_amount');
+                    ->getStateUsing(function (District $record) {
+                        return static::filteredRekap($record)->sum('total_zf_amount');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zm_amount')
                     ->label('Zakat Mal')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_zm_amount');
+                    ->getStateUsing(function (District $record) {
+                        return static::filteredRekap($record)->sum('total_zm_amount');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_ifs_amount')
                     ->label('Infak Sedekah')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_ifs_amount');
+                    ->getStateUsing(function (District $record) {
+                        return static::filteredRekap($record)->sum('total_ifs_amount');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zf_muzakki')
                     ->label('Muzakki ZF')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_zf_muzakki');
+                    ->getStateUsing(function (District $record) {
+                        return static::filteredRekap($record)->sum('total_zf_muzakki');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zm_muzakki')
                     ->label('Muzakki ZM')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_zm_muzakki');
+                    ->getStateUsing(function (District $record) {
+                        return static::filteredRekap($record)->sum('total_zm_muzakki');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_ifs_munfiq')
                     ->label('Munfiq')
-                    ->getStateUsing(function ($record) {
-                        return $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
-                            ->sum('total_ifs_munfiq');
+                    ->getStateUsing(function (District $record) {
+                        return static::filteredRekap($record)->sum('total_ifs_munfiq');
                     })
                     ->numeric(),
             ])
             ->filters([])
             ->actions([
-                ActionGroup::make([
+                /*  ActionGroup::make([
 
                     Tables\Actions\Action::make('pdf')
                         ->label('Report UPZ DKM/RT/RW')
@@ -156,9 +219,7 @@ class DistrictResource extends Resource
 
                 ])
                     ->icon('heroicon-o-cloud-arrow-down')
-                    ->size('lg')
-
-            ], position: ActionsPosition::BeforeColumns)
+                    ->size('lg') */], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 //
             ])
@@ -166,8 +227,9 @@ class DistrictResource extends Resource
                 ActionsExportAction::make()
                     ->exporter(DistrictExporter::class)
             ])
-            //->defaultSort('total', 'desc')
-            ->recordUrl(null);
+            ->defaultSort(static::TOTAL_ALIAS, 'desc')
+            ->recordUrl(null)
+            ->defaultPaginationPageOption(50);
     }
 
     public static function getEloquentQuery(): Builder
@@ -179,6 +241,18 @@ class DistrictResource extends Resource
             $query->where('district_id', $user->district_id);
         }
 
+        $query->select('districts.*')
+            ->selectSub(function ($subQuery) {
+                $subQuery->from('rekap_zis')
+                    ->join('unit_zis', 'unit_zis.id', '=', 'rekap_zis.unit_id')
+                    ->whereColumn('unit_zis.district_id', 'districts.id')
+                    ->where('rekap_zis.period', static::REKAP_PERIOD)
+                    ->where('rekap_zis.period_date', static::REKAP_PERIOD_DATE)
+                    ->selectRaw(
+                        'COALESCE(SUM(COALESCE(rekap_zis.total_zf_amount, 0) + COALESCE(rekap_zis.total_zm_amount, 0) + COALESCE(rekap_zis.total_ifs_amount, 0) + COALESCE(rekap_zis.total_zf_rice, 0) * COALESCE(unit_zis.rice_price, 0)), 0)'
+                    );
+            }, static::TOTAL_ALIAS);
+
         return $query
             ->withSum('rekapZis', 'total_zf_rice')
             ->withSum('rekapZis', 'total_zf_amount')
@@ -187,7 +261,7 @@ class DistrictResource extends Resource
             ->withSum('rekapZis', 'total_zm_muzakki')
             ->withSum('rekapZis', 'total_ifs_amount')
             ->withSum('rekapZis', 'total_ifs_munfiq')
-            ->with('rekapZis');
+            ->with(['rekapZis.unit']);
     }
 
     // Tambahkan method view untuk modal detail

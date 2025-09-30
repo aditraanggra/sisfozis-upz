@@ -11,10 +11,11 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\Carbon;
 
-class AllZisOverview extends BaseWidget
+class TotalZisOverview extends BaseWidget
 {
-
     use InteractsWithPageFilters;
+
+    protected int|string|array $columnSpan = 'full';
 
     protected function getStats(): array
     {
@@ -22,105 +23,70 @@ class AllZisOverview extends BaseWidget
         $endDate = $this->filters['endDate'] ?? null;
         $year = $this->filters['year'] ?? null;
 
+        $currentTotal = $this->calculateTotal($startDate, $endDate, $year);
+
         $comparisonReady = $year !== null || $startDate !== null || $endDate !== null;
 
         [$previousStart, $previousEnd, $previousYear] = $comparisonReady
             ? $this->resolvePreviousPeriod($startDate, $endDate, $year)
             : [null, null, null];
 
-        $zakatFitrahCurrent = $this->calculateZakatFitrahTotal($startDate, $endDate, $year);
-        $zakatFitrahPrevious = $comparisonReady
-            ? $this->calculateZakatFitrahTotal($previousStart, $previousEnd, $previousYear)
+        $previousTotal = $comparisonReady
+            ? $this->calculateTotal($previousStart, $previousEnd, $previousYear)
             : null;
-        [$zakatFitrahDescription, $zakatFitrahIcon, $zakatFitrahColor] = $this->formatComparisonDescription(
-            $zakatFitrahCurrent,
-            $zakatFitrahPrevious,
-            $comparisonReady
-        );
 
-        $zakatMalCurrent = $this->calculateZakatMalTotal($startDate, $endDate, $year);
-        $zakatMalPrevious = $comparisonReady
-            ? $this->calculateZakatMalTotal($previousStart, $previousEnd, $previousYear)
-            : null;
-        [$zakatMalDescription, $zakatMalIcon, $zakatMalColor] = $this->formatComparisonDescription(
-            $zakatMalCurrent,
-            $zakatMalPrevious,
-            $comparisonReady
-        );
-
-        $infaqCurrent = $this->calculateInfaqTotal($startDate, $endDate, $year);
-        $infaqPrevious = $comparisonReady
-            ? $this->calculateInfaqTotal($previousStart, $previousEnd, $previousYear)
-            : null;
-        [$infaqDescription, $infaqIcon, $infaqColor] = $this->formatComparisonDescription(
-            $infaqCurrent,
-            $infaqPrevious,
+        [$description, $icon, $descriptionColor] = $this->formatComparisonDescription(
+            $currentTotal,
+            $previousTotal,
             $comparisonReady
         );
 
         return [
             Stat::make(
-                'Total Penerimaan Zakat Fitrah',
-                'Rp ' . number_format($zakatFitrahCurrent, 0, ',', '.')
+                'Total Penerimaan ZIS',
+                'Rp ' . number_format($currentTotal, 0, ',', '.')
             )
-                ->description($zakatFitrahDescription)
-                ->descriptionIcon($zakatFitrahIcon)
-                ->descriptionColor($zakatFitrahColor)
-                ->color('primary'),
-            Stat::make(
-                'Total Penerimaan Zakat Mal',
-                'Rp ' . number_format($zakatMalCurrent, 0, ',', '.')
-            )
-                ->description($zakatMalDescription)
-                ->descriptionIcon($zakatMalIcon)
-                ->descriptionColor($zakatMalColor)
-                ->color('primary'),
-            Stat::make(
-                'Total Penerimaan Infaq/Shodaqoh',
-                'Rp ' . number_format($infaqCurrent, 0, ',', '.')
-            )
-                ->description($infaqDescription)
-                ->descriptionIcon($infaqIcon)
-                ->descriptionColor($infaqColor)
+                ->chart($this->getMonthlyTotals($startDate, $endDate, $year))
+                ->description($description)
+                ->descriptionIcon($icon)
+                ->descriptionColor($descriptionColor)
                 ->color('primary'),
         ];
     }
 
-    protected function calculateZakatFitrahTotal(?string $startDate, ?string $endDate, ?string $year): float
+    protected function getColumns(): int
     {
-        $moneyTotal = Zf::query()
+        return 1;
+    }
+
+    protected function calculateTotal(?string $startDate, ?string $endDate, ?string $year): float
+    {
+        $totalZakatFitrahMoney = Zf::query()
             ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
             ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
             ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('zf_amount');
 
-        $riceTotal = Zf::query()
-            ->join('unit_zis', 'zfs.unit_id', '=', 'unit_zis.id')
+        $totalZakatFitrahRice = Zf::join('unit_zis', 'zfs.unit_id', '=', 'unit_zis.id')
             ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('zfs.trx_date', '>=', $startDate))
             ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('zfs.trx_date', '<=', $endDate))
             ->when($year, fn(EloquentBuilder $query) => $query->whereYear('zfs.trx_date', $year))
             ->selectRaw('COALESCE(SUM(zfs.zf_rice * unit_zis.rice_price), 0) as total_rice_value')
             ->value('total_rice_value');
 
-        return (float) ($moneyTotal + ($riceTotal ?? 0));
-    }
-
-    protected function calculateZakatMalTotal(?string $startDate, ?string $endDate, ?string $year): float
-    {
-        return (float) Zm::query()
+        $totalZakatMal = Zm::query()
             ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
             ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
             ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('amount');
-    }
 
-    protected function calculateInfaqTotal(?string $startDate, ?string $endDate, ?string $year): float
-    {
-        return (float) Ifs::query()
+        $totalInfaqShodaqoh = Ifs::query()
             ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
             ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
             ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('amount');
+
+        return (float) ($totalZakatFitrahMoney + ($totalZakatFitrahRice ?? 0) + $totalZakatMal + $totalInfaqShodaqoh);
     }
 
     protected function resolvePreviousPeriod(?string $startDate, ?string $endDate, ?string $year): array
@@ -212,5 +178,73 @@ class AllZisOverview extends BaseWidget
             'heroicon-m-minus',
             'secondary',
         ];
+    }
+
+    protected function getMonthlyTotals(?string $startDate, ?string $endDate, ?string $year): array
+    {
+        $monthlyTotals = array_fill(0, 12, 0.0);
+
+        $zakatFitrahData = Zf::query()
+            ->join('unit_zis', 'zfs.unit_id', '=', 'unit_zis.id')
+            ->selectRaw('
+                EXTRACT(MONTH FROM zfs.trx_date) as month,
+                SUM(zfs.zf_amount + zfs.zf_rice * unit_zis.rice_price) as total
+            ')
+            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('zfs.trx_date', '>=', $startDate))
+            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('zfs.trx_date', '<=', $endDate))
+            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('zfs.trx_date', $year))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        foreach ($zakatFitrahData as $item) {
+            $monthIndex = ((int) $item->month) - 1;
+
+            if ($monthIndex < 0 || $monthIndex > 11) {
+                continue;
+            }
+
+            $monthlyTotals[$monthIndex] += (float) $item->total;
+        }
+
+        $zakatMalData = Zm::query()
+            ->selectRaw('EXTRACT(MONTH FROM trx_date) as month, SUM(amount) as total')
+            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        foreach ($zakatMalData as $item) {
+            $monthIndex = ((int) $item->month) - 1;
+
+            if ($monthIndex < 0 || $monthIndex > 11) {
+                continue;
+            }
+
+            $monthlyTotals[$monthIndex] += (float) $item->total;
+        }
+
+        $infaqData = Ifs::query()
+            ->selectRaw('EXTRACT(MONTH FROM trx_date) as month, SUM(amount) as total')
+            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        foreach ($infaqData as $item) {
+            $monthIndex = ((int) $item->month) - 1;
+
+            if ($monthIndex < 0 || $monthIndex > 11) {
+                continue;
+            }
+
+            $monthlyTotals[$monthIndex] += (float) $item->total;
+        }
+
+        return array_map(static fn(float $value) => round($value, 2), $monthlyTotals);
     }
 }

@@ -12,8 +12,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use App\Filament\Widgets\AllZisOverview;
-use App\Filament\Widgets\TotalZisOverview;
-use Filament\View\LegacyComponents\Widget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -38,11 +36,10 @@ class AdminPanelProvider extends PanelProvider
             ->pages([])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                //Widgets\AccountWidget::class,
+                /* //Widgets\AccountWidget::class,
                 //Widgets\FilamentInfoWidget::class,
                 //TotalZisOverview::class,
-                AllZisOverview::class,
-            ])
+                AllZisOverview::class, */])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -63,7 +60,9 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->brandName('SISFOZIS')
-            ->sidebarCollapsibleOnDesktop(true);
-        //->brandLogo(asset('/public/assets/img/logo.svg'));
+            ->sidebarCollapsibleOnDesktop(true)
+            ->brandLogo(asset('images/Logo.png'))
+            ->favicon(asset('images/Favicon.png'))
+            ->brandLogoHeight('3.5rem');
     }
 }

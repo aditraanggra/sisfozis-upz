@@ -40,4 +40,14 @@ class Dashboard extends \Filament\Pages\Dashboard
 
             ]);
     }
+
+    public function getWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\TotalZisOverview::class,
+            \App\Filament\Widgets\AllZisOverview::class,
+            \App\Filament\Widgets\MuzakiChart::class,
+            \App\Filament\Widgets\ZisChart::class,
+        ];
+    }
 }
