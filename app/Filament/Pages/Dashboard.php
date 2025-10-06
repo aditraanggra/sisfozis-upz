@@ -27,6 +27,7 @@ class Dashboard extends \Filament\Pages\Dashboard
                                 date('Y', strtotime('-1 year')) => date('Y', strtotime('-1 year')),
                                 date('Y', strtotime('-2 year')) => date('Y', strtotime('-2 year')),
                             ])
+                            ->default(date('Y'))
                             ->placeholder('Select Year')
                             ->searchable(),
                         DatePicker::make('startDate')

@@ -21,7 +21,7 @@ class DistributionResource extends Resource
 
     protected static ?string $navigationGroup = 'Rekap & Transaksi';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $label = 'Pendistribusian';
 

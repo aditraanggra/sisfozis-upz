@@ -19,9 +19,9 @@ class UnitCategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $navigationGroup = 'Unit Pengumpul Zakat (UPZ)';
+    protected static ?string $navigationGroup = 'Manajemen Pengguna';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $label = 'Kategori UPZ';
 
