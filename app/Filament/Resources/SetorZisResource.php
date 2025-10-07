@@ -29,36 +29,45 @@ class SetorZisResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('unit_id')
+                    ->label('ID UPZ')
                     ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\DatePicker::make('trx_date')
+                    ->label('Tanggal Transaksi')
                     ->readOnly()
                     ->required(),
                 Forms\Components\TextInput::make('zf_amount_deposit')
+                    ->label('Setor Zakat Fitrah (Uang)')
                     ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('zf_rice_deposit')
+                    ->label('Setor Zakat Fitrah (Beras)')
                     ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('zm_amount_deposit')
+                    ->label('Setor Zakat Mal (Uang)')
                     ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('ifs_amount_deposit')
+                    ->label('Setor Infaq Sedekah (Uang)')
                     ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('total_deposit')
+                    ->label('Total Setor')
                     ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('status')
+                    ->label('Status')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('validation')
+                    ->label('Validasi')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('upload')
@@ -75,6 +84,7 @@ class SetorZisResource extends Resource
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('unit.unit_name')
+                    ->label('Nama UPZ')
                     ->sortable()
                     ->searchable()
                     ->toggleable(),
@@ -118,10 +128,13 @@ class SetorZisResource extends Resource
                     ->sortable()
                     ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Setor')),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('validation')
+                    ->label('Validasi')
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('upload')
+                    ->label('Bukti Setor')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

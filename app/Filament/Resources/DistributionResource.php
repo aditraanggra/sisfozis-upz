@@ -67,36 +67,46 @@ class DistributionResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('unit_id')
+                    ->label('ID UPZ')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('unit.no_register')
-                    ->label('Unit')
+                    ->label('No. Register')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('unit.unit_name')
-                    ->label('Unit')
+                    ->label('Nama UPZ')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('trx_date')
+                    ->label('Tgl. Transaksi')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('mustahik_name')
+                    ->label('Nama Mustahik')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nik')
+                    ->label('NIK')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('fund_type')
+                    ->label('Jenis Dana')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('asnaf')
+                    ->label('Asnaf')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('program')
+                    ->label('Program')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('total_rice')
+                    ->label('Total Beras (kg)')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_amount')
+                    ->label('Total Nominal (Rp)')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('beneficiary')
+                    ->label('Jumlah Penerima')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')

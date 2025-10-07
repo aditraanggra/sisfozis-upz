@@ -10,8 +10,7 @@ class Dskl extends Cluster
 
     protected static ?string $navigationGroup = 'Rekap & Transaksi';
 
-    public static function getLabel(): string
-    {
-        return 'DSKL';
-    }
+    protected static ?int $navigationSort = 4;
+
+    protected static ?string $navigationLabel = 'DSKL';
 }
