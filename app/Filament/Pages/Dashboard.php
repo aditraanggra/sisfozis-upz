@@ -14,6 +14,14 @@ class Dashboard extends \Filament\Pages\Dashboard
     // ...
     use HasFiltersForm;
 
+    protected static ?string $navigationIcon = 'heroicon-o-chart-pie';
+
+    protected static ?string $title = 'Pengumpulan';
+
+    protected static ?string $navigationGroup = 'Dashboard';
+
+    protected static ?int $navigationSort = 1;
+
     public function filtersForm(Form $form): Form
     {
         return $form

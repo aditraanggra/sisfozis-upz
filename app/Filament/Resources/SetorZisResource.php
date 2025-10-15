@@ -18,7 +18,7 @@ class SetorZisResource extends Resource
 {
     protected static ?string $model = SetorZis::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-percent-badge';
 
     protected static ?string $navigationGroup = 'Rekap & Transaksi';
 
