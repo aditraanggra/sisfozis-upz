@@ -1,61 +1,65 @@
-# -------- Stage 1: Vendor (Composer) --------
+# ---------- Stage 1: Vendor (Composer) ----------
 FROM php:8.3-cli-alpine AS vendor
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 WORKDIR /app
 
-# Tools & headers untuk build ekstensi (termasuk ZIP)
+# Build deps & libs untuk ekstensi (MySQL + PostgreSQL + GD + ZIP)
 RUN apk add --no-cache \
     git unzip icu-dev oniguruma-dev \
     libpng-dev libjpeg-turbo-dev libwebp-dev freetype-dev \
-    mariadb-connector-c-dev \
+    mariadb-connector-c-dev postgresql-dev \
     libzip-dev zlib-dev zip \
     $PHPIZE_DEPS
 
-# Ekstensi PHP yang dibutuhkan saat composer resolve
+# Ekstensi yang dibutuhkan saat composer (tidak perlu pgsql di tahap ini, tapi aman dipasang)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j"$(nproc)" intl mbstring pdo_mysql gd zip
+    && docker-php-ext-install -j"$(nproc)" intl mbstring gd zip \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql
 
-# Ambil composer dari image resmi
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# 1) Copy file composer dulu agar cache efektif
+# 1) Copy composer.* dulu agar cache efektif
 COPY composer.json composer.lock ./
-
-# 2) Install vendor TANPA menjalankan scripts (belum ada file artisan)
+# 2) Install vendor tanpa scripts (belum ada artisan)
 RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts
-
-# 3) Baru copy seluruh source code
+# 3) Copy source code
 COPY . .
-
-# 4) Optimize autoload TANPA scripts (package:discover nanti saat runtime)
+# 4) Optimize autoload (tanpa scripts)
 RUN composer dump-autoload -o --no-scripts
 
 
 
-# -------- Stage 2: Runtime (FrankenPHP + Caddy) --------
+# ---------- Stage 2: Runtime (FrankenPHP + Caddy) ----------
 FROM dunglas/frankenphp:1-php8.3-alpine
 
 WORKDIR /app
 
-# Paket & ekstensi runtime
+# Runtime deps & ekstensi (kedua driver DB dipasang)
 RUN apk add --no-cache \
     git unzip icu-dev oniguruma-dev \
     libpng-dev libjpeg-turbo-dev libwebp-dev freetype-dev \
-    mariadb-connector-c-dev \
+    mariadb-connector-c-dev postgresql-dev \
     libzip-dev zlib-dev zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo_mysql opcache zip
+    && docker-php-ext-install -j"$(nproc)" gd intl mbstring opcache zip \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql
+
+# (opsional) client tools jika perlu debugging
+# RUN apk add --no-cache postgresql-client mariadb-client
 
 # Copy app + vendor dari stage vendor
 COPY --from=vendor /app /app
 
-# Bersih-bersih cache & set permission (tanpa butuh .env)
-RUN php artisan route:clear && php artisan config:clear && php artisan view:clear \
-    && chown -R www-data:www-data storage bootstrap/cache
-
-# Caddyfile (FrankenPHP)
+# Caddyfile (pastikan listen :8000 di file ini)
 COPY ./deploy/Caddyfile /etc/caddy/Caddyfile
 
-EXPOSE 80
+# Permission folder writable Laravel
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Expose port yang dipakai Caddyfile (:8000)
+EXPOSE 8000
+
+# Jalankan FrankenPHP/Caddy
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
