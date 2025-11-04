@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InfakTerikatResource\Pages;
-use App\Filament\Resources\InfakTerikatResource\RelationManagers;
 use App\Models\InfakTerikat;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InfakTerikatResource extends Resource
 {
@@ -30,6 +27,33 @@ class InfakTerikatResource extends Resource
         return $form
             ->schema([
                 //
+                Forms\Components\Select::make('unit_id')
+                    ->label('Unit UPZ')
+                    ->relationship('unit', 'unit_name')
+                    ->required(),
+
+                Forms\Components\Select::make('program_id')
+                    ->label('Program')
+                    ->relationship('program', 'name')
+                    ->required(),
+
+                Forms\Components\DatePicker::make('trx_date')
+                    ->label('Tanggal Transaksi')
+                    ->required(),
+
+                Forms\Components\TextInput::make('munfiq_name')
+                    ->label('Nama Munfiq')
+                    ->required()
+                    ->maxLength(255),
+
+                Forms\Components\TextInput::make('amount')
+                    ->label('Jumlah (Rp)')
+                    ->numeric()
+                    ->required(),
+
+                Forms\Components\Textarea::make('desc')
+                    ->label('Deskripsi')
+                    ->maxLength(65535),
             ]);
     }
 
@@ -39,7 +63,7 @@ class InfakTerikatResource extends Resource
             ->columns([
                 //
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
-                Tables\Columns\TextColumn::make('unit.name')->label('Unit UPZ')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('unit.unit_name')->label('Unit UPZ')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('program.name')->label('Program')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('trx_date')->label('Tanggal Transaksi')->date()->sortable(),
                 Tables\Columns\TextColumn::make('munfiq_name')->label('Nama Munfiq')->sortable()->searchable(),
@@ -50,7 +74,7 @@ class InfakTerikatResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

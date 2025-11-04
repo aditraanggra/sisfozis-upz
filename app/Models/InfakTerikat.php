@@ -57,4 +57,9 @@ class InfakTerikat extends Model
     {
         return $this->belongsTo(UnitZis::class, 'unit_id');
     }
+
+    public function program()
+    {
+        return $this->belongsTo(MasterProgram::class, 'program_id');
+    }
 }

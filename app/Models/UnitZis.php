@@ -112,4 +112,9 @@ class UnitZis extends Model
     {
         return $this->hasMany(setorZis::class, 'unit_id');
     }
+
+    public function infakTerikats()
+    {
+        return $this->hasMany(InfakTerikat::class, 'unit_id');
+    }
 }

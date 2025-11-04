@@ -64,17 +64,18 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total')
                     ->label('Total ZIS')
                     ->getStateUsing(function ($record) {
+                        $currentYear = date('Y') . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_zf_amount') +
                             $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_zm_amount') +
                             $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_ifs_amount');
                     })
                     ->numeric(),
@@ -82,9 +83,10 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total_zf_rice')
                     ->label('Zakat Fitrah (Beras)')
                     ->getStateUsing(function ($record) {
+                        $currentYear = date('Y') . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_zf_rice');
                     })
                     ->numeric(),
@@ -92,9 +94,10 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total_zf_amount')
                     ->label('Zakat Fitrah (Uang)')
                     ->getStateUsing(function ($record) {
+                        $currentYear = date('Y') . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_zf_amount');
                     })
                     ->numeric(),
@@ -102,9 +105,10 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total_zm_amount')
                     ->label('Zakat Mal')
                     ->getStateUsing(function ($record) {
+                        $currentYear = date('Y') . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_zm_amount');
                     })
                     ->numeric(),
@@ -112,9 +116,10 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total_ifs_amount')
                     ->label('Infak Sedekah')
                     ->getStateUsing(function ($record) {
+                        $currentYear = date('Y') . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_ifs_amount');
                     })
                     ->numeric(),
@@ -122,9 +127,10 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total_zf_muzakki')
                     ->label('Muzakki ZF')
                     ->getStateUsing(function ($record) {
+                        $currentYear = date('Y') . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_zf_muzakki');
                     })
                     ->numeric(),
@@ -132,9 +138,10 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total_zm_muzakki')
                     ->label('Muzakki ZM')
                     ->getStateUsing(function ($record) {
+                        $currentYear = date('Y') . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_zm_muzakki');
                     })
                     ->numeric(),
@@ -142,9 +149,10 @@ class VillageResource extends Resource
                 Tables\Columns\TextColumn::make('total_ifs_munfiq')
                     ->label('Munfiq')
                     ->getStateUsing(function ($record) {
+                        $currentYear = date('Y') . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', '2025-01-01')
+                            ->where('period_date', $currentYear)
                             ->sum('total_ifs_munfiq');
                     })
                     ->numeric(),

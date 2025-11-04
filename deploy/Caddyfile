@@ -1,0 +1,12 @@
+{
+    frankenphp
+}
+
+:80 {
+    root * /app/public
+    encode zstd gzip
+    @notFile { not file }
+    rewrite @notFile /index.php
+    php_server
+    file_server
+}

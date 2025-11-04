@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DistributionResource\Pages;
-use App\Filament\Resources\DistributionResource\RelationManagers;
 use App\Models\Distribution;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DistributionResource extends Resource
 {
@@ -66,10 +63,6 @@ class DistributionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('unit_id')
-                    ->label('ID UPZ')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('unit.no_register')
                     ->label('No. Register')
                     ->searchable()
