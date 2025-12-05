@@ -88,21 +88,11 @@ class AllZisOverview extends BaseWidget
 
     protected function calculateZakatFitrahTotal(?string $startDate, ?string $endDate, ?string $year): float
     {
-        $moneyTotal = Zf::query()
+        return (float) Zf::query()
             ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
             ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
             ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('zf_amount');
-
-        $riceTotal = Zf::query()
-            ->join('unit_zis', 'zfs.unit_id', '=', 'unit_zis.id')
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('zfs.trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('zfs.trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('zfs.trx_date', $year))
-            ->selectRaw('COALESCE(SUM(zfs.zf_rice * unit_zis.rice_price), 0) as total_rice_value')
-            ->value('total_rice_value');
-
-        return (float) ($moneyTotal + ($riceTotal ?? 0));
     }
 
     protected function calculateZakatMalTotal(?string $startDate, ?string $endDate, ?string $year): float
