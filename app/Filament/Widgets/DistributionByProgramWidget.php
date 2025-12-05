@@ -86,7 +86,7 @@ class DistributionByProgramWidget extends ChartWidget
                         'drawOnChartArea' => false,
                     ],
                     'ticks' => [
-                        'callback' => "function(value) { return value + ' Kg'; }",
+                        'callback' => "function(value) { return parseFloat(value).toFixed(2) + ' Kg'; }",
                     ],
                 ],
             ],
