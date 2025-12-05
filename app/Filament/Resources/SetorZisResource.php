@@ -67,12 +67,17 @@ class SetorZisResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('validation')
-                    ->label('Validasi')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('upload')
-                    ->required()
-                    ->maxLength(255),
+                    ->label('Validasi'),
+                Forms\Components\FileUpload::make('upload')
+                    ->label('Bukti Setor')
+                    ->disk('cloudinary')
+                    ->directory('bukti-setor')
+                    ->visibility('public')
+                    ->acceptedFileTypes(['image/*', 'application/pdf'])
+                    ->maxSize(5120)
+                    ->openable()
+                    ->downloadable()
+                    ->required(),
             ]);
     }
 
@@ -135,6 +140,7 @@ class SetorZisResource extends Resource
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('upload')
                     ->label('Bukti Setor')
+                    ->disk('cloudinary')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
