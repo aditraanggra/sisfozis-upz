@@ -4,12 +4,18 @@ namespace App\Filament\Clusters\Dskl\Resources;
 
 use App\Filament\Clusters\Dskl;
 use App\Filament\Clusters\Dskl\Resources\DonationBoxResource\Pages;
+use App\Models\District;
 use App\Models\DonationBox;
+use App\Models\UnitZis;
+use App\Models\User;
+use App\Models\Village;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DonationBoxResource extends Resource
 {
@@ -76,7 +82,65 @@ class DonationBoxResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('trx_year')
+                    ->label('Tahun')
+                    ->options(function () {
+                        $currentYear = now()->year;
+                        $years = [];
+                        for ($year = $currentYear; $year >= 2020; $year--) {
+                            $years[$year] = (string) $year;
+                        }
+                        return $years;
+                    })
+                    ->query(
+                        fn(Builder $query, array $data): Builder =>
+                        $query->when($data['value'], fn(Builder $q, $year) => $q->whereYear('trx_date', $year))
+                    ),
+                SelectFilter::make('district')
+                    ->label('Kecamatan')
+                    ->options(fn() => District::pluck('name', 'id'))
+                    ->query(
+                        fn(Builder $query, array $data): Builder =>
+                        $query->when(
+                            $data['value'],
+                            fn(Builder $q, $districtId) =>
+                            $q->whereHas('unit', fn($q) => $q->where('district_id', $districtId))
+                        )
+                    )
+                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin()),
+                SelectFilter::make('village')
+                    ->label('Desa')
+                    ->options(function () {
+                        $user = User::current();
+                        if ($user && $user->isUpzKecamatan() && $user->district_id) {
+                            return Village::where('district_id', $user->district_id)->pluck('name', 'id');
+                        }
+                        return Village::pluck('name', 'id');
+                    })
+                    ->searchable()
+                    ->query(
+                        fn(Builder $query, array $data): Builder =>
+                        $query->when(
+                            $data['value'],
+                            fn(Builder $q, $villageId) =>
+                            $q->whereHas('unit', fn($q) => $q->where('village_id', $villageId))
+                        )
+                    )
+                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
+                SelectFilter::make('unit_id')
+                    ->label('Unit UPZ')
+                    ->options(function () {
+                        $user = User::current();
+                        if ($user && $user->isUpzKecamatan() && $user->district_id) {
+                            return UnitZis::where('district_id', $user->district_id)->pluck('unit_name', 'id');
+                        }
+                        if ($user && $user->isUpzDesa() && $user->village_id) {
+                            return UnitZis::where('village_id', $user->village_id)->pluck('unit_name', 'id');
+                        }
+                        return UnitZis::pluck('unit_name', 'id');
+                    })
+                    ->searchable()
+                    ->visible(fn() => !User::currentIsUpzDesa()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

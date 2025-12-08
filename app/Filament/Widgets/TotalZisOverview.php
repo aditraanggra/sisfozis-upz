@@ -104,14 +104,14 @@ class TotalZisOverview extends BaseWidget
 
     protected function calculateRiceTotal(?string $startDate, ?string $endDate, ?string $year): float
     {
-        $totalZakatFitrahRice = Zf::join('unit_zis', 'zfs.unit_id', '=', 'unit_zis.id')
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('zfs.trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('zfs.trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('zfs.trx_date', $year))
-            ->selectRaw('COALESCE(SUM(zfs.zf_rice), 0) as total_rice')
+        $totalZakatFitrahRice = Zf::query()
+            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->selectRaw('COALESCE(SUM(zf_rice), 0) as total_rice')
             ->value('total_rice');
 
-        return (float) ($totalZakatFitrahRice ?? 0);
+        return (float) $totalZakatFitrahRice;
     }
 
     protected function resolvePreviousPeriod(?string $startDate, ?string $endDate, ?string $year): array
