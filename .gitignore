@@ -30,3 +30,4 @@ desa_rows_edited__fix.csv
 kecamatan_rows.csv
 .qodo
 database/migrations/2025_03_09_124646_create_permission_tables.php
+SIDEBAR_COLOR_REFACTOR.md

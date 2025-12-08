@@ -215,9 +215,6 @@ class SetorZisResource extends Resource
                         if ($user && $user->isUpzKecamatan() && $user->district_id) {
                             return UnitZis::where('district_id', $user->district_id)->pluck('unit_name', 'id');
                         }
-                        if ($user && $user->isUpzDesa() && $user->village_id) {
-                            return UnitZis::where('village_id', $user->village_id)->pluck('unit_name', 'id');
-                        }
                         return UnitZis::pluck('unit_name', 'id');
                     })
                     ->searchable()

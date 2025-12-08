@@ -185,10 +185,7 @@ class DistributionResource extends Resource
                         return UnitZis::pluck('unit_name', 'id');
                     })
                     ->searchable()
-                    ->visible(fn() => !User::currentIsUpzDesa()),
-            ])
-            ->actions([
-                //Tables\Actions\EditAction::make(),
+                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan() || User::currentIsUpzDesa()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
