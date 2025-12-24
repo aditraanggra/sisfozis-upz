@@ -2,12 +2,17 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Services\RekapPendisService;
-use App\Models\UnitZis;
-use Carbon\Carbon;
 
-class RebuildRekapPendis extends Command
+/**
+ * Command to rebuild Pendis (Distribution) recapitulation data.
+ * 
+ * Extends BaseRebuildCommand to leverage standardized interface and
+ * common functionality for all rebuild operations.
+ * 
+ * @see Requirements 5.1
+ */
+class RebuildRekapPendis extends BaseRebuildCommand
 {
     /**
      * The name and signature of the console command.
@@ -15,10 +20,12 @@ class RebuildRekapPendis extends Command
      * @var string
      */
     protected $signature = 'pendis:rebuild 
-                            {--unit=all : ID unit atau "all" untuk semua unit} 
-                            {--start= : Tanggal mulai format Y-m-d} 
+                            {--unit=all : ID unit atau "all" untuk semua unit}
+                            {--start= : Tanggal mulai format Y-m-d}
                             {--end= : Tanggal akhir format Y-m-d}
-                            {--periode=all : Periode yang ingin dibangun (harian, mingguan, bulanan, tahunan, all)}';
+                            {--periode=all : Periode (harian, bulanan, tahunan, all)}
+                            {--chunk-size=50 : Jumlah unit per batch}
+                            {--queue : Jalankan sebagai background job}';
 
     /**
      * The console command description.
@@ -28,63 +35,16 @@ class RebuildRekapPendis extends Command
     protected $description = 'Membangun ulang tabel rekapitulasi Pendistribusian untuk periode tertentu';
 
     /**
-     * Execute the console command.
+     * The fully qualified class name of the rekap service to use.
      *
-     * @param RekapPendisService $rekapitulasiService
-     * @return int
+     * @var string
      */
-    public function handle(RekapPendisService $rekapitulasiPendis)
-    {
-        $unitOption = $this->option('unit');
-        $startDate = $this->option('start') ? Carbon::parse($this->option('start')) : Carbon::now()->subMonth();
-        $endDate = $this->option('end') ? Carbon::parse($this->option('end')) : Carbon::now();
-        $periode = $this->option('periode');
+    protected string $serviceClass = RekapPendisService::class;
 
-        $this->info("Membangun ulang rekapitulasi dari {$startDate->format('Y-m-d')} sampai {$endDate->format('Y-m-d')}");
-
-        // Tentukan unit yang akan dihitung
-        $units = $unitOption === 'all'
-            ? UnitZis::all()
-            : UnitZis::where('id', $unitOption)->get();
-
-        if ($units->isEmpty()) {
-            $this->error("Unit tidak ditemukan!");
-            return 1;
-        }
-
-        $bar = $this->output->createProgressBar(count($units) * $startDate->diffInDays($endDate) + 1);
-        $bar->start();
-
-        foreach ($units as $unit) {
-            $this->info("\nMemproses Unit: {$unit->name}");
-
-            // Loop melalui setiap hari dalam rentang tanggal
-            $currentDate = clone $startDate;
-            while ($currentDate <= $endDate) {
-                // Update rekapitulasi harian
-                if ($periode === 'all' || $periode === 'harian') {
-                    $rekapitulasiPendis->updateDailyRekapPendis($currentDate, $unit->id);
-                }
-
-                // Pada hari terakhir bulan, update rekapitulasi bulanan
-                if (($periode === 'all' || $periode === 'bulanan') && $currentDate->day === $currentDate->daysInMonth) {
-                    $rekapitulasiPendis->updateMonthlyRekapPendis($currentDate->month, $currentDate->year, $unit->id);
-                }
-
-                // Pada hari terakhir tahun, update rekapitulasi tahunan
-                if (($periode === 'all' || $periode === 'tahunan') && $currentDate->month === 12 && $currentDate->day === 31) {
-                    $rekapitulasiPendis->updateYearlyRekapPendis($currentDate->year, $unit->id);
-                }
-
-                $currentDate->addDay();
-                $bar->advance();
-            }
-        }
-
-        $bar->finish();
-        $this->newLine(2);
-        $this->info('Rekapitulasi berhasil dibangun ulang!');
-
-        return 0;
-    }
+    /**
+     * Human-readable name of the rekap type for display purposes.
+     *
+     * @var string
+     */
+    protected string $rekapType = 'Rekapitulasi Pendistribusian';
 }

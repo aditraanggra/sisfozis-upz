@@ -4,19 +4,269 @@ namespace App\Services;
 
 use App\Models\RekapZis;
 use App\Models\RekapAlokasi;
+use App\Models\UnitZis;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class RekapAlokasiService
+/**
+ * Service for rebuilding Alokasi (Allocation) recapitulation data.
+ * 
+ * This service calculates allocation percentages from RekapZis data
+ * to determine setor, kelola, hak amil, and pendis allocations.
+ * 
+ * Extends BaseRekapService to leverage chunked processing and bulk upsert
+ * for optimized performance when processing large datasets.
+ */
+class RekapAlokasiService extends BaseRekapService
 {
+    protected string $rekapTable = 'rekap_alokasi';
+    protected string $periodColumn = 'periode';
+    protected string $periodDateColumn = 'periode_date';
+
+    // ===== Skala pembulatan per jenis nilai =====
+    protected const RUPIAH_SCALE = 0; // rupiah bulat (INT)
+    protected const RICE_SCALE = 3;   // beras disimpan 3 desimal (kg)
+
+    // ===== Persentase kebijakan =====
+    protected const PCT_SETOR = '30';       // 30%
+    protected const PCT_AMIL_STD = '12.5';  // 12.5% (ZF & ZM)
+    protected const PCT_AMIL_IFS = '20';    // 20% (IFS)
+    protected const PCT_HAK_OP = '5';       // 5% dari SETOR
+
     /**
-     * Update or create rekap alokasi based on rekap zis data
+     * Rebuild rekap for given parameters using batch processing
+     *
+     * @param string $unitId Unit ID or 'all' for all units
+     * @param string $periode Period type: harian, bulanan, tahunan, or all
+     * @param Carbon|null $startDate Start date for rebuild
+     * @param Carbon|null $endDate End date for rebuild
+     * @return array Results with 'processed' count and 'errors' array
+     */
+    public function rebuild(
+        string $unitId = 'all',
+        string $periode = 'all',
+        ?Carbon $startDate = null,
+        ?Carbon $endDate = null
+    ): array {
+        $startDate = $startDate ?? $this->getDefaultStartDate();
+        $endDate = $endDate ?? $this->getDefaultEndDate();
+
+        $unitQuery = $unitId === 'all'
+            ? UnitZis::query()
+            : UnitZis::where('id', $unitId);
+
+        return $this->processInChunks($unitQuery, function ($unit) use ($periode, $startDate, $endDate) {
+            $this->rebuildForUnit($unit->id, $periode, $startDate, $endDate);
+        });
+    }
+
+    /**
+     * Rebuild rekap for a specific unit
+     *
+     * @param int $unitId
+     * @param string $periode
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     */
+    protected function rebuildForUnit(
+        int $unitId,
+        string $periode,
+        Carbon $startDate,
+        Carbon $endDate
+    ): void {
+        $records = [];
+
+        if ($periode === 'all' || $periode === 'harian') {
+            $records = array_merge($records, $this->buildRecordsForPeriode($unitId, 'harian', $startDate, $endDate));
+        }
+
+        if ($periode === 'all' || $periode === 'bulanan') {
+            $records = array_merge($records, $this->buildRecordsForPeriode($unitId, 'bulanan', $startDate, $endDate));
+        }
+
+        if ($periode === 'all' || $periode === 'tahunan') {
+            $records = array_merge($records, $this->buildRecordsForPeriode($unitId, 'tahunan', $startDate, $endDate));
+        }
+
+        if (!empty($records)) {
+            $this->bulkUpsert($records);
+        }
+    }
+
+    /**
+     * Build records for a specific periode from RekapZis data
+     *
+     * @param int $unitId
+     * @param string $periode
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return array
+     */
+    protected function buildRecordsForPeriode(
+        int $unitId,
+        string $periode,
+        Carbon $startDate,
+        Carbon $endDate
+    ): array {
+        $rekapZisData = $this->getAggregatedData($unitId, $startDate, $endDate, $periode);
+
+        return collect($rekapZisData)->map(function ($data) use ($unitId, $periode) {
+            return $this->buildRekapRecord($unitId, $periode, $data);
+        })->toArray();
+    }
+
+    /**
+     * Build a single rekap record with BCMath calculations
+     *
+     * @param int $unitId
+     * @param string $periode
+     * @param object $data
+     * @return array
+     */
+    protected function buildRekapRecord(int $unitId, string $periode, object $data): array
+    {
+        // Convert values to string for BCMath
+        $totZfAmount = $this->numStr($data->total_zf_amount ?? 0, self::RUPIAH_SCALE);
+        $totZfRice = $this->numStr($data->total_zf_rice ?? 0, self::RICE_SCALE);
+        $totZmAmount = $this->numStr($data->total_zm_amount ?? 0, self::RUPIAH_SCALE);
+        $totIfsAmount = $this->numStr($data->total_ifs_amount ?? 0, self::RUPIAH_SCALE);
+
+        // ===== 1) SETOR (dibulatkan per skala), KELOLA = TOTAL − SETOR =====
+        // ZF Amount
+        $totalSetorZfAmount = $this->bcPercent($totZfAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+        $totalKelolaZfAmount = bcsub($totZfAmount, $totalSetorZfAmount, self::RUPIAH_SCALE);
+
+        // ZF Rice
+        $totalSetorZfRice = $this->bcPercent($totZfRice, self::PCT_SETOR, self::RICE_SCALE);
+        $totalKelolaZfRice = bcsub($totZfRice, $totalSetorZfRice, self::RICE_SCALE);
+
+        // ZM Amount
+        $totalSetorZm = $this->bcPercent($totZmAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+        $totalKelolaZm = bcsub($totZmAmount, $totalSetorZm, self::RUPIAH_SCALE);
+
+        // IFS Amount
+        $totalSetorIfs = $this->bcPercent($totIfsAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+        $totalKelolaIfs = bcsub($totIfsAmount, $totalSetorIfs, self::RUPIAH_SCALE);
+
+        // ===== 2) Hak Amil dihitung dari KELOLA; Pendis = KELOLA − Amil =====
+        // ZF
+        $hakAmilZfAmount = $this->bcPercent($totalKelolaZfAmount, self::PCT_AMIL_STD, self::RUPIAH_SCALE);
+        $alokasiPendisZfAmount = bcsub($totalKelolaZfAmount, $hakAmilZfAmount, self::RUPIAH_SCALE);
+
+        $hakAmilZfRice = $this->bcPercent($totalKelolaZfRice, self::PCT_AMIL_STD, self::RICE_SCALE);
+        $alokasiPendisZfRice = bcsub($totalKelolaZfRice, $hakAmilZfRice, self::RICE_SCALE);
+
+        // ZM
+        $hakAmilZm = $this->bcPercent($totalKelolaZm, self::PCT_AMIL_STD, self::RUPIAH_SCALE);
+        $alokasiPendisZm = bcsub($totalKelolaZm, $hakAmilZm, self::RUPIAH_SCALE);
+
+        // IFS
+        $hakAmilIfs = $this->bcPercent($totalKelolaIfs, self::PCT_AMIL_IFS, self::RUPIAH_SCALE);
+        $alokasiPendisIfs = bcsub($totalKelolaIfs, $hakAmilIfs, self::RUPIAH_SCALE);
+
+        // ===== 3) Hak Operasional 5% dari SETOR =====
+        $hakOpZfAmount = $this->bcPercent($totalSetorZfAmount, self::PCT_HAK_OP, self::RUPIAH_SCALE);
+        $hakOpZfRice = $this->bcPercent($totalSetorZfRice, self::PCT_HAK_OP, self::RICE_SCALE);
+
+        return [
+            'unit_id' => $unitId,
+            'periode' => $periode,
+            'periode_date' => $data->period_date,
+            'total_setor_zf_amount' => (int) $totalSetorZfAmount,
+            'total_setor_zf_rice' => $totalSetorZfRice,
+            'total_setor_zm' => (int) $totalSetorZm,
+            'total_setor_ifs' => (int) $totalSetorIfs,
+            'total_kelola_zf_amount' => (int) $totalKelolaZfAmount,
+            'total_kelola_zf_rice' => $totalKelolaZfRice,
+            'total_kelola_zm' => (int) $totalKelolaZm,
+            'total_kelola_ifs' => (int) $totalKelolaIfs,
+            'hak_amil_zf_amount' => (int) $hakAmilZfAmount,
+            'hak_amil_zf_rice' => $hakAmilZfRice,
+            'hak_amil_zm' => (int) $hakAmilZm,
+            'hak_amil_ifs' => (int) $hakAmilIfs,
+            'alokasi_pendis_zf_amount' => (int) $alokasiPendisZfAmount,
+            'alokasi_pendis_zf_rice' => $alokasiPendisZfRice,
+            'alokasi_pendis_zm' => (int) $alokasiPendisZm,
+            'alokasi_pendis_ifs' => (int) $alokasiPendisIfs,
+            'hak_op_zf_amount' => (int) $hakOpZfAmount,
+            'hak_op_zf_rice' => $hakOpZfRice,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+    }
+
+    /**
+     * Get RekapZis data for a unit and date range
+     *
+     * @param int $unitId
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param string $periode Period type: harian, bulanan, tahunan
+     * @return array
+     */
+    protected function getAggregatedData(
+        int $unitId,
+        Carbon $startDate,
+        Carbon $endDate,
+        string $periode = 'harian'
+    ): array {
+        return DB::table('rekap_zis')
+            ->where('unit_id', $unitId)
+            ->where('period', $periode)
+            ->whereBetween('period_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->select([
+                'period_date',
+                'total_zf_amount',
+                'total_zf_rice',
+                'total_zm_amount',
+                'total_ifs_amount',
+            ])
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * BCMath percentage calculation
+     *
+     * @param string $value
+     * @param string $percent
+     * @param int $scale
+     * @return string
+     */
+    protected function bcPercent(string $value, string $percent, int $scale = 0): string
+    {
+        $mul = bcmul($value, $percent, $scale + 4);
+        return bcdiv($mul, '100', $scale);
+    }
+
+    /**
+     * Convert value to numeric string for BCMath
+     *
+     * @param mixed $v
+     * @param int $scale
+     * @return string
+     */
+    protected function numStr($v, int $scale = 0): string
+    {
+        if ($v === null || $v === '') {
+            return $scale > 0 ? ('0.' . str_repeat('0', $scale)) : '0';
+        }
+        return (string) $v;
+    }
+
+    // =========================================================================
+    // Legacy methods for backward compatibility
+    // =========================================================================
+
+    /**
+     * Update or create rekap alokasi based on rekap zis data (legacy method)
      *
      * @param int $unitId
      * @param string $period
      * @return RekapAlokasi
      */
-    /* public function updateOrCreateRekapAlokasi(int $unitId, string $period): RekapAlokasi
+    public function updateOrCreateRekapAlokasi(int $unitId, string $period): RekapAlokasi
     {
         try {
             DB::beginTransaction();
@@ -30,29 +280,41 @@ class RekapAlokasiService
                 throw new \Exception("RekapZis record not found for unit_id: {$unitId} and period: {$period}");
             }
 
-            // Calculate allocation values based on the formulas
-            $totalSetorZfAmount = $rekapZis->total_zf_amount * 0.3;
-            $totalSetorZfRice = $rekapZis->total_zf_rice * 0.3;
-            $totalSetorZm = $rekapZis->total_zm_amount * 0.3;
-            $totalSetorIfs = $rekapZis->total_ifs_amount * 0.3;
+            // Convert values to string for BCMath
+            $totZfAmount = $this->numStr($rekapZis->total_zf_amount, self::RUPIAH_SCALE);
+            $totZfRice = $this->numStr($rekapZis->total_zf_rice, self::RICE_SCALE);
+            $totZmAmount = $this->numStr($rekapZis->total_zm_amount, self::RUPIAH_SCALE);
+            $totIfsAmount = $this->numStr($rekapZis->total_ifs_amount, self::RUPIAH_SCALE);
 
-            $totalKelolaZfAmount = $rekapZis->total_zf_amount * 0.7;
-            $totalKelolaZfRice = $rekapZis->total_zf_rice * 0.7;
-            $totalKelolaZm = $rekapZis->total_zm_amount * 0.7;
-            $totalKelolaIfs = $rekapZis->total_ifs_amount * 0.7;
+            // ===== 1) SETOR (dibulatkan per skala), KELOLA = TOTAL − SETOR =====
+            $totalSetorZfAmount = $this->bcPercent($totZfAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+            $totalKelolaZfAmount = bcsub($totZfAmount, $totalSetorZfAmount, self::RUPIAH_SCALE);
 
-            $hakAmilZfAmount = $totalKelolaZfAmount * 0.125;
-            $hakAmilZfRice = $totalKelolaZfRice * 0.125;
-            $hakAmilZm = $totalKelolaZm * 0.125;
-            $hakAmilIfs = $totalKelolaIfs * 0.2;
+            $totalSetorZfRice = $this->bcPercent($totZfRice, self::PCT_SETOR, self::RICE_SCALE);
+            $totalKelolaZfRice = bcsub($totZfRice, $totalSetorZfRice, self::RICE_SCALE);
 
-            $alokasiPendisZfAmount = $totalKelolaZfAmount * 0.875;
-            $alokasiPendisZfRice = $totalKelolaZfRice * 0.875;
-            $alokasiPendisZm = $totalKelolaZm * 0.875;
-            $alokasiPendisIfs = $totalKelolaIfs * 0.8;
+            $totalSetorZm = $this->bcPercent($totZmAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+            $totalKelolaZm = bcsub($totZmAmount, $totalSetorZm, self::RUPIAH_SCALE);
 
-            $hakOpZfAmount = $totalSetorZfAmount * 0.05;
-            $hakOpZfRice = $totalSetorZfRice * 0.05;
+            $totalSetorIfs = $this->bcPercent($totIfsAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+            $totalKelolaIfs = bcsub($totIfsAmount, $totalSetorIfs, self::RUPIAH_SCALE);
+
+            // ===== 2) Hak Amil dihitung dari KELOLA; Pendis = KELOLA − Amil =====
+            $hakAmilZfAmount = $this->bcPercent($totalKelolaZfAmount, self::PCT_AMIL_STD, self::RUPIAH_SCALE);
+            $alokasiPendisZfAmount = bcsub($totalKelolaZfAmount, $hakAmilZfAmount, self::RUPIAH_SCALE);
+
+            $hakAmilZfRice = $this->bcPercent($totalKelolaZfRice, self::PCT_AMIL_STD, self::RICE_SCALE);
+            $alokasiPendisZfRice = bcsub($totalKelolaZfRice, $hakAmilZfRice, self::RICE_SCALE);
+
+            $hakAmilZm = $this->bcPercent($totalKelolaZm, self::PCT_AMIL_STD, self::RUPIAH_SCALE);
+            $alokasiPendisZm = bcsub($totalKelolaZm, $hakAmilZm, self::RUPIAH_SCALE);
+
+            $hakAmilIfs = $this->bcPercent($totalKelolaIfs, self::PCT_AMIL_IFS, self::RUPIAH_SCALE);
+            $alokasiPendisIfs = bcsub($totalKelolaIfs, $hakAmilIfs, self::RUPIAH_SCALE);
+
+            // ===== 3) Hak Operasional 5% dari SETOR =====
+            $hakOpZfAmount = $this->bcPercent($totalSetorZfAmount, self::PCT_HAK_OP, self::RUPIAH_SCALE);
+            $hakOpZfRice = $this->bcPercent($totalSetorZfRice, self::PCT_HAK_OP, self::RICE_SCALE);
 
             // Update or create rekap_alokasi record
             $rekapAlokasi = RekapAlokasi::updateOrCreate(
@@ -62,149 +324,24 @@ class RekapAlokasiService
                 ],
                 [
                     'periode_date' => $rekapZis->period_date,
-                    'total_setor_zf_amount' => $totalSetorZfAmount,
+                    'total_setor_zf_amount' => (int) $totalSetorZfAmount,
                     'total_setor_zf_rice' => $totalSetorZfRice,
-                    'total_setor_zm' => $totalSetorZm,
-                    'total_setor_ifs' => $totalSetorIfs,
-                    'total_kelola_zf_amount' => $totalKelolaZfAmount,
+                    'total_setor_zm' => (int) $totalSetorZm,
+                    'total_setor_ifs' => (int) $totalSetorIfs,
+                    'total_kelola_zf_amount' => (int) $totalKelolaZfAmount,
                     'total_kelola_zf_rice' => $totalKelolaZfRice,
-                    'total_kelola_zm' => $totalKelolaZm,
-                    'total_kelola_ifs' => $totalKelolaIfs,
-                    'hak_amil_zf_amount' => $hakAmilZfAmount,
+                    'total_kelola_zm' => (int) $totalKelolaZm,
+                    'total_kelola_ifs' => (int) $totalKelolaIfs,
+                    'hak_amil_zf_amount' => (int) $hakAmilZfAmount,
                     'hak_amil_zf_rice' => $hakAmilZfRice,
-                    'hak_amil_zm' => $hakAmilZm,
-                    'hak_amil_ifs' => $hakAmilIfs,
-                    'alokasi_pendis_zf_amount' => $alokasiPendisZfAmount,
+                    'hak_amil_zm' => (int) $hakAmilZm,
+                    'hak_amil_ifs' => (int) $hakAmilIfs,
+                    'alokasi_pendis_zf_amount' => (int) $alokasiPendisZfAmount,
                     'alokasi_pendis_zf_rice' => $alokasiPendisZfRice,
-                    'alokasi_pendis_zm' => $alokasiPendisZm,
-                    'alokasi_pendis_ifs' => $alokasiPendisIfs,
-                    'hak_op_zf_amount' => $hakOpZfAmount,
+                    'alokasi_pendis_zm' => (int) $alokasiPendisZm,
+                    'alokasi_pendis_ifs' => (int) $alokasiPendisIfs,
+                    'hak_op_zf_amount' => (int) $hakOpZfAmount,
                     'hak_op_zf_rice' => $hakOpZfRice,
-                ]
-            );
-
-            DB::commit();
-            return $rekapAlokasi;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error updating rekap alokasi: ' . $e->getMessage());
-            throw $e;
-        }
-    } */
-
-    public function updateOrCreateRekapAlokasi(int $unitId, string $period): RekapAlokasi
-    {
-        // ===== Helper BCMath (tanpa float) =====
-        $bcPercent = function (string $value, string $percent, int $scale = 0): string {
-            // (value * percent) / 100  dengan extra presisi lalu di-scale ke target
-            $mul = bcmul($value, $percent, $scale + 4);
-            return bcdiv($mul, '100', $scale);
-        };
-        $numStr = function ($v, int $scale = 0): string {
-            if ($v === null || $v === '') {
-                return $scale > 0 ? ('0.' . str_repeat('0', $scale)) : '0';
-            }
-            return (string) $v;
-        };
-
-        // ===== Skala pembulatan per jenis nilai =====
-        $RUPIAH_SCALE = 0; // rupiah bulat (INT)
-        $RICE_SCALE   = 3; // contoh: beras disimpan 3 desimal (kg)
-
-        // ===== Persentase kebijakan =====
-        $PCT_SETOR       = '30';    // 30%
-        $PCT_AMIL_STD    = '12.5';  // 12.5% (ZF & ZM)
-        $PCT_AMIL_IFS    = '20';    // 20% (IFS)
-        $PCT_HAK_OP      = '5';     // 5% dari SETOR
-
-        try {
-            DB::beginTransaction();
-
-            // Get rekap_zis data
-            $rekapZis = RekapZis::where('unit_id', $unitId)
-                ->where('period', $period)
-                ->first();
-
-            if (!$rekapZis) {
-                throw new \Exception("RekapZis record not found for unit_id: {$unitId} and period: {$period}");
-            }
-
-            // ===== Tarik total sebagai string numerik (aman untuk BCMath) =====
-            $totZfAmount  = $numStr($rekapZis->total_zf_amount,  $RUPIAH_SCALE);
-            $totZfRice    = $numStr($rekapZis->total_zf_rice,    $RICE_SCALE);
-            $totZmAmount  = $numStr($rekapZis->total_zm_amount,  $RUPIAH_SCALE);
-            $totIfsAmount = $numStr($rekapZis->total_ifs_amount, $RUPIAH_SCALE);
-
-            // ===== 1) SETOR (dibulatkan per skala), KELOLA = TOTAL − SETOR =====
-            // ZF Amount
-            $totalSetorZfAmount   = $bcPercent($totZfAmount, $PCT_SETOR, $RUPIAH_SCALE);
-            $totalKelolaZfAmount  = bcsub($totZfAmount, $totalSetorZfAmount, $RUPIAH_SCALE);
-
-            // ZF Rice
-            $totalSetorZfRice     = $bcPercent($totZfRice, $PCT_SETOR, $RICE_SCALE);
-            $totalKelolaZfRice    = bcsub($totZfRice, $totalSetorZfRice, $RICE_SCALE);
-
-            // ZM Amount
-            $totalSetorZm         = $bcPercent($totZmAmount, $PCT_SETOR, $RUPIAH_SCALE);
-            $totalKelolaZm        = bcsub($totZmAmount, $totalSetorZm, $RUPIAH_SCALE);
-
-            // IFS Amount
-            $totalSetorIfs        = $bcPercent($totIfsAmount, $PCT_SETOR, $RUPIAH_SCALE);
-            $totalKelolaIfs       = bcsub($totIfsAmount, $totalSetorIfs, $RUPIAH_SCALE);
-
-            // ===== 2) Hak Amil dihitung dari KELOLA; Pendis = KELOLA − Amil =====
-            // ZF
-            $hakAmilZfAmount         = $bcPercent($totalKelolaZfAmount, $PCT_AMIL_STD, $RUPIAH_SCALE);
-            $alokasiPendisZfAmount   = bcsub($totalKelolaZfAmount, $hakAmilZfAmount, $RUPIAH_SCALE);
-
-            $hakAmilZfRice           = $bcPercent($totalKelolaZfRice, $PCT_AMIL_STD, $RICE_SCALE);
-            $alokasiPendisZfRice     = bcsub($totalKelolaZfRice, $hakAmilZfRice, $RICE_SCALE);
-
-            // ZM
-            $hakAmilZm               = $bcPercent($totalKelolaZm, $PCT_AMIL_STD, $RUPIAH_SCALE);
-            $alokasiPendisZm         = bcsub($totalKelolaZm, $hakAmilZm, $RUPIAH_SCALE);
-
-            // IFS
-            $hakAmilIfs              = $bcPercent($totalKelolaIfs, $PCT_AMIL_IFS, $RUPIAH_SCALE);
-            $alokasiPendisIfs        = bcsub($totalKelolaIfs, $hakAmilIfs, $RUPIAH_SCALE);
-
-            // ===== 3) Hak Operasional 5% dari SETOR =====
-            $hakOpZfAmount           = $bcPercent($totalSetorZfAmount, $PCT_HAK_OP, $RUPIAH_SCALE);
-            $hakOpZfRice             = $bcPercent($totalSetorZfRice,   $PCT_HAK_OP, $RICE_SCALE);
-
-            // ===== 4) Simpan (casting sesuai tipe kolom Anda) =====
-            // Asumsi: kolom amount bertipe INT/NUMERIC(,0) → cast ke int.
-            //         kolom rice bertipe DECIMAL(,3)       → simpan string 3 desimal (aman).
-            $rekapAlokasi = RekapAlokasi::updateOrCreate(
-                [
-                    'unit_id' => $unitId,
-                    'periode' => $period, // sesuai skema Anda
-                ],
-                [
-                    'periode_date'               => $rekapZis->period_date,
-
-                    'total_setor_zf_amount'      => (int) $totalSetorZfAmount,
-                    'total_setor_zf_rice'        => $totalSetorZfRice,     // "12.345"
-                    'total_setor_zm'             => (int) $totalSetorZm,
-                    'total_setor_ifs'            => (int) $totalSetorIfs,
-
-                    'total_kelola_zf_amount'     => (int) $totalKelolaZfAmount,
-                    'total_kelola_zf_rice'       => $totalKelolaZfRice,
-                    'total_kelola_zm'            => (int) $totalKelolaZm,
-                    'total_kelola_ifs'           => (int) $totalKelolaIfs,
-
-                    'hak_amil_zf_amount'         => (int) $hakAmilZfAmount,
-                    'hak_amil_zf_rice'           => $hakAmilZfRice,
-                    'hak_amil_zm'                => (int) $hakAmilZm,
-                    'hak_amil_ifs'               => (int) $hakAmilIfs,
-
-                    'alokasi_pendis_zf_amount'   => (int) $alokasiPendisZfAmount,
-                    'alokasi_pendis_zf_rice'     => $alokasiPendisZfRice,
-                    'alokasi_pendis_zm'          => (int) $alokasiPendisZm,
-                    'alokasi_pendis_ifs'         => (int) $alokasiPendisIfs,
-
-                    'hak_op_zf_amount'           => (int) $hakOpZfAmount,
-                    'hak_op_zf_rice'             => $hakOpZfRice,
                 ]
             );
 
@@ -218,7 +355,7 @@ class RekapAlokasiService
     }
 
     /**
-     * Update all rekap alokasi records
+     * Update all rekap alokasi records (legacy method)
      *
      * @return array
      */
@@ -229,11 +366,10 @@ class RekapAlokasiService
 
         foreach ($rekapZisRecords as $rekapZis) {
             try {
-                // Ensure both unit_id and period are not null before calling updateOrCreateRekapAlokasi
                 if ($rekapZis->unit_id !== null && $rekapZis->period !== null) {
                     $rekapAlokasi = $this->updateOrCreateRekapAlokasi(
-                        (int)$rekapZis->unit_id,
-                        (string)$rekapZis->period
+                        (int) $rekapZis->unit_id,
+                        (string) $rekapZis->period
                     );
 
                     $results[] = [
@@ -242,7 +378,6 @@ class RekapAlokasiService
                         'status' => 'success'
                     ];
                 } else {
-                    // Log and record error for records with null values
                     $errorMessage = 'Missing required data: ' .
                         ($rekapZis->unit_id === null ? 'unit_id is null' : '') .
                         ($rekapZis->period === null ? 'period is null' : '');
