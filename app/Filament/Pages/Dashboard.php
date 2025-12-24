@@ -57,8 +57,9 @@ class Dashboard extends \Filament\Pages\Dashboard
             \App\Filament\Widgets\AllZisOverview::class,
             \App\Filament\Widgets\MuzakiChart::class,
             \App\Filament\Widgets\ZisChart::class,
-            \App\Filament\Widgets\ZisPerKecamatanTable::class,
-            \App\Filament\Widgets\ZisPerDesaTable::class,
+            \App\Filament\Widgets\Top10KecamatanChart::class,
+            \App\Filament\Widgets\Top10DesaChart::class,
+            \App\Filament\Widgets\Top10DkmChart::class,
         ];
     }
 }
