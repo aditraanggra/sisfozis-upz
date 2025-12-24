@@ -43,6 +43,31 @@ return [
             'after_commit' => false,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Rebuild Queue Connection
+        |--------------------------------------------------------------------------
+        |
+        | Dedicated queue connection for rebuild rekap jobs. Uses longer retry_after
+        | to accommodate long-running rebuild operations (up to 1 hour timeout).
+        |
+        | Usage:
+        |   - Development: php artisan queue:work --queue=rebuild
+        |   - Production: Configure supervisor to run a dedicated worker
+        |
+        | @see App\Jobs\RebuildRekapJob
+        | @see Requirements 2.1
+        |
+        */
+        'rebuild' => [
+            'driver' => 'database',
+            'connection' => env('DB_QUEUE_CONNECTION'),
+            'table' => env('DB_QUEUE_TABLE', 'jobs'),
+            'queue' => 'rebuild',
+            'retry_after' => (int) env('REBUILD_QUEUE_RETRY_AFTER', 3700), // 1 hour + buffer
+            'after_commit' => true, // Ensure database transactions complete before job runs
+        ],
+
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => env('BEANSTALKD_QUEUE_HOST', 'localhost'),
