@@ -19,7 +19,9 @@ class RebuildRekapAlokasi extends BaseRebuildCommand
      *
      * @var string
      */
-    protected $signature = 'alokasi:rebuild 
+
+    protected $signature = 'rekap:rebuild-alokasi 
+
                             {--unit=all : ID unit atau "all" untuk semua unit}
                             {--start= : Tanggal mulai format Y-m-d}
                             {--end= : Tanggal akhir format Y-m-d}

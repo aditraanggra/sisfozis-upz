@@ -19,7 +19,9 @@ class RebuildRekapSetor extends BaseRebuildCommand
      *
      * @var string
      */
-    protected $signature = 'setor:rebuild 
+
+    protected $signature = 'rekap:rebuild-setor 
+
                             {--unit=all : ID unit atau "all" untuk semua unit}
                             {--start= : Tanggal mulai format Y-m-d}
                             {--end= : Tanggal akhir format Y-m-d}
