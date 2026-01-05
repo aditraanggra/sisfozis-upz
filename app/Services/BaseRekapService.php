@@ -83,7 +83,9 @@ abstract class BaseRekapService
      * @param int $unitId The unit ID
      * @param Carbon $startDate Start date
      * @param Carbon $endDate End date
+
      * @param string $groupBy Grouping type: daily, monthly, yearly
+
      * @return array Aggregated data
      */
     abstract protected function getAggregatedData(
