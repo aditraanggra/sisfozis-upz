@@ -19,7 +19,7 @@ class RebuildRekapitulasi extends BaseRebuildCommand
      *
      * @var string
      */
-    protected $signature = 'zis:rebuild-rekapitulasi 
+    protected $signature = 'rekap:rebuild-zis 
                             {--unit=all : ID unit atau "all" untuk semua unit}
                             {--start= : Tanggal mulai format Y-m-d}
                             {--end= : Tanggal akhir format Y-m-d}

@@ -19,7 +19,7 @@ class RebuildRekapHakAmil extends BaseRebuildCommand
      *
      * @var string
      */
-    protected $signature = 'amil:rebuild 
+    protected $signature = 'rekap:rebuild-hak-amil 
                             {--unit=all : ID unit atau "all" untuk semua unit}
                             {--start= : Tanggal mulai format Y-m-d}
                             {--end= : Tanggal akhir format Y-m-d}
