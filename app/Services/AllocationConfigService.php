@@ -23,11 +23,13 @@ class AllocationConfigService
         $year = $date instanceof Carbon ? $date->year : Carbon::parse($date)->year;
         $config = $this->getConfigForYear($zisType, $year);
 
+        $penyaluran = number_format(100 - (float) $config['amil_percentage'], 2, '.', '');
+
         return [
             'setor' => $config['setor_percentage'],
             'kelola' => $config['kelola_percentage'],
             'amil' => $config['amil_percentage'],
-            'penyaluran' => bcsub('100', $config['amil_percentage'], 2),
+            'penyaluran' => $penyaluran,
         ];
     }
 
@@ -69,10 +71,12 @@ class AllocationConfigService
      */
     public function calculateHakAmil(string $kelolaAmount, string $amilPercentage, int $scale = 2): string
     {
-        if (bccomp($kelolaAmount, '0', $scale) === 0) {
+        $kelola = (float) $kelolaAmount;
+        if ($kelola == 0) {
             return '0';
         }
-        return bcdiv(bcmul($kelolaAmount, $amilPercentage, $scale + 2), '100', $scale);
+        $result = ($kelola * (float) $amilPercentage) / 100;
+        return number_format($result, $scale, '.', '');
     }
 
     /**
@@ -81,10 +85,12 @@ class AllocationConfigService
      */
     public function calculatePenyaluran(string $kelolaAmount, string $hakAmilAmount, int $scale = 2): string
     {
-        if (bccomp($kelolaAmount, '0', $scale) === 0) {
+        $kelola = (float) $kelolaAmount;
+        if ($kelola == 0) {
             return '0';
         }
-        return bcsub($kelolaAmount, $hakAmilAmount, $scale);
+        $result = $kelola - (float) $hakAmilAmount;
+        return number_format($result, $scale, '.', '');
     }
 
     /**
