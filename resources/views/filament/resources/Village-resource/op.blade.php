@@ -81,7 +81,7 @@
                 <th rowspan="2">No</th>
                 <th rowspan="2">No Register</th>
                 <th rowspan="2">Unit Pengumpul Zakat (UPZ)</th>
-                <th colspan="1">Setor ZF (30%)</th>
+                <th colspan="1">Setor ZF ({{ $allocations['zf']['setor'] }}%)</th>
                 <th colspan="1">Hak OP (5%)</th>
                 <th rowspan="2">Jumlah Muzakki</th>
                 <th rowspan="2">Total Transaksi ZF</th>
@@ -93,11 +93,12 @@
         </thead>
         <tbody>
             @php $no = 1; @endphp
+            @php $zfSetorPct = $allocations['zf']['setor'] / 100; @endphp
             @foreach($rekapZis->sortBy('unit.category_id') as $rekap)
             @php
             $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
             $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
-            $setor_zf = $total_zf * 0.3;
+            $setor_zf = $total_zf * $zfSetorPct;
             $hak_op = $setor_zf * 0.05;
             $jml_baris_transaksi = $rekap->zf->count();
             @endphp
@@ -113,19 +114,20 @@
             @endforeach
         </tbody>
         @if($rekapZis->isNotEmpty())
+        @php $zfSetorPctFooter = $allocations['zf']['setor'] / 100; @endphp
         <tfoot>
             <tr class="bold">
                 <td colspan="2">Total Penerimaan</td>
                 <td></td>
-                <td>{{ number_format($rekapZis->sum(function($rekap) {
+                <td>{{ number_format($rekapZis->sum(function($rekap) use ($zfSetorPctFooter) {
                     $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
                     $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
-                    return $total_zf * 0.3;
+                    return $total_zf * $zfSetorPctFooter;
                 }), 2) }}</td>
-                <td>{{ number_format($rekapZis->sum(function($rekap) {
+                <td>{{ number_format($rekapZis->sum(function($rekap) use ($zfSetorPctFooter) {
                     $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
                     $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
-                    $setor_zf = $total_zf * 0.3;
+                    $setor_zf = $total_zf * $zfSetorPctFooter;
                     return $setor_zf * 0.05;
                 }), 2) }}</td>
                 <td>{{ $rekapZis->sum('total_zf_muzakki') }}</td>

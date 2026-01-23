@@ -29,10 +29,23 @@ class RekapAlokasiService extends BaseRekapService
     protected const RICE_SCALE = 3;   // beras disimpan 3 desimal (kg)
 
     // ===== Persentase kebijakan =====
-    protected const PCT_SETOR = '30';       // 30%
-    protected const PCT_AMIL_STD = '12.5';  // 12.5% (ZF & ZM)
-    protected const PCT_AMIL_IFS = '20';    // 20% (IFS)
+    // PCT_HAK_OP is kept as it's not part of the allocation config
     protected const PCT_HAK_OP = '5';       // 5% dari SETOR
+
+    /**
+     * AllocationConfigService instance for dynamic percentage retrieval
+     */
+    protected AllocationConfigService $allocationConfigService;
+
+    /**
+     * Create a new RekapAlokasiService instance.
+     *
+     * @param AllocationConfigService $allocationConfigService
+     */
+    public function __construct(AllocationConfigService $allocationConfigService)
+    {
+        $this->allocationConfigService = $allocationConfigService;
+    }
 
     /**
      * Rebuild rekap for given parameters using batch processing
@@ -126,6 +139,14 @@ class RekapAlokasiService extends BaseRekapService
      */
     protected function buildRekapRecord(int $unitId, string $periode, object $data): array
     {
+        // Get the period date for allocation lookup
+        $date = $data->period_date;
+
+        // Get dynamic percentages for each ZIS type
+        $zfAlloc = $this->allocationConfigService->getAllocation('zf', $date);
+        $zmAlloc = $this->allocationConfigService->getAllocation('zm', $date);
+        $ifsAlloc = $this->allocationConfigService->getAllocation('ifs', $date);
+
         // Convert values to string for BCMath
         $totZfAmount = $this->numStr($data->total_zf_amount ?? 0, self::RUPIAH_SCALE);
         $totZfRice = $this->numStr($data->total_zf_rice ?? 0, self::RICE_SCALE);
@@ -133,37 +154,60 @@ class RekapAlokasiService extends BaseRekapService
         $totIfsAmount = $this->numStr($data->total_ifs_amount ?? 0, self::RUPIAH_SCALE);
 
         // ===== 1) SETOR (dibulatkan per skala), KELOLA = TOTAL − SETOR =====
-        // ZF Amount
-        $totalSetorZfAmount = $this->bcPercent($totZfAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+        // ZF Amount - using dynamic percentage
+        $totalSetorZfAmount = $this->bcPercent($totZfAmount, $zfAlloc['setor'], self::RUPIAH_SCALE);
         $totalKelolaZfAmount = bcsub($totZfAmount, $totalSetorZfAmount, self::RUPIAH_SCALE);
 
-        // ZF Rice
-        $totalSetorZfRice = $this->bcPercent($totZfRice, self::PCT_SETOR, self::RICE_SCALE);
+        // ZF Rice - using dynamic percentage
+        $totalSetorZfRice = $this->bcPercent($totZfRice, $zfAlloc['setor'], self::RICE_SCALE);
         $totalKelolaZfRice = bcsub($totZfRice, $totalSetorZfRice, self::RICE_SCALE);
 
-        // ZM Amount
-        $totalSetorZm = $this->bcPercent($totZmAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+        // ZM Amount - using dynamic percentage
+        $totalSetorZm = $this->bcPercent($totZmAmount, $zmAlloc['setor'], self::RUPIAH_SCALE);
         $totalKelolaZm = bcsub($totZmAmount, $totalSetorZm, self::RUPIAH_SCALE);
 
-        // IFS Amount
-        $totalSetorIfs = $this->bcPercent($totIfsAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+        // IFS Amount - using dynamic percentage
+        $totalSetorIfs = $this->bcPercent($totIfsAmount, $ifsAlloc['setor'], self::RUPIAH_SCALE);
         $totalKelolaIfs = bcsub($totIfsAmount, $totalSetorIfs, self::RUPIAH_SCALE);
 
         // ===== 2) Hak Amil dihitung dari KELOLA; Pendis = KELOLA − Amil =====
-        // ZF
-        $hakAmilZfAmount = $this->bcPercent($totalKelolaZfAmount, self::PCT_AMIL_STD, self::RUPIAH_SCALE);
-        $alokasiPendisZfAmount = bcsub($totalKelolaZfAmount, $hakAmilZfAmount, self::RUPIAH_SCALE);
+        // Handle zero kelola case (Requirement 10.3)
 
-        $hakAmilZfRice = $this->bcPercent($totalKelolaZfRice, self::PCT_AMIL_STD, self::RICE_SCALE);
-        $alokasiPendisZfRice = bcsub($totalKelolaZfRice, $hakAmilZfRice, self::RICE_SCALE);
+        // ZF Amount
+        if (bccomp($totalKelolaZfAmount, '0', self::RUPIAH_SCALE) === 0) {
+            $hakAmilZfAmount = '0';
+            $alokasiPendisZfAmount = '0';
+        } else {
+            $hakAmilZfAmount = $this->bcPercent($totalKelolaZfAmount, $zfAlloc['amil'], self::RUPIAH_SCALE);
+            $alokasiPendisZfAmount = bcsub($totalKelolaZfAmount, $hakAmilZfAmount, self::RUPIAH_SCALE);
+        }
 
-        // ZM
-        $hakAmilZm = $this->bcPercent($totalKelolaZm, self::PCT_AMIL_STD, self::RUPIAH_SCALE);
-        $alokasiPendisZm = bcsub($totalKelolaZm, $hakAmilZm, self::RUPIAH_SCALE);
+        // ZF Rice
+        if (bccomp($totalKelolaZfRice, '0', self::RICE_SCALE) === 0) {
+            $hakAmilZfRice = '0';
+            $alokasiPendisZfRice = '0';
+        } else {
+            $hakAmilZfRice = $this->bcPercent($totalKelolaZfRice, $zfAlloc['amil'], self::RICE_SCALE);
+            $alokasiPendisZfRice = bcsub($totalKelolaZfRice, $hakAmilZfRice, self::RICE_SCALE);
+        }
 
-        // IFS
-        $hakAmilIfs = $this->bcPercent($totalKelolaIfs, self::PCT_AMIL_IFS, self::RUPIAH_SCALE);
-        $alokasiPendisIfs = bcsub($totalKelolaIfs, $hakAmilIfs, self::RUPIAH_SCALE);
+        // ZM Amount
+        if (bccomp($totalKelolaZm, '0', self::RUPIAH_SCALE) === 0) {
+            $hakAmilZm = '0';
+            $alokasiPendisZm = '0';
+        } else {
+            $hakAmilZm = $this->bcPercent($totalKelolaZm, $zmAlloc['amil'], self::RUPIAH_SCALE);
+            $alokasiPendisZm = bcsub($totalKelolaZm, $hakAmilZm, self::RUPIAH_SCALE);
+        }
+
+        // IFS Amount
+        if (bccomp($totalKelolaIfs, '0', self::RUPIAH_SCALE) === 0) {
+            $hakAmilIfs = '0';
+            $alokasiPendisIfs = '0';
+        } else {
+            $hakAmilIfs = $this->bcPercent($totalKelolaIfs, $ifsAlloc['amil'], self::RUPIAH_SCALE);
+            $alokasiPendisIfs = bcsub($totalKelolaIfs, $hakAmilIfs, self::RUPIAH_SCALE);
+        }
 
         // ===== 3) Hak Operasional 5% dari SETOR =====
         $hakOpZfAmount = $this->bcPercent($totalSetorZfAmount, self::PCT_HAK_OP, self::RUPIAH_SCALE);
@@ -280,6 +324,14 @@ class RekapAlokasiService extends BaseRekapService
                 throw new \Exception("RekapZis record not found for unit_id: {$unitId} and period: {$period}");
             }
 
+            // Get the period date for allocation lookup
+            $date = $rekapZis->period_date;
+
+            // Get dynamic percentages for each ZIS type
+            $zfAlloc = $this->allocationConfigService->getAllocation('zf', $date);
+            $zmAlloc = $this->allocationConfigService->getAllocation('zm', $date);
+            $ifsAlloc = $this->allocationConfigService->getAllocation('ifs', $date);
+
             // Convert values to string for BCMath
             $totZfAmount = $this->numStr($rekapZis->total_zf_amount, self::RUPIAH_SCALE);
             $totZfRice = $this->numStr($rekapZis->total_zf_rice, self::RICE_SCALE);
@@ -287,30 +339,60 @@ class RekapAlokasiService extends BaseRekapService
             $totIfsAmount = $this->numStr($rekapZis->total_ifs_amount, self::RUPIAH_SCALE);
 
             // ===== 1) SETOR (dibulatkan per skala), KELOLA = TOTAL − SETOR =====
-            $totalSetorZfAmount = $this->bcPercent($totZfAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+            // ZF Amount - using dynamic percentage
+            $totalSetorZfAmount = $this->bcPercent($totZfAmount, $zfAlloc['setor'], self::RUPIAH_SCALE);
             $totalKelolaZfAmount = bcsub($totZfAmount, $totalSetorZfAmount, self::RUPIAH_SCALE);
 
-            $totalSetorZfRice = $this->bcPercent($totZfRice, self::PCT_SETOR, self::RICE_SCALE);
+            // ZF Rice - using dynamic percentage
+            $totalSetorZfRice = $this->bcPercent($totZfRice, $zfAlloc['setor'], self::RICE_SCALE);
             $totalKelolaZfRice = bcsub($totZfRice, $totalSetorZfRice, self::RICE_SCALE);
 
-            $totalSetorZm = $this->bcPercent($totZmAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+            // ZM Amount - using dynamic percentage
+            $totalSetorZm = $this->bcPercent($totZmAmount, $zmAlloc['setor'], self::RUPIAH_SCALE);
             $totalKelolaZm = bcsub($totZmAmount, $totalSetorZm, self::RUPIAH_SCALE);
 
-            $totalSetorIfs = $this->bcPercent($totIfsAmount, self::PCT_SETOR, self::RUPIAH_SCALE);
+            // IFS Amount - using dynamic percentage
+            $totalSetorIfs = $this->bcPercent($totIfsAmount, $ifsAlloc['setor'], self::RUPIAH_SCALE);
             $totalKelolaIfs = bcsub($totIfsAmount, $totalSetorIfs, self::RUPIAH_SCALE);
 
             // ===== 2) Hak Amil dihitung dari KELOLA; Pendis = KELOLA − Amil =====
-            $hakAmilZfAmount = $this->bcPercent($totalKelolaZfAmount, self::PCT_AMIL_STD, self::RUPIAH_SCALE);
-            $alokasiPendisZfAmount = bcsub($totalKelolaZfAmount, $hakAmilZfAmount, self::RUPIAH_SCALE);
+            // Handle zero kelola case (Requirement 10.3)
 
-            $hakAmilZfRice = $this->bcPercent($totalKelolaZfRice, self::PCT_AMIL_STD, self::RICE_SCALE);
-            $alokasiPendisZfRice = bcsub($totalKelolaZfRice, $hakAmilZfRice, self::RICE_SCALE);
+            // ZF Amount
+            if (bccomp($totalKelolaZfAmount, '0', self::RUPIAH_SCALE) === 0) {
+                $hakAmilZfAmount = '0';
+                $alokasiPendisZfAmount = '0';
+            } else {
+                $hakAmilZfAmount = $this->bcPercent($totalKelolaZfAmount, $zfAlloc['amil'], self::RUPIAH_SCALE);
+                $alokasiPendisZfAmount = bcsub($totalKelolaZfAmount, $hakAmilZfAmount, self::RUPIAH_SCALE);
+            }
 
-            $hakAmilZm = $this->bcPercent($totalKelolaZm, self::PCT_AMIL_STD, self::RUPIAH_SCALE);
-            $alokasiPendisZm = bcsub($totalKelolaZm, $hakAmilZm, self::RUPIAH_SCALE);
+            // ZF Rice
+            if (bccomp($totalKelolaZfRice, '0', self::RICE_SCALE) === 0) {
+                $hakAmilZfRice = '0';
+                $alokasiPendisZfRice = '0';
+            } else {
+                $hakAmilZfRice = $this->bcPercent($totalKelolaZfRice, $zfAlloc['amil'], self::RICE_SCALE);
+                $alokasiPendisZfRice = bcsub($totalKelolaZfRice, $hakAmilZfRice, self::RICE_SCALE);
+            }
 
-            $hakAmilIfs = $this->bcPercent($totalKelolaIfs, self::PCT_AMIL_IFS, self::RUPIAH_SCALE);
-            $alokasiPendisIfs = bcsub($totalKelolaIfs, $hakAmilIfs, self::RUPIAH_SCALE);
+            // ZM Amount
+            if (bccomp($totalKelolaZm, '0', self::RUPIAH_SCALE) === 0) {
+                $hakAmilZm = '0';
+                $alokasiPendisZm = '0';
+            } else {
+                $hakAmilZm = $this->bcPercent($totalKelolaZm, $zmAlloc['amil'], self::RUPIAH_SCALE);
+                $alokasiPendisZm = bcsub($totalKelolaZm, $hakAmilZm, self::RUPIAH_SCALE);
+            }
+
+            // IFS Amount
+            if (bccomp($totalKelolaIfs, '0', self::RUPIAH_SCALE) === 0) {
+                $hakAmilIfs = '0';
+                $alokasiPendisIfs = '0';
+            } else {
+                $hakAmilIfs = $this->bcPercent($totalKelolaIfs, $ifsAlloc['amil'], self::RUPIAH_SCALE);
+                $alokasiPendisIfs = bcsub($totalKelolaIfs, $hakAmilIfs, self::RUPIAH_SCALE);
+            }
 
             // ===== 3) Hak Operasional 5% dari SETOR =====
             $hakOpZfAmount = $this->bcPercent($totalSetorZfAmount, self::PCT_HAK_OP, self::RUPIAH_SCALE);

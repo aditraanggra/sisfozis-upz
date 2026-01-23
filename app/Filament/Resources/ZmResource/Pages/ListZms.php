@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\ZmResource\Pages;
 
 use App\Filament\Resources\ZmResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,14 +29,15 @@ class ListZms extends ListRecords
                     fileName: 'template_zm.xlsx',
                     sampleButtonLabel: 'Download Sample',
                 ),
-            //Actions\CreateAction::make(),
         ];
     }
 
     protected function getHeaderWidgets(): array
     {
         return [
-            ZmResource\Widgets\ZmOverview::class,
+            ZmResource\Widgets\ZmOverview::make([
+                'tableFilters' => $this->tableFilters,
+            ]),
         ];
     }
 }

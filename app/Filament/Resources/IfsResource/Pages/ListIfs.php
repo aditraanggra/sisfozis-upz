@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\IfsResource\Pages;
 
 use App\Filament\Resources\IfsResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,14 +28,15 @@ class ListIfs extends ListRecords
                     fileName: 'template_ifs.xlsx',
                     sampleButtonLabel: 'Download Sample',
                 ),
-            //Actions\CreateAction::make(),
         ];
     }
 
     protected function getHeaderWidgets(): array
     {
         return [
-            IfsResource\Widgets\IfsOverview::class,
+            IfsResource\Widgets\IfsOverview::make([
+                'tableFilters' => $this->tableFilters,
+            ]),
         ];
     }
 }
