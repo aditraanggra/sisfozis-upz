@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ZfPaymentTypeRequest;
 use App\Http\Resources\ZfPaymentTypeResource;
+use App\Models\User;
 use App\Models\ZfPaymentType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 
 class ZfPaymentTypeController extends Controller
 {
@@ -34,7 +34,7 @@ class ZfPaymentTypeController extends Controller
     public function store(ZfPaymentTypeRequest $request)
     {
         // Check admin access
-        if (!Auth::user()->isAdmin()) {
+        if (!User::currentIsAdmin()) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], Response::HTTP_FORBIDDEN);
@@ -55,7 +55,7 @@ class ZfPaymentTypeController extends Controller
 
     public function update(ZfPaymentTypeRequest $request, ZfPaymentType $zfPaymentType)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (!User::currentIsAdmin()) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], Response::HTTP_FORBIDDEN);
@@ -69,7 +69,7 @@ class ZfPaymentTypeController extends Controller
 
     public function destroy(ZfPaymentType $zfPaymentType)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (!User::currentIsAdmin()) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], Response::HTTP_FORBIDDEN);

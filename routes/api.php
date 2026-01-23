@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ZfController;
 use App\Http\Controllers\Api\ZmController;
 use App\Http\Controllers\Api\ZfPaymentTypeController;
 use App\Http\Controllers\Api\UnitZisController;
+use App\Http\Controllers\Api\AllocationConfigController;
 use App\Http\Controllers\RekapZisController;
 
 Route::get('/user', function (Request $request) {
@@ -59,6 +60,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/zf-payment-types', [ZfPaymentTypeController::class, 'store']);
     Route::put('/zf-payment-types/{zfPaymentType}', [ZfPaymentTypeController::class, 'update']);
     Route::delete('/zf-payment-types/{zfPaymentType}', [ZfPaymentTypeController::class, 'destroy']);
+
+    // Allocation Config (konfigurasi persentase alokasi ZIS)
+    Route::apiResource('allocation-configs', AllocationConfigController::class);
+    Route::get('allocation-configs-active', [AllocationConfigController::class, 'getActive']);
 
     // Menggunakan prefix '/rekap/' untuk semua endpoint
     Route::prefix('rekap')->group(function () {
