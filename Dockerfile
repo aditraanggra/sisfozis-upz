@@ -43,7 +43,7 @@ RUN apk add --no-cache \
     mariadb-connector-c-dev postgresql-dev \
     libzip-dev zlib-dev zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j"$(nproc)" gd intl mbstring opcache zip \
+    && docker-php-ext-install -j"$(nproc)" gd intl mbstring opcache zip bcmath \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql
 
 # (opsional) client tools jika perlu debugging
