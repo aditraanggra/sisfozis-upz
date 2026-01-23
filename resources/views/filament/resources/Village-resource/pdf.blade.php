@@ -145,24 +145,32 @@
                    $rekap->total_zm_amount + $rekap->total_ifs_amount;
         }), 2) }}</td>
             </tr>
+            @php
+            $zfSetorPct = $allocations['zf']['setor'] / 100;
+            $zmSetorPct = $allocations['zm']['setor'] / 100;
+            $ifsSetorPct = $allocations['ifs']['setor'] / 100;
+            @endphp
             <tr class="bold">
-                <td colspan="2">Total Setor (30%)</td>
-                <td>{{ number_format($rekapZis->sum('total_zf_rice')*0.3, 2) }}</td>
+                <td colspan="2">Total Setor (ZF: {{ $allocations['zf']['setor'] }}%, ZM: {{ $allocations['zm']['setor'] }}%, IFS: {{ $allocations['ifs']['setor'] }}%)</td>
+                <td>{{ number_format($rekapZis->sum('total_zf_rice') * $zfSetorPct, 2) }}</td>
                 <td></td>
                 <td></td>
                 <td>{{ number_format($rekapZis->sum(function($rekap) {
             return $rekap->total_zf_rice * $rekap->unit->rice_price;
-        })*0.3, 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_zf_amount')*0.3, 2) }}</td>
+        }) * $zfSetorPct, 2) }}</td>
+                <td>{{ number_format($rekapZis->sum('total_zf_amount') * $zfSetorPct, 2) }}</td>
                 <td>{{ number_format($rekapZis->sum(function($rekap) {
             return $rekap->total_zf_amount + ($rekap->total_zf_rice * $rekap->unit->rice_price);
-        })*0.3, 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_zm_amount')*0.3, 2) }}</td>
-                <td>{{ number_format($rekapZis->sum('total_ifs_amount')*0.3, 2) }}</td>
-                <td>{{ number_format($rekapZis->sum(function($rekap) {
-            return ($rekap->total_zf_amount + ($rekap->total_zf_rice * $rekap->unit->rice_price)) + 
-                   $rekap->total_zm_amount + $rekap->total_ifs_amount;
-        })*0.3, 2) }}</td>
+        }) * $zfSetorPct, 2) }}</td>
+                <td>{{ number_format($rekapZis->sum('total_zm_amount') * $zmSetorPct, 2) }}</td>
+                <td>{{ number_format($rekapZis->sum('total_ifs_amount') * $ifsSetorPct, 2) }}</td>
+                <td>{{ number_format(
+                    ($rekapZis->sum(function($rekap) {
+                        return $rekap->total_zf_amount + ($rekap->total_zf_rice * $rekap->unit->rice_price);
+                    }) * $zfSetorPct) + 
+                    ($rekapZis->sum('total_zm_amount') * $zmSetorPct) + 
+                    ($rekapZis->sum('total_ifs_amount') * $ifsSetorPct)
+                , 2) }}</td>
             </tr>
         </tfoot>
         @endif

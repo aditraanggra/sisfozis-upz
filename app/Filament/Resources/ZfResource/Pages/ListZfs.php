@@ -4,9 +4,7 @@ namespace App\Filament\Resources\ZfResource\Pages;
 
 use App\Filament\Resources\ZfResource;
 use App\Models\User;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Support\Facades\Auth;
 
 class ListZfs extends ListRecords
 {
@@ -25,14 +23,15 @@ class ListZfs extends ListRecords
                     fileName: 'template_zf.xlsx',
                     sampleButtonLabel: 'Download Sample',
                 ),
-            //Actions\CreateAction::make(),
         ];
     }
 
     protected function getHeaderWidgets(): array
     {
         return [
-            ZfResource\Widgets\ZfOverview::class,
+            ZfResource\Widgets\ZfOverview::make([
+                'tableFilters' => $this->tableFilters,
+            ]),
         ];
     }
 }

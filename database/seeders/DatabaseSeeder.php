@@ -19,5 +19,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed allocation configuration before transaction seeders
+        // This ensures allocation rules are available when seeding transaction data
+        $this->call([
+            AllocationConfigSeeder::class,
+        ]);
     }
 }
