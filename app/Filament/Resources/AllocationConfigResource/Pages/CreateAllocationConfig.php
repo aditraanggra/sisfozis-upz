@@ -20,12 +20,12 @@ class CreateAllocationConfig extends CreateRecord
         // Validate setor + kelola = 100
         $setor = (float) ($data['setor_percentage'] ?? 0);
         $kelola = (float) ($data['kelola_percentage'] ?? 0);
-        $sum = bcadd((string) $setor, (string) $kelola, 2);
+        $sum = round($setor + $kelola, 2);
 
-        if (bccomp($sum, '100', 2) !== 0) {
+        if (abs($sum - 100) > 0.01) {
             Notification::make()
                 ->title('Validasi Gagal')
-                ->body('Persentase Setor dan Kelola harus berjumlah 100%. Saat ini: '.$sum.'%')
+                ->body('Persentase Setor dan Kelola harus berjumlah 100%. Saat ini: ' . $sum . '%')
                 ->danger()
                 ->send();
 
