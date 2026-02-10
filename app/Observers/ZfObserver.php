@@ -2,19 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\UpdateRekapZis;
 use App\Models\Zf;
 use App\Services\RekapZisService;
-use App\Jobs\UpdateRekapZis;
 
 class ZfObserver
 {
-
     protected $rekapzisService;
 
     public function __construct(RekapZisService $rekapzisService)
     {
         $this->rekapzisService = $rekapzisService;
     }
+
     /**
      * Handle the Zf "created" event.
      */
@@ -32,7 +32,7 @@ class ZfObserver
         //
         if ($zf->isDirty('trx_date') || $zf->isDirty('unit_id')) {
             $oldDate = $zf->getOriginal('trx_date');
-            UpdateRekapZis::dispatch($oldDate, $zf->unit_id);
+            UpdateRekapZis::updateAllPeriods($oldDate, $zf->unit_id);
         }
 
         $this->dispatchUpdateJob($zf);
@@ -70,6 +70,7 @@ class ZfObserver
      */
     private function dispatchUpdateJob(Zf $zf): void
     {
-        UpdateRekapZis::dispatch($zf->trx_date, $zf->unit_id);
+        // Update all periods when transaction occurs
+        UpdateRekapZis::updateAllPeriods($zf->trx_date, $zf->unit_id);
     }
 }

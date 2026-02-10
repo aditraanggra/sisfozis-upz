@@ -9,7 +9,8 @@ class ZmResource extends BaseTransactionResource
         return array_merge(parent::getBaseArray(), [
             'category_maal' => $this->category_maal,
             'muzakki_name' => $this->muzakki_name,
-            'amount' => $this->amount
+            'no_telp' => $this->no_telp,
+            'amount' => $this->amount,
         ]);
     }
 }

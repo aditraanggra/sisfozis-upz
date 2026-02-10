@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Zm;
-use App\Models\UnitZis;
-use App\Http\Resources\ZmResource;
 use App\Http\Requests\ZmRequest;
-use Illuminate\Http\Response;
+use App\Http\Resources\ZmResource;
+use App\Models\UnitZis;
+use App\Models\User;
+use App\Models\Zm;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class ZmController extends Controller
@@ -19,7 +20,7 @@ class ZmController extends Controller
     public function index(Request $request)
     {
         $query = Zm::with(['unit'])
-            ->when(!Auth::user()->isAdmin(), function ($query) {
+            ->when(! User::currentIsAdmin(), function ($query) {
                 return $query->whereHas('unit', function ($q) {
                     $q->where('user_id', Auth::user()->id);
                 });
@@ -30,13 +31,25 @@ class ZmController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('muzakki_name', 'like', "%{$search}%")
+                    ->orWhere('no_telp', 'like', "%{$search}%")
                     ->orWhere('desc', 'like', "%{$search}%");
             });
+        }
+
+        // Handle phone number filter if needed
+        if ($request->has('no_telp')) {
+            $query->where('no_telp', $request->no_telp);
         }
 
         // Handle date range filter if needed
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
+        }
+
+        // Handle sorting by phone number
+        if ($request->has('sort_by') && $request->sort_by === 'no_telp') {
+            $direction = $request->get('sort_direction', 'desc');
+            $query->orderBy('no_telp', $direction);
         }
 
         $data = $query->latest('trx_date')->get();
@@ -68,7 +81,7 @@ class ZmController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error creating Zm transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -82,7 +95,7 @@ class ZmController extends Controller
             $Zm = Zm::with('unit')->findOrFail($id);
 
             // Check if user can access this record
-            if (!Auth::user()->isAdmin() && $Zm->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Zm->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -90,7 +103,7 @@ class ZmController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error retrieving Zm transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         }
     }
@@ -104,7 +117,7 @@ class ZmController extends Controller
             $Zm = Zm::findOrFail($id);
 
             // Check if user can update this record
-            if (!Auth::user()->isAdmin() && $Zm->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Zm->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -123,7 +136,7 @@ class ZmController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error updating Zm transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -137,7 +150,7 @@ class ZmController extends Controller
             $Zm = Zm::findOrFail($id);
 
             // Check if user can delete this record
-            if (!Auth::user()->isAdmin() && $Zm->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Zm->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -147,19 +160,49 @@ class ZmController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error deleting Zm transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
 
     /**
-     * Check if authenticated user owns the unit or is admin
+     * Get statistics for ZM transactions
+     */
+    public function statistics(Request $request)
+    {
+        $query = Zm::query()
+            ->when(! User::currentIsAdmin(), function ($query) {
+                return $query->whereHas('unit', function ($q) {
+                    $q->where('user_id', Auth::user()->id);
+                });
+            });
+
+        // Apply same filters as index
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
+        }
+
+        $stats = [
+            'total_transactions' => $query->count(),
+            'total_amount' => $query->sum('amount'),
+            'total_with_phone' => $query->whereNotNull('no_telp')->count(),
+            'total_without_phone' => $query->whereNull('no_telp')->count(),
+            'average_amount' => $query->avg('amount'),
+            'highest_amount' => $query->max('amount'),
+            'phone_coverage' => $query->count() > 0 ? round(($query->whereNotNull('no_telp')->count() / $query->count()) * 100, 2) : 0,
+        ];
+
+        return response()->json($stats);
+    }
+
+    /**
+     * Check if authenticated user owns unit or is admin
      */
     private function checkUnitOwnership(int $unitId): void
     {
         $unit = UnitZis::findOrFail($unitId);
 
-        if (!Auth::user()->isAdmin() && $unit->user_id !== Auth::id()) {
+        if (! User::currentIsAdmin() && $unit->user_id !== Auth::id()) {
             abort(Response::HTTP_FORBIDDEN, 'You do not have permission to use this unit');
         }
     }

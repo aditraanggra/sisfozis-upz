@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Imports\ZmImporter;
 use App\Filament\Resources\ZmResource\Pages;
-use App\Filament\Resources\ZmResource\RelationManagers;
 use App\Models\District;
 use App\Models\UnitZis;
 use App\Models\User;
@@ -14,13 +13,12 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Columns\Summarizers\Count;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Actions\ImportAction;
 
 class ZmResource extends Resource
 {
@@ -40,8 +38,7 @@ class ZmResource extends Resource
             ->schema([
                 Forms\Components\Select::make('unit_id')
                     ->relationship('unit', 'unit_name')
-                    ->getOptionLabelFromRecordUsing(fn(UnitZis $record) =>
-                    "{$record->no_register}-{$record->unit_name}")
+                    ->getOptionLabelFromRecordUsing(fn (UnitZis $record) => "{$record->no_register}-{$record->unit_name}")
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -54,6 +51,9 @@ class ZmResource extends Resource
                 Forms\Components\TextInput::make('muzakki_name')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('no_telp')
+                    ->label('No. Telepon')
+                    ->string(),
                 Forms\Components\TextInput::make('amount')
                     ->required()
                     ->numeric()
@@ -94,6 +94,10 @@ class ZmResource extends Resource
                     ->label('Muzakki')
                     ->searchable()
                     ->summarize(Count::make()->label('Total Transaksi')),
+                Tables\Columns\TextColumn::make('no_telp')
+                    ->label('No. Telepon')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Jumlah')
                     ->numeric()
@@ -109,27 +113,25 @@ class ZmResource extends Resource
                         for ($year = $currentYear; $year >= 2020; $year--) {
                             $years[$year] = (string) $year;
                         }
+
                         return $years;
                     })
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when($data['value'], fn(Builder $q, $year) => $q->whereYear('trx_date', $year))
+                        fn (Builder $query, array $data): Builder => $query->when($data['value'], fn (Builder $q, $year) => $q->whereYear('trx_date', $year))
                     ),
                 SelectFilter::make('category_maal')
                     ->label('Kategori Maal')
-                    ->options(fn() => Zm::distinct()->pluck('category_maal', 'category_maal')->filter()),
+                    ->options(fn () => Zm::distinct()->pluck('category_maal', 'category_maal')->filter()),
                 SelectFilter::make('district')
                     ->label('Kecamatan')
-                    ->options(fn() => District::pluck('name', 'id'))
+                    ->options(fn () => District::pluck('name', 'id'))
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when(
+                        fn (Builder $query, array $data): Builder => $query->when(
                             $data['value'],
-                            fn(Builder $q, $districtId) =>
-                            $q->whereHas('unit', fn($q) => $q->where('district_id', $districtId))
+                            fn (Builder $q, $districtId) => $q->whereHas('unit', fn ($q) => $q->where('district_id', $districtId))
                         )
                     )
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin()),
                 SelectFilter::make('village')
                     ->label('Desa')
                     ->options(function () {
@@ -137,18 +139,17 @@ class ZmResource extends Resource
                         if ($user && $user->isUpzKecamatan() && $user->district_id) {
                             return Village::where('district_id', $user->district_id)->pluck('name', 'id');
                         }
+
                         return Village::pluck('name', 'id');
                     })
                     ->searchable()
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when(
+                        fn (Builder $query, array $data): Builder => $query->when(
                             $data['value'],
-                            fn(Builder $q, $villageId) =>
-                            $q->whereHas('unit', fn($q) => $q->where('village_id', $villageId))
+                            fn (Builder $q, $villageId) => $q->whereHas('unit', fn ($q) => $q->where('village_id', $villageId))
                         )
                     )
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
                 SelectFilter::make('unit_id')
                     ->label('Unit UPZ')
                     ->options(function () {
@@ -156,16 +157,17 @@ class ZmResource extends Resource
                         if ($user && $user->isUpzKecamatan() && $user->district_id) {
                             return UnitZis::where('district_id', $user->district_id)->pluck('unit_name', 'id');
                         }
+
                         return UnitZis::pluck('unit_name', 'id');
                     })
                     ->searchable()
-                    ->visible(fn() => !User::currentIsUpzDesa()),
+                    ->visible(fn () => ! User::currentIsUpzDesa()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
             ->headerActions([
-                /* ImportAction::make()
+            /* ImportAction::make()
                     ->importer(ZmImporter::class) */])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

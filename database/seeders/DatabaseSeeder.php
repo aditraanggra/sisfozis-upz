@@ -15,15 +15,22 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User', 'password' => bcrypt('password')]
+        );
 
         // Seed allocation configuration before transaction seeders
         // This ensures allocation rules are available when seeding transaction data
+        // $this->call([
+        //     AllocationConfigSeeder::class,
+        // ]);
+
+        // Seed geographic data (districts and villages)
         $this->call([
-            AllocationConfigSeeder::class,
+            GeographicSeeder::class,
+            ZisTransactionSeeder::class,
+            SetorZisDummySeeder::class,
         ]);
     }
 }

@@ -2,20 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\UpdateRekapZis;
 use App\Models\Zm;
 use App\Services\RekapZisService;
-use App\Jobs\UpdateRekapitulasiJob;
-use App\Jobs\UpdateRekapZis;
 
 class ZmObserver
 {
-
     protected $rekapzisService;
 
     public function __construct(RekapZisService $rekapzisService)
     {
         $this->rekapzisService = $rekapzisService;
     }
+
     /**
      * Handle the Zm "created" event.
      */
@@ -33,7 +32,7 @@ class ZmObserver
         //
         if ($zm->isDirty('trx_date') || $zm->isDirty('unit_id')) {
             $oldDate = $zm->getOriginal('trx_date');
-            UpdateRekapZis::dispatch($oldDate, $zm->unit_id);
+            UpdateRekapZis::updateAllPeriods($oldDate, $zm->unit_id);
         }
 
         $this->dispatchUpdateJob($zm);
@@ -71,6 +70,7 @@ class ZmObserver
      */
     private function dispatchUpdateJob(Zm $zm): void
     {
-        UpdateRekapZis::dispatch($zm->trx_date, $zm->unit_id);
+        // Update all periods when transaction occurs
+        UpdateRekapZis::updateAllPeriods($zm->trx_date, $zm->unit_id);
     }
 }

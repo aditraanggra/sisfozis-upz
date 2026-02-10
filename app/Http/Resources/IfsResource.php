@@ -8,7 +8,9 @@ class IfsResource extends BaseTransactionResource
     {
         return array_merge(parent::getBaseArray(), [
             'munfiq_name' => $this->munfiq_name,
-            'amount' => $this->amount
+            'amount' => $this->amount,
+            'total_munfiq' => $this->total_munfiq,
+            'desc' => $this->desc,
         ]);
     }
 }

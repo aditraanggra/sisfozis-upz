@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Ifs extends Model
 {
@@ -16,19 +16,26 @@ class Ifs extends Model
         'trx_date',
         'munfiq_name',
         'amount',
-        'desc'
+        'total_munfiq',
+        'desc',
+    ];
+
+    protected $casts = [
+        'trx_date' => 'date',
+        'amount' => 'integer',
+        'total_munfiq' => 'integer',
     ];
 
     protected static function booted()
     {
         static::addGlobalScope('user_access', function (Builder $builder) {
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return;
             }
 
             $user = Auth::user();
 
-            if (!$user) {
+            if (! $user) {
                 return;
             }
 
@@ -44,12 +51,13 @@ class Ifs extends Model
             }
             // Admin dan super_admin tidak dibatasi
         });
-    }
 
-    protected $casts = [
-        'trx_date' => 'date',
-        'amount' => 'integer'
-    ];
+        static::saving(function ($model) {
+            if (isset($model->total_munfiq) && $model->total_munfiq < 1) {
+                throw new \InvalidArgumentException('Total Munfiq must be at least 1');
+            }
+        });
+    }
 
     public function unit()
     {

@@ -1,34 +1,33 @@
 <?php
 
-use Illuminate\Auth\Middleware\Authenticate;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AllocationConfigController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DistributionController;
 use App\Http\Controllers\Api\DonationBoxController;
 use App\Http\Controllers\Api\FidyahController;
 use App\Http\Controllers\Api\IfsController;
 use App\Http\Controllers\Api\SetorZisController;
-use App\Http\Controllers\Api\ZfController;
-use App\Http\Controllers\Api\ZmController;
-use App\Http\Controllers\Api\ZfPaymentTypeController;
 use App\Http\Controllers\Api\UnitZisController;
-use App\Http\Controllers\Api\AllocationConfigController;
-use App\Http\Controllers\RekapZisController;
+use App\Http\Controllers\Api\ZfController;
+use App\Http\Controllers\Api\ZfPaymentTypeController;
+use App\Http\Controllers\Api\ZmController;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware(Authenticate::using('sanctum'));
 
-//Ambil data Kecamatan
+// Ambil data Kecamatan
 Route::get('/kecamatan', [\App\Http\Controllers\Api\DistrictController::class, 'index']);
-//Route::apiResource('/kecamatan', \App\Http\Controllers\Api\DistrictController::class);
+// Route::apiResource('/kecamatan', \App\Http\Controllers\Api\DistrictController::class);
 
-//Ambil data Desa
+// Ambil data Desa
 Route::get('/desa', [\App\Http\Controllers\Api\VillageController::class, 'index']);
-//Route::apiResource('/desa', \App\Http\Controllers\Api\VillageController::class);
+// Route::apiResource('/desa', \App\Http\Controllers\Api\VillageController::class);
 
-//Ambil data UPZ
+// Ambil data UPZ
 
 // Jenis Pembayaran Zakat Fitrah (public read, auth for CUD)
 Route::get('/zf-payment-types', [ZfPaymentTypeController::class, 'index']);
@@ -37,13 +36,12 @@ Route::get('/zf-payment-types/{zfPaymentType}', [ZfPaymentTypeController::class,
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-//Route::apiResource('/unit-zis', \App\Http\Controllers\Api\UnitZisController::class);
+// Route::apiResource('/unit-zis', \App\Http\Controllers\Api\UnitZisController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/unit-zis/{id}', [\App\Http\Controllers\Api\UnitZisController::class, 'update']);
-
 
     Route::apiResources([
         'zf' => ZfController::class,
@@ -55,6 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
         'setor' => SetorZisController::class,
         'unit-zis' => UnitZisController::class,
     ]);
+
+
 
     // Jenis Pembayaran ZF (CUD - admin only)
     Route::post('/zf-payment-types', [ZfPaymentTypeController::class, 'store']);

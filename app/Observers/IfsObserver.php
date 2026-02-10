@@ -2,19 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\UpdateRekapZis;
 use App\Models\Ifs;
 use App\Services\RekapZisService;
-use App\Jobs\UpdateRekapZis;
 
 class IfsObserver
 {
-
     protected $rekapzisService;
 
     public function __construct(RekapZisService $rekapzisService)
     {
         $this->rekapzisService = $rekapzisService;
     }
+
     /**
      * Handle the Ifs "created" event.
      */
@@ -25,14 +25,14 @@ class IfsObserver
     }
 
     /**
-     * Handle the Ifs "updated" event.
+     * Handle Ifs "updated" event.
      */
     public function updated(Ifs $ifs): void
     {
         //
         if ($ifs->isDirty('trx_date') || $ifs->isDirty('unit_id')) {
             $oldDate = $ifs->getOriginal('trx_date');
-            UpdateRekapZis::dispatch($oldDate, $ifs->unit_id);
+            UpdateRekapZis::updateAllPeriods($oldDate, $ifs->unit_id);
         }
 
         $this->dispatchUpdateJob($ifs);
@@ -70,6 +70,7 @@ class IfsObserver
      */
     private function dispatchUpdateJob(Ifs $ifs): void
     {
-        UpdateRekapZis::dispatch($ifs->trx_date, $ifs->unit_id);
+        // Update all periods when transaction occurs
+        UpdateRekapZis::updateAllPeriods($ifs->trx_date, $ifs->unit_id);
     }
 }

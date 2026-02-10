@@ -32,10 +32,11 @@ class ZisTransactionSeeder extends Seeder
 
         if ($districts->isEmpty()) {
             $this->command->warn('Tidak ada data kecamatan.');
+
             return;
         }
 
-        $this->command->info("Membuat 1 UnitZis DKM per desa di setiap kecamatan...");
+        $this->command->info('Membuat 1 UnitZis DKM per desa di setiap kecamatan...');
 
         $masjidNames = [
             'Al-Ikhlas',
@@ -47,7 +48,7 @@ class ZisTransactionSeeder extends Seeder
             'Nurul Huda',
             'Baitul Makmur',
             'At-Taqwa',
-            'Al-Muttaqin'
+            'Al-Muttaqin',
         ];
         $leaderNames = [
             'H. Ahmad Syafii',
@@ -55,26 +56,30 @@ class ZisTransactionSeeder extends Seeder
             'Ust. Muhammad Ridwan',
             'H. Sulaiman',
             'KH. Hasan Basri',
-            'Ust. Fauzi Rahman'
+            'Ust. Fauzi Rahman',
         ];
 
         $unitCount = 0;
 
         foreach ($districts as $district) {
             $villages = $district->villages;
-            if ($villages->isEmpty()) continue;
+            if ($villages->isEmpty()) {
+                continue;
+            }
 
             // Buat 1 unit DKM per desa
             foreach ($villages as $village) {
                 // Cek apakah sudah ada unit DKM di desa ini
                 $exists = UnitZis::where('village_id', $village->id)
                     ->where('category_id', $dkmCategory->id)->exists();
-                if ($exists) continue;
+                if ($exists) {
+                    continue;
+                }
 
                 $masjidName = $masjidNames[array_rand($masjidNames)];
                 $unitName = "DKM Masjid {$masjidName} {$village->name}";
 
-                $email = 'dkm.' . $village->id . '@dummy.test';
+                $email = 'dkm.'.$village->id.'@dummy.test';
                 $user = User::firstOrCreate(['email' => $email], [
                     'name' => "Operator DKM {$village->name}",
                     'password' => Hash::make('password'),
@@ -88,12 +93,12 @@ class ZisTransactionSeeder extends Seeder
                     'village_id' => $village->id,
                     'district_id' => $district->id,
                     'unit_name' => $unitName,
-                    'no_register' => 'DKM-' . $district->id . '-' . str_pad($unitCount + 1, 4, '0', STR_PAD_LEFT),
+                    'no_register' => 'DKM-'.$district->id.'-'.str_pad($unitCount + 1, 4, '0', STR_PAD_LEFT),
                     'address' => "Jl. Masjid {$masjidName}, Desa {$village->name}",
                     'unit_leader' => $leaderNames[array_rand($leaderNames)],
                     'unit_assistant' => $leaderNames[array_rand($leaderNames)],
                     'unit_finance' => $leaderNames[array_rand($leaderNames)],
-                    'operator_phone' => '08' . rand(1000000000, 9999999999),
+                    'operator_phone' => '08'.rand(1000000000, 9999999999),
                     'rice_price' => rand(14, 18) * 1000,
                     'is_verified' => true,
                     'profile_completion' => 100,
@@ -110,6 +115,7 @@ class ZisTransactionSeeder extends Seeder
 
         if ($units->isEmpty()) {
             $this->command->warn('Tidak ada UnitZis.');
+
             return;
         }
 
@@ -135,7 +141,7 @@ class ZisTransactionSeeder extends Seeder
             'Qori Amin',
             'Rina Wati',
             'Surya Darma',
-            'Taufik Rahman'
+            'Taufik Rahman',
         ];
 
         $categoryMaal = [
@@ -146,7 +152,7 @@ class ZisTransactionSeeder extends Seeder
             'Profesi',
             'Saham',
             'Tabungan',
-            'Properti'
+            'Properti',
         ];
 
         $startDate = Carbon::now()->subMonths(6)->startOfMonth();
@@ -173,22 +179,42 @@ class ZisTransactionSeeder extends Seeder
                 }
 
                 for ($i = 0; $i < $zmCount; $i++) {
+                    // Generate realistic phone numbers for ZM records
+                    $phone = null;
+                    if (rand(1, 10) <= 8) { // 80% have phone numbers
+                        $formats = ['08', '62'];
+                        $prefix = $formats[array_rand($formats)];
+                        $phone = $prefix.rand(100000000, 999999999);
+                    }
+
                     Zm::withoutGlobalScopes()->create([
                         'unit_id' => $unit->id,
                         'trx_date' => $currentDate->format('Y-m-d'),
                         'category_maal' => $categoryMaal[array_rand($categoryMaal)],
                         'muzakki_name' => $names[array_rand($names)],
+                        'no_telp' => $phone,
                         'amount' => rand(1, 50) * 100000,
                         'desc' => rand(0, 1) ? 'Zakat maal tahunan' : null,
                     ]);
                 }
 
                 for ($i = 0; $i < $ifsCount; $i++) {
+                    // Generate realistic distribution of group sizes
+                    $rand = mt_rand(1, 100);
+                    if ($rand <= 70) {
+                        $totalMunfiq = 1; // 70% individual donors
+                    } elseif ($rand <= 90) {
+                        $totalMunfiq = rand(2, 3); // 20% small groups
+                    } else {
+                        $totalMunfiq = rand(4, 10); // 10% larger groups
+                    }
+
                     Ifs::withoutGlobalScopes()->create([
                         'unit_id' => $unit->id,
                         'trx_date' => $currentDate->format('Y-m-d'),
                         'munfiq_name' => $names[array_rand($names)],
                         'amount' => rand(1, 20) * 50000,
+                        'total_munfiq' => $totalMunfiq,
                         'desc' => rand(0, 1) ? 'Infak bulanan' : null,
                     ]);
                 }
@@ -198,8 +224,8 @@ class ZisTransactionSeeder extends Seeder
         }
 
         $this->command->info('Transaksi dummy ZIS berhasil dibuat!');
-        $this->command->info('Total Zakat Fitrah: ' . Zf::withoutGlobalScopes()->count());
-        $this->command->info('Total Zakat Maal: ' . Zm::withoutGlobalScopes()->count());
-        $this->command->info('Total Infak/Sedekah: ' . Ifs::withoutGlobalScopes()->count());
+        $this->command->info('Total Zakat Fitrah: '.Zf::withoutGlobalScopes()->count());
+        $this->command->info('Total Zakat Maal: '.Zm::withoutGlobalScopes()->count());
+        $this->command->info('Total Infak/Sedekah: '.Ifs::withoutGlobalScopes()->count());
     }
 }
