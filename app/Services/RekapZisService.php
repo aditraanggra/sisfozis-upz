@@ -223,7 +223,7 @@ class RekapZisService extends BaseRekapService
             ->where('unit_id', $unitId)
             ->whereBetween('trx_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->selectRaw("{$periodDateExpr} as period_date")
-            ->selectRaw('COUNT(DISTINCT munfiq_name) as total_ifs_munfiq')
+            ->selectRaw('COALESCE(SUM(total_munfiq), 0) as total_ifs_munfiq')
             ->selectRaw('COALESCE(SUM(amount), 0) as total_ifs_amount')
             ->groupByRaw($dateFormat)
             ->get()
@@ -338,7 +338,7 @@ class RekapZisService extends BaseRekapService
             // Data IFS
             $ifsData = Ifs::where('unit_id', $unitId)
                 ->whereBetween('trx_date', [$startDate, $endDate])
-                ->selectRaw('COUNT(DISTINCT munfiq_name) as total_munfiq, 
+                ->selectRaw('SUM(total_munfiq) as total_munfiq, 
                             SUM(amount) as total_amount')
                 ->first();
 
@@ -403,7 +403,7 @@ class RekapZisService extends BaseRekapService
             // Data IFS Bulanan
             $ifsData = Ifs::where('unit_id', $unitId)
                 ->whereBetween('trx_date', [$startDate, $endDate])
-                ->selectRaw('COUNT(DISTINCT munfiq_name) as total_munfiq, 
+                ->selectRaw('SUM(total_munfiq) as total_munfiq, 
                             SUM(amount) as total_amount')
                 ->first();
 
@@ -463,7 +463,7 @@ class RekapZisService extends BaseRekapService
             // Data IFS Tahunan
             $ifsData = Ifs::where('unit_id', $unitId)
                 ->whereBetween('trx_date', [$startDate, $endDate])
-                ->selectRaw('COUNT(DISTINCT munfiq_name) as total_munfiq, 
+                ->selectRaw('SUM(total_munfiq) as total_munfiq, 
                             SUM(amount) as total_amount')
                 ->first();
 
