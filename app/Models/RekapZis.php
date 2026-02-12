@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 
+#[ObservedBy(\App\Observers\RekapZisObserver::class)]
 class RekapZis extends Model
 {
     //
@@ -19,7 +21,7 @@ class RekapZis extends Model
         'total_zm_amount',
         'total_zm_muzakki',
         'total_ifs_amount',
-        'total_ifs_munfiq'
+        'total_ifs_munfiq',
     ];
 
     protected $cast = [
@@ -29,7 +31,7 @@ class RekapZis extends Model
         'total_zm_amount' => 'integer',
         'total_zm_muzakki' => 'integer',
         'total_ifs_amount' => 'integer',
-        'total_ifs_munfiq' => 'integer'
+        'total_ifs_munfiq' => 'integer',
     ];
 
     public function unit()
