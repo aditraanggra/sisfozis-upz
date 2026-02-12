@@ -38,8 +38,6 @@ class UpdateRekapUnit implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param int $unitId
-     * @param string $period
      * @return void
      */
     public function __construct(int $unitId, string $period)
@@ -51,7 +49,6 @@ class UpdateRekapUnit implements ShouldQueue
     /**
      * Execute the job.
      *
-     * @param RekapUnitService $RekapUnitService
      * @return void
      */
     public function handle(RekapUnitService $RekapUnitService)
@@ -66,7 +63,7 @@ class UpdateRekapUnit implements ShouldQueue
 
             Log::info("Successfully updated rekap unit ID: {$rekapAlokasi->id}");
         } catch (\Exception $e) {
-            Log::error("Failed to update rekap unit: " . $e->getMessage());
+            Log::error('Failed to update rekap unit: '.$e->getMessage());
 
             // Rethrow the exception to retry the job
             throw $e;
@@ -76,11 +73,87 @@ class UpdateRekapUnit implements ShouldQueue
     /**
      * Handle a job failure.
      *
-     * @param \Throwable $exception
      * @return void
      */
     public function failed(\Throwable $exception)
     {
         Log::error("UpdateRekapUnit job failed after {$this->tries} attempts. Unit ID: {$this->unitId}, Period: {$this->period}. Error: {$exception->getMessage()}");
+    }
+
+    /**
+     * Create and dispatch daily update job
+     *
+     * @param  int  $unitId
+     * @param  string  $date  Date in Y-m-d format
+     * @return void
+     */
+    public static function updateDaily($unitId, $date = null)
+    {
+        dispatch(new self($unitId, 'harian'));
+    }
+
+    /**
+     * Create and dispatch monthly update job
+     *
+     * @param  int  $unitId
+     * @param  string  $date  Date in Y-m-d format (any date within month)
+     * @return void
+     */
+    public static function updateMonthly($unitId, $date = null)
+    {
+        $date = $date ?? now()->format('Y-m-d');
+        dispatch(new self($unitId, 'bulanan'));
+    }
+
+    /**
+     * Create and dispatch yearly update job
+     *
+     * @param  int  $unitId
+     * @param  string  $date  Date in Y-m-d format (any date within year)
+     * @return void
+     */
+    public static function updateYearly($unitId, $date = null)
+    {
+        $date = $date ?? now()->format('Y-m-d');
+        dispatch(new self($unitId, 'tahunan'));
+    }
+
+    /**
+     * Create and dispatch job for automatic monthly update
+     * This method is typically called at the end of each month
+     *
+     * @param  int  $unitId
+     * @return void
+     */
+    public static function updateCurrentMonth($unitId)
+    {
+        self::updateMonthly($unitId);
+    }
+
+    /**
+     * Create and dispatch job for automatic yearly update
+     * This method is typically called at the end of each year
+     *
+     * @param  int  $unitId
+     * @return void
+     */
+    public static function updateCurrentYear($unitId)
+    {
+        self::updateYearly($unitId);
+    }
+
+    /**
+     * Create and dispatch jobs for all period types for a unit
+     *
+     * @param  int  $unitId
+     * @param  string  $date  Date in Y-m-d format
+     * @return void
+     */
+    public static function updateAllPeriods($unitId, $date = null)
+    {
+        $date = $date ?? now()->format('Y-m-d');
+        self::updateDaily($unitId, $date);
+        self::updateMonthly($unitId, $date);
+        self::updateYearly($unitId, $date);
     }
 }
