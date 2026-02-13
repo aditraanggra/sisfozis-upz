@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\RekapZis;
 use App\Models\RekapAlokasi;
+use App\Models\RekapZis;
 use App\Models\UnitZis;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -11,21 +11,24 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Service for rebuilding Alokasi (Allocation) recapitulation data.
- * 
+ *
  * This service calculates allocation percentages from RekapZis data
  * to determine setor, kelola, hak amil, and pendis allocations.
- * 
+ *
  * Extends BaseRekapService to leverage chunked processing and bulk upsert
  * for optimized performance when processing large datasets.
  */
 class RekapAlokasiService extends BaseRekapService
 {
     protected string $rekapTable = 'rekap_alokasi';
+
     protected string $periodColumn = 'periode';
+
     protected string $periodDateColumn = 'periode_date';
 
     // ===== Skala pembulatan per jenis nilai =====
     protected const RUPIAH_SCALE = 0; // rupiah bulat (INT)
+
     protected const RICE_SCALE = 3;   // beras disimpan 3 desimal (kg)
 
     // ===== Persentase kebijakan =====
@@ -39,8 +42,6 @@ class RekapAlokasiService extends BaseRekapService
 
     /**
      * Create a new RekapAlokasiService instance.
-     *
-     * @param AllocationConfigService $allocationConfigService
      */
     public function __construct(AllocationConfigService $allocationConfigService)
     {
@@ -50,10 +51,10 @@ class RekapAlokasiService extends BaseRekapService
     /**
      * Rebuild rekap for given parameters using batch processing
      *
-     * @param string $unitId Unit ID or 'all' for all units
-     * @param string $periode Period type: harian, bulanan, tahunan, or all
-     * @param Carbon|null $startDate Start date for rebuild
-     * @param Carbon|null $endDate End date for rebuild
+     * @param  string  $unitId  Unit ID or 'all' for all units
+     * @param  string  $periode  Period type: harian, bulanan, tahunan, or all
+     * @param  Carbon|null  $startDate  Start date for rebuild
+     * @param  Carbon|null  $endDate  End date for rebuild
      * @return array Results with 'processed' count and 'errors' array
      */
     public function rebuild(
@@ -76,11 +77,6 @@ class RekapAlokasiService extends BaseRekapService
 
     /**
      * Rebuild rekap for a specific unit
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      */
     protected function rebuildForUnit(
         int $unitId,
@@ -102,19 +98,13 @@ class RekapAlokasiService extends BaseRekapService
             $records = array_merge($records, $this->buildRecordsForPeriode($unitId, 'tahunan', $startDate, $endDate));
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             $this->bulkUpsert($records);
         }
     }
 
     /**
      * Build records for a specific periode from RekapZis data
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function buildRecordsForPeriode(
         int $unitId,
@@ -122,20 +112,128 @@ class RekapAlokasiService extends BaseRekapService
         Carbon $startDate,
         Carbon $endDate
     ): array {
-        $rekapZisData = $this->getAggregatedData($unitId, $startDate, $endDate, $periode);
+        $records = [];
 
-        return collect($rekapZisData)->map(function ($data) use ($unitId, $periode) {
-            return $this->buildRekapRecord($unitId, $periode, $data);
-        })->toArray();
+        // For yearly periods, aggregate from daily and monthly data
+        if ($periode === 'tahunan') {
+            $records = $this->buildYearlyRecords($unitId, $startDate, $endDate);
+        } else {
+            // For daily and monthly periods, use existing aggregated data
+            $rekapZisData = $this->getAggregatedData($unitId, $startDate, $endDate, $periode);
+            $records = collect($rekapZisData)->map(function ($data) use ($unitId, $periode) {
+                return $this->buildRekapRecord($unitId, $periode, $data);
+            })->toArray();
+        }
+
+        return $records;
+    }
+
+    /**
+     * Build yearly records by aggregating daily and monthly data
+     */
+    protected function buildYearlyRecords(
+        int $unitId,
+        Carbon $startDate,
+        Carbon $endDate
+    ): array {
+        $records = [];
+
+        // Get unique years within the date range
+        $years = DB::table('rekap_zis')
+            ->where('unit_id', $unitId)
+            ->whereBetween('period_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->selectRaw('DISTINCT EXTRACT(YEAR FROM period_date) as year')
+            ->orderBy('year')
+            ->pluck('year')
+            ->toArray();
+
+        foreach ($years as $year) {
+            $yearStart = Carbon::create($year, 1, 1)->startOfDay();
+            $yearEnd = Carbon::create($year, 12, 31)->endOfDay();
+
+            // Aggregate data from daily and monthly records
+            $dailyData = $this->getAggregatedData($unitId, $yearStart, $yearEnd, 'harian');
+            $monthlyData = $this->getAggregatedData($unitId, $yearStart, $yearEnd, 'bulanan');
+
+            // Merge and aggregate totals
+            $aggregated = $this->aggregateYearlyData($dailyData, $monthlyData, $year);
+
+            $hasData = ($aggregated->total_zf_amount ?? 0) > 0
+                    || ($aggregated->total_zf_rice ?? 0) > 0
+                    || ($aggregated->total_zm_amount ?? 0) > 0
+                    || ($aggregated->total_ifs_amount ?? 0) > 0;
+
+            if ($hasData) {
+                $records[] = $this->buildRekapRecord($unitId, 'tahunan', $aggregated);
+            }
+        }
+
+        return $records;
+    }
+
+    /**
+     * Aggregate daily and monthly data into yearly totals
+     */
+    protected function aggregateYearlyData(array $dailyData, array $monthlyData, int $year): object
+    {
+        $totals = [
+            'total_zf_amount' => 0,
+            'total_zf_rice' => 0,
+            'total_zm_amount' => 0,
+            'total_ifs_amount' => 0,
+        ];
+
+        // Handle both array of objects and array of arrays
+        $dailyMonthKeys = array_unique(array_filter(array_map(function ($day) {
+            // Handle both object and array formats
+            $periodDate = is_object($day) ? ($day->period_date ?? null) : ($day['period_date'] ?? null);
+
+            return ($periodDate && is_string($periodDate)) ? substr($periodDate, 0, 7) : null; // Format: YYYY-MM
+        }, $dailyData)));
+
+        // Add daily totals
+        foreach ($dailyData as $day) {
+            // Handle both object and array formats
+            $amount = is_object($day) ? ($day->total_zf_amount ?? 0) : ($day['total_zf_amount'] ?? 0);
+            $amount = (float) $amount;
+            $totals['total_zf_amount'] += $amount;
+            $totals['total_zf_rice'] += $amount;
+            $totals['total_zm_amount'] += $amount;
+            $totals['total_ifs_amount'] += $amount;
+        }
+
+        // Add monthly totals (only if no daily records exist for that month)
+        foreach ($monthlyData as $month) {
+            // Handle both object and array formats
+            $periodDate = is_object($month) ? ($month->period_date ?? null) : ($month['period_date'] ?? null);
+
+            if (! $periodDate || ! is_string($periodDate)) {
+                continue;
+            }
+
+            $monthYear = (int) substr($periodDate, 0, 4);
+            $monthKey = substr($periodDate, 0, 7); // Format: YYYY-MM
+
+            // Only add monthly total if the month is within the target year
+            // AND there are no daily records for any day in this month
+            if ($monthYear === $year && ! in_array($monthKey, $dailyMonthKeys)) {
+                $amount = is_object($month) ? ($month->total_zf_amount ?? 0) : ($month['total_zf_amount'] ?? 0);
+                $amount = (float) $amount;
+                $totals['total_zf_amount'] += $amount;
+                $totals['total_zf_rice'] += $amount;
+                $totals['total_zm_amount'] += $amount;
+                $totals['total_ifs_amount'] += $amount;
+            }
+        }
+
+        return (object) [
+            'period_date' => $year.'-01-01',
+            ...$totals,
+        ];
     }
 
     /**
      * Build a single rekap record with BCMath calculations
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param object $data
-     * @return array
      */
     protected function buildRekapRecord(int $unitId, string $periode, object $data): array
     {
@@ -243,11 +341,7 @@ class RekapAlokasiService extends BaseRekapService
     /**
      * Get RekapZis data for a unit and date range
      *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @param string $periode Period type: harian, bulanan, tahunan
-     * @return array
+     * @param  string  $periode  Period type: harian, bulanan, tahunan
      */
     protected function getAggregatedData(
         int $unitId,
@@ -272,30 +366,25 @@ class RekapAlokasiService extends BaseRekapService
 
     /**
      * BCMath percentage calculation
-     *
-     * @param string $value
-     * @param string $percent
-     * @param int $scale
-     * @return string
      */
     protected function bcPercent(string $value, string $percent, int $scale = 0): string
     {
         $mul = bcmul($value, $percent, $scale + 4);
+
         return bcdiv($mul, '100', $scale);
     }
 
     /**
      * Convert value to numeric string for BCMath
      *
-     * @param mixed $v
-     * @param int $scale
-     * @return string
+     * @param  mixed  $v
      */
     protected function numStr($v, int $scale = 0): string
     {
         if ($v === null || $v === '') {
-            return $scale > 0 ? ('0.' . str_repeat('0', $scale)) : '0';
+            return $scale > 0 ? ('0.'.str_repeat('0', $scale)) : '0';
         }
+
         return (string) $v;
     }
 
@@ -305,10 +394,6 @@ class RekapAlokasiService extends BaseRekapService
 
     /**
      * Update or create rekap alokasi based on rekap zis data (legacy method)
-     *
-     * @param int $unitId
-     * @param string $period
-     * @return RekapAlokasi
      */
     public function updateOrCreateRekapAlokasi(int $unitId, string $period): RekapAlokasi
     {
@@ -320,7 +405,7 @@ class RekapAlokasiService extends BaseRekapService
                 ->where('period', $period)
                 ->first();
 
-            if (!$rekapZis) {
+            if (! $rekapZis) {
                 throw new \Exception("RekapZis record not found for unit_id: {$unitId} and period: {$period}");
             }
 
@@ -428,18 +513,17 @@ class RekapAlokasiService extends BaseRekapService
             );
 
             DB::commit();
+
             return $rekapAlokasi;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating rekap alokasi: ' . $e->getMessage());
+            Log::error('Error updating rekap alokasi: '.$e->getMessage());
             throw $e;
         }
     }
 
     /**
      * Update all rekap alokasi records (legacy method)
-     *
-     * @return array
      */
     public function rebuildAllRekapAlokasi(): array
     {
@@ -455,23 +539,27 @@ class RekapAlokasiService extends BaseRekapService
                     );
 
                     $results[] = [
+                        'id' => $rekapZis->id,
                         'unit_id' => $rekapZis->unit_id,
                         'periode' => $rekapZis->period,
-                        'status' => 'success'
+                        'status' => 'success',
                     ];
                 } else {
-                    $errorMessage = 'Missing required data: ' .
-                        ($rekapZis->unit_id === null ? 'unit_id is null' : '') .
-                        ($rekapZis->period === null ? 'period is null' : '');
-
-                    Log::error("Cannot update rekap alokasi: {$errorMessage} for rekap_zis ID: {$rekapZis->id}");
+                    $errors = [];
+                    if ($rekapZis->unit_id === null) {
+                        $errors[] = 'unit_id is null';
+                    }
+                    if ($rekapZis->period === null) {
+                        $errors[] = 'period is null';
+                    }
+                    $errorMessage = 'Missing required data: '.implode(', ', $errors);
 
                     $results[] = [
                         'id' => $rekapZis->id,
                         'unit_id' => $rekapZis->unit_id,
                         'periode' => $rekapZis->period,
                         'status' => 'error',
-                        'message' => $errorMessage
+                        'message' => $errorMessage,
                     ];
                 }
             } catch (\Exception $e) {
@@ -482,7 +570,7 @@ class RekapAlokasiService extends BaseRekapService
                     'unit_id' => $rekapZis->unit_id ?? 'unknown',
                     'periode' => $rekapZis->period ?? 'unknown',
                     'status' => 'error',
-                    'message' => $e->getMessage()
+                    'message' => $e->getMessage(),
                 ];
             }
         }

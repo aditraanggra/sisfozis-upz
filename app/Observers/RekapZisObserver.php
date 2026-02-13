@@ -2,80 +2,81 @@
 
 namespace App\Observers;
 
-use App\Models\RekapZis;
 use App\Jobs\UpdateRekapAlokasi;
+use App\Models\RekapZis;
 
 class RekapZisObserver
 {
     /**
      * Handle the RekapZis "created" event.
      *
-     * @param  \App\Models\RekapZis  $rekapZis
      * @return void
      */
     public function created(RekapZis $rekapZis)
     {
-        $this->dispatchUpdateJob($rekapZis);
+        $this->dispatchUpdateJobs($rekapZis);
     }
 
     /**
      * Handle the RekapZis "updated" event.
      *
-     * @param  \App\Models\RekapZis  $rekapZis
      * @return void
      */
     public function updated(RekapZis $rekapZis)
     {
-        $this->dispatchUpdateJob($rekapZis);
+        $this->dispatchUpdateJobs($rekapZis);
     }
 
     /**
      * Handle the RekapZis "deleted" event.
      *
-     * @param  \App\Models\RekapZis  $rekapZis
      * @return void
      */
     public function deleted(RekapZis $rekapZis)
     {
-        // When a rekap_zis record is deleted, we might want to remove the corresponding 
+        // When a rekap_zis record is deleted, we might want to remove the corresponding
         // rekap_alokasi record or update it to reflect zero values
-        $this->dispatchUpdateJob($rekapZis);
+        $this->dispatchUpdateJobs($rekapZis);
     }
 
     /**
      * Handle the RekapZis "restored" event.
      *
-     * @param  \App\Models\RekapZis  $rekapZis
      * @return void
      */
     public function restored(RekapZis $rekapZis)
     {
-        $this->dispatchUpdateJob($rekapZis);
+        $this->dispatchUpdateJobs($rekapZis);
     }
 
     /**
      * Handle the RekapZis "force deleted" event.
      *
-     * @param  \App\Models\RekapZis  $rekapZis
      * @return void
      */
     public function forceDeleted(RekapZis $rekapZis)
     {
         // Similar to deleted event handling
-        $this->dispatchUpdateJob($rekapZis);
+        $this->dispatchUpdateJobs($rekapZis);
     }
 
     /**
-     * Dispatch the update job
+     * Dispatch update jobs for all relevant periods
      *
-     * @param RekapZis $rekapZis
      * @return void
      */
-    private function dispatchUpdateJob(RekapZis $rekapZis)
+    private function dispatchUpdateJobs(RekapZis $rekapZis)
     {
-        UpdateRekapAlokasi::dispatch(
-            $rekapZis->unit_id,
-            $rekapZis->period
-        );
+        // Dispatch jobs for all periods that may be affected:
+        // - The specific period (harian, bulanan, tahunan)
+        // - All related periods if needed
+        $periods = ['harian', 'bulanan', 'tahunan'];
+
+        foreach ($periods as $period) {
+            UpdateRekapAlokasi::dispatch(
+                $rekapZis->unit_id,
+                $period
+            );
+        }
     }
 }
