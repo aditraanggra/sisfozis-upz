@@ -194,12 +194,15 @@ class RekapAlokasiService extends BaseRekapService
         // Add daily totals
         foreach ($dailyData as $day) {
             // Handle both object and array formats
-            $amount = is_object($day) ? ($day->total_zf_amount ?? 0) : ($day['total_zf_amount'] ?? 0);
-            $amount = (float) $amount;
-            $totals['total_zf_amount'] += $amount;
-            $totals['total_zf_rice'] += $amount;
-            $totals['total_zm_amount'] += $amount;
-            $totals['total_ifs_amount'] += $amount;
+            $zfAmount = is_object($day) ? ($day->total_zf_amount ?? 0) : ($day['total_zf_amount'] ?? 0);
+            $zfRice = is_object($day) ? ($day->total_zf_rice ?? 0) : ($day['total_zf_rice'] ?? 0);
+            $zmAmount = is_object($day) ? ($day->total_zm_amount ?? 0) : ($day['total_zm_amount'] ?? 0);
+            $ifsAmount = is_object($day) ? ($day->total_ifs_amount ?? 0) : ($day['total_ifs_amount'] ?? 0);
+
+            $totals['total_zf_amount'] += (float) $zfAmount;
+            $totals['total_zf_rice'] += (float) $zfRice;
+            $totals['total_zm_amount'] += (float) $zmAmount;
+            $totals['total_ifs_amount'] += (float) $ifsAmount;
         }
 
         // Add monthly totals (only if no daily records exist for that month)
@@ -217,12 +220,15 @@ class RekapAlokasiService extends BaseRekapService
             // Only add monthly total if the month is within the target year
             // AND there are no daily records for any day in this month
             if ($monthYear === $year && ! in_array($monthKey, $dailyMonthKeys)) {
-                $amount = is_object($month) ? ($month->total_zf_amount ?? 0) : ($month['total_zf_amount'] ?? 0);
-                $amount = (float) $amount;
-                $totals['total_zf_amount'] += $amount;
-                $totals['total_zf_rice'] += $amount;
-                $totals['total_zm_amount'] += $amount;
-                $totals['total_ifs_amount'] += $amount;
+                $zfAmount = is_object($month) ? ($month->total_zf_amount ?? 0) : ($month['total_zf_amount'] ?? 0);
+                $zfRice = is_object($month) ? ($month->total_zf_rice ?? 0) : ($month['total_zf_rice'] ?? 0);
+                $zmAmount = is_object($month) ? ($month->total_zm_amount ?? 0) : ($month['total_zm_amount'] ?? 0);
+                $ifsAmount = is_object($month) ? ($month->total_ifs_amount ?? 0) : ($month['total_ifs_amount'] ?? 0);
+
+                $totals['total_zf_amount'] += (float) $zfAmount;
+                $totals['total_zf_rice'] += (float) $zfRice;
+                $totals['total_zm_amount'] += (float) $zmAmount;
+                $totals['total_ifs_amount'] += (float) $ifsAmount;
             }
         }
 

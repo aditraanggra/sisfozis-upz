@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DistributionRequest;
+use App\Http\Resources\DistributionResource;
 use App\Models\Distribution;
 use App\Models\UnitZis;
-use App\Http\Resources\DistributionResource;
-use App\Http\Requests\DistributionRequest;
-use Illuminate\Http\Response;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class DistributionController extends Controller
@@ -19,7 +20,7 @@ class DistributionController extends Controller
     public function index(Request $request)
     {
         $query = Distribution::with(['unit'])
-            ->when(!Auth::user()->isAdmin(), function ($query) {
+            ->when(! User::currentIsAdmin(), function ($query) {
                 return $query->whereHas('unit', function ($q) {
                     $q->where('user_id', Auth::user()->id);
                 });
@@ -41,6 +42,12 @@ class DistributionController extends Controller
         // Handle date range filter if needed
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
+        }
+
+        // Handle year filter
+        if ($request->has('year') && $request->year !== 'all') {
+            $year = (int) $request->year;
+            $query->whereYear('trx_date', $year);
         }
 
         $data = $query->latest('trx_date')->get();
@@ -70,9 +77,9 @@ class DistributionController extends Controller
                 ->response()
                 ->setStatusCode(Response::HTTP_CREATED);
         } catch (\Exception $e) {
+            \Log::error('Error creating Distribution transaction', ['error' => $e->getMessage()]);
             return response()->json([
                 'message' => 'Error creating Distribution transaction',
-                'error' => $e->getMessage()
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -86,7 +93,7 @@ class DistributionController extends Controller
             $Distribution = Distribution::with('unit')->findOrFail($id);
 
             // Check if user can access this record
-            if (!Auth::user()->isAdmin() && $Distribution->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Distribution->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -94,7 +101,7 @@ class DistributionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error retrieving Distribution transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         }
     }
@@ -108,7 +115,7 @@ class DistributionController extends Controller
             $Distribution = Distribution::findOrFail($id);
 
             // Check if user can update this record
-            if (!Auth::user()->isAdmin() && $Distribution->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Distribution->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -127,7 +134,7 @@ class DistributionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error updating Distribution transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -141,7 +148,7 @@ class DistributionController extends Controller
             $Distribution = Distribution::findOrFail($id);
 
             // Check if user can delete this record
-            if (!Auth::user()->isAdmin() && $Distribution->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Distribution->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -151,7 +158,7 @@ class DistributionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error deleting Distribution transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -163,7 +170,7 @@ class DistributionController extends Controller
     {
         $unit = UnitZis::findOrFail($unitId);
 
-        if (!Auth::user()->isAdmin() && $unit->user_id !== Auth::id()) {
+        if (! User::currentIsAdmin() && $unit->user_id !== Auth::id()) {
             abort(Response::HTTP_FORBIDDEN, 'You do not have permission to use this unit');
         }
     }

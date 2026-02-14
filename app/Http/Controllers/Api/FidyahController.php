@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FidyahRequest;
+use App\Http\Resources\FidyahResource;
 use App\Models\Fidyah;
 use App\Models\UnitZis;
-use App\Http\Resources\FidyahResource;
-use App\Http\Requests\FidyahRequest;
-use Illuminate\Http\Response;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class FidyahController extends Controller
@@ -19,7 +20,7 @@ class FidyahController extends Controller
     public function index(Request $request)
     {
         $query = Fidyah::with(['unit'])
-            ->when(!Auth::user()->isAdmin(), function ($query) {
+            ->when(! User::currentIsAdmin(), function ($query) {
                 return $query->whereHas('unit', function ($q) {
                     $q->where('user_id', Auth::user()->id);
                 });
@@ -37,6 +38,12 @@ class FidyahController extends Controller
         // Handle date range filter if needed
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
+        }
+
+        // Handle year filter
+        if ($request->has('year') && $request->year !== 'all') {
+            $year = (int) $request->year;
+            $query->whereYear('trx_date', $year);
         }
 
         $data = $query->latest('trx_date')->get();
@@ -66,9 +73,9 @@ class FidyahController extends Controller
                 ->response()
                 ->setStatusCode(Response::HTTP_CREATED);
         } catch (\Exception $e) {
+            \Log::error('Error creating Fidyah transaction', ['error' => $e->getMessage()]);
             return response()->json([
                 'message' => 'Error creating Fidyah transaction',
-                'error' => $e->getMessage()
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -82,7 +89,7 @@ class FidyahController extends Controller
             $Fidyah = Fidyah::with('unit')->findOrFail($id);
 
             // Check if user can access this record
-            if (!Auth::user()->isAdmin() && $Fidyah->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Fidyah->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -90,7 +97,7 @@ class FidyahController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error retrieving Fidyah transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         }
     }
@@ -104,7 +111,7 @@ class FidyahController extends Controller
             $Fidyah = Fidyah::findOrFail($id);
 
             // Check if user can update this record
-            if (!Auth::user()->isAdmin() && $Fidyah->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Fidyah->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -123,7 +130,7 @@ class FidyahController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error updating Fidyah transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -137,7 +144,7 @@ class FidyahController extends Controller
             $Fidyah = Fidyah::findOrFail($id);
 
             // Check if user can delete this record
-            if (!Auth::user()->isAdmin() && $Fidyah->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $Fidyah->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -147,7 +154,7 @@ class FidyahController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error deleting Fidyah transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -159,7 +166,7 @@ class FidyahController extends Controller
     {
         $unit = UnitZis::findOrFail($unitId);
 
-        if (!Auth::user()->isAdmin() && $unit->user_id !== Auth::id()) {
+        if (! User::currentIsAdmin() && $unit->user_id !== Auth::id()) {
             abort(Response::HTTP_FORBIDDEN, 'You do not have permission to use this unit');
         }
     }

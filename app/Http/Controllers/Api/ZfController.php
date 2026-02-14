@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Zf;
-use App\Models\UnitZis;
-use App\Http\Resources\ZfResource;
 use App\Http\Requests\ZfRequest;
-use Illuminate\Http\Response;
+use App\Http\Resources\ZfResource;
+use App\Models\UnitZis;
+use App\Models\User;
+use App\Models\Zf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class ZfController extends Controller
@@ -19,7 +20,7 @@ class ZfController extends Controller
     public function index(Request $request)
     {
         $query = Zf::with(['unit'])
-            ->when(!Auth::user()->isAdmin(), function ($query) {
+            ->when(! User::currentIsAdmin(), function ($query) {
                 return $query->whereHas('unit', function ($q) {
                     $q->where('user_id', Auth::user()->id);
                 });
@@ -37,6 +38,14 @@ class ZfController extends Controller
         // Handle date range filter if needed
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
+        }
+
+        // Handle year filter
+        if ($request->filled('year') && $request->year !== 'all') {
+            $year = (int) $request->year;
+            if ($year > 0) {
+                $query->whereYear('trx_date', $year);
+            }
         }
 
         $data = $query->latest('trx_date')->get();
@@ -68,7 +77,7 @@ class ZfController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error creating ZF transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -82,7 +91,7 @@ class ZfController extends Controller
             $zf = Zf::with('unit')->findOrFail($id);
 
             // Check if user can access this record
-            if (!Auth::user()->isAdmin() && $zf->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $zf->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -90,7 +99,7 @@ class ZfController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error retrieving ZF transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         }
     }
@@ -99,12 +108,12 @@ class ZfController extends Controller
      * Update the specified resource in storage.
      */
     public function update(ZfRequest $request, string $id)
-    {
-        try {
             $zf = Zf::findOrFail($id);
 
             // Check if user can update this record
-            if (!Auth::user()->isAdmin() && $zf->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $zf->unit?->user_id !== Auth::id()) {
+                abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
+            }
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -123,7 +132,7 @@ class ZfController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error updating ZF transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -137,7 +146,7 @@ class ZfController extends Controller
             $zf = Zf::findOrFail($id);
 
             // Check if user can delete this record
-            if (!Auth::user()->isAdmin() && $zf->unit->user_id !== Auth::id()) {
+            if (! User::currentIsAdmin() && $zf->unit->user_id !== Auth::id()) {
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
@@ -147,7 +156,7 @@ class ZfController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error deleting ZF transaction',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -159,7 +168,7 @@ class ZfController extends Controller
     {
         $unit = UnitZis::findOrFail($unitId);
 
-        if (!Auth::user()->isAdmin() && $unit->user_id !== Auth::id()) {
+        if (! User::currentIsAdmin() && $unit->user_id !== Auth::id()) {
             abort(Response::HTTP_FORBIDDEN, 'You do not have permission to use this unit');
         }
     }

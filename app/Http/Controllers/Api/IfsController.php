@@ -64,6 +64,12 @@ class IfsController extends Controller
             $query->latest('trx_date');
         }
 
+        // Handle year filter
+        if ($request->has('year') && $request->year !== 'all') {
+            $year = (int) $request->year;
+            $query->whereYear('trx_date', $year);
+        }
+
         // Handle pagination
         $perPage = $request->get('per_page', 15);
         $data = $perPage > 0 ? $query->paginate($perPage)->appends($request->query()) : $query->get();
@@ -192,6 +198,12 @@ class IfsController extends Controller
         // Apply same filters as index
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
+        }
+
+        // Handle year filter for statistics
+        if ($request->has('year') && $request->year !== 'all') {
+            $year = (int) $request->year;
+            $query->whereYear('trx_date', $year);
         }
 
         $stats = [

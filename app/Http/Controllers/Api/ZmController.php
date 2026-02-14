@@ -52,6 +52,12 @@ class ZmController extends Controller
             $query->orderBy('no_telp', $direction);
         }
 
+        // Handle year filter
+        if ($request->has('year') && $request->year !== 'all') {
+            $year = (int) $request->year;
+            $query->whereYear('trx_date', $year);
+        }
+
         $data = $query->latest('trx_date')->get();
         /* ->paginate($request->per_page ?? 15)
             ->appends($request->query()); */
@@ -180,6 +186,12 @@ class ZmController extends Controller
         // Apply same filters as index
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->whereBetween('trx_date', [$request->start_date, $request->end_date]);
+        }
+
+        // Handle year filter for statistics
+        if ($request->has('year') && $request->year !== 'all') {
+            $year = (int) $request->year;
+            $query->whereYear('trx_date', $year);
         }
 
         $stats = [
