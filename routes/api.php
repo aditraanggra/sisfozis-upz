@@ -96,5 +96,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // RekapSetor Routes
         Route::get('setor', [App\Http\Controllers\RekapSetorController::class, 'index']);
         Route::get('setor/{rekapSetor}', [App\Http\Controllers\RekapSetorController::class, 'show']);
+
+        // Consolidated ZIS Report (single endpoint for PDF report generation)
+        Route::get('zis-report', [App\Http\Controllers\ZisReportController::class, 'report']);
     });
 });

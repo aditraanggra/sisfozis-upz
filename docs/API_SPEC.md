@@ -5,7 +5,7 @@ Dokumentasi lengkap REST API untuk sistem SISFOZIS (Sistem Informasi Zakat, Infa
 ## Base URL
 
 ```
-/api
+/api/v1
 ```
 
 ## Authentication
@@ -27,7 +27,7 @@ Accept: application/json
 ### 1.1 Register
 
 ```
-POST /api/register
+POST /api/v1/register
 ```
 
 **Request Body:**
@@ -52,7 +52,7 @@ POST /api/register
 ### 1.2 Login
 
 ```
-POST /api/login
+POST /api/v1/login
 ```
 
 **Request Body:**
@@ -77,7 +77,7 @@ POST /api/login
 🔒 **Requires Authentication**
 
 ```
-POST /api/logout
+POST /api/v1/logout
 ```
 
 **Response (200):**
@@ -91,7 +91,7 @@ POST /api/logout
 🔒 **Requires Authentication**
 
 ```
-GET /api/user
+GET /api/v1/user
 ```
 
 **Response (200):**
@@ -107,7 +107,7 @@ GET /api/user
 ### 2.1 Kecamatan (Districts)
 
 ```
-GET /api/kecamatan
+GET /api/v1/kecamatan
 ```
 
 **Response (200):**
@@ -123,7 +123,7 @@ GET /api/kecamatan
 ### 2.2 Desa (Villages)
 
 ```
-GET /api/desa
+GET /api/v1/desa
 ```
 
 **Query Parameters:**
@@ -145,8 +145,8 @@ GET /api/desa
 ### 2.3 Jenis Pembayaran Zakat Fitrah
 
 ```
-GET /api/zf-payment-types
-GET /api/zf-payment-types/{id}
+GET /api/v1/zf-payment-types
+GET /api/v1/zf-payment-types/{id}
 ```
 
 **Query Parameters:**
@@ -185,11 +185,11 @@ GET /api/zf-payment-types/{id}
 ### 3.1 CRUD Unit ZIS
 
 ```
-GET    /api/unit-zis          # List
-POST   /api/unit-zis          # Create
-GET    /api/unit-zis/{id}     # Show
-PUT    /api/unit-zis/{id}     # Update
-DELETE /api/unit-zis/{id}     # Delete
+GET    /api/v1/unit-zis          # List
+POST   /api/v1/unit-zis          # Create
+GET    /api/v1/unit-zis/{id}     # Show
+PUT    /api/v1/unit-zis/{id}     # Update
+DELETE /api/v1/unit-zis/{id}     # Delete
 ```
 
 **Request Body (Create/Update):**
@@ -243,12 +243,12 @@ DELETE /api/unit-zis/{id}     # Delete
 
 **Example Request - Filter by Year:**
 ```
-GET /api/unit-zis?year=2025
+GET /api/v1/unit-zis?year=2025
 ```
 
 **Example Request - Filter by Village:**
 ```
-GET /api/unit-zis?village_id=1
+GET /api/v1/unit-zis?village_id=1
 ```
 
 ---
@@ -276,36 +276,36 @@ GET /api/unit-zis?village_id=1
 ### 4.1 Zakat Fitrah (ZF)
 
 ```
-GET    /api/zf          # List
-POST   /api/zf          # Create
-GET    /api/zf/{id}     # Show
-PUT    /api/zf/{id}     # Update
-DELETE /api/zf/{id}     # Delete
+GET    /api/v1/zf          # List
+POST   /api/v1/zf          # Create
+GET    /api/v1/zf/{id}     # Show
+PUT    /api/v1/zf/{id}     # Update
+DELETE /api/v1/zf/{id}     # Delete
 ```
 
 **Example Request - Get all ZF for year 2025:**
 ```
-GET /api/zf?year=2025&per_page=15&page=1
+GET /api/v1/zf?year=2025&per_page=15&page=1
 ```
 
 **Example Request - Filter by month:**
 ```
-GET /api/zf?month=1&year=2025
+GET /api/v1/zf?month=1&year=2025
 ```
 
 **Example Request - Search by name:**
 ```
-GET /api/zf?search=Ahmad&per_page=10
+GET /api/v1/zf?search=Ahmad&per_page=10
 ```
 
 **Example Request - Get by date range:**
 ```
-GET /api/zf?start_date=2025-01-01&end_date=2025-01-31
+GET /api/v1/zf?start_date=2025-01-01&end_date=2025-01-31
 ```
 
 **Example Request - Create new ZF transaction:**
 ```json
-POST /api/zf
+POST /api/v1/zf
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -352,31 +352,31 @@ Content-Type: application/json
 ### 4.2 Zakat Maal (ZM)
 
 ```
-GET    /api/zm          # List
-POST   /api/zm          # Create
-GET    /api/zm/{id}     # Show
-PUT    /api/zm/{id}     # Update
-DELETE /api/zm/{id}     # Delete
+GET    /api/v1/zm          # List
+POST   /api/v1/zm          # Create
+GET    /api/v1/zm/{id}     # Show
+PUT    /api/v1/zm/{id}     # Update
+DELETE /api/v1/zm/{id}     # Delete
 ```
 
 **Example Request - Get all ZM transactions for 2025:**
 ```
-GET /api/zm?year=2025&per_page=15
+GET /api/v1/zm?year=2025&per_page=15
 ```
 
 **Example Request - Filter by category:**
 ```
-GET /api/zm?category_maal=Pendidikan
+GET /api/v1/zm?category_maal=Pendidikan
 ```
 
 **Example Request - Search by name:**
 ```
-GET /api/zm?search=Budi&per_page=10
+GET /api/v1/zm?search=Budi&per_page=10
 ```
 
 **Example Request - Create new ZM transaction:**
 ```json
-POST /api/zm
+POST /api/v1/zm
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -424,31 +424,31 @@ Content-Type: application/json
 ### 4.3 Infak/Sedekah (IFS)
 
 ```
-GET    /api/ifs          # List
-POST   /api/ifs          # Create
-GET    /api/ifs/{id}     # Show
-PUT    /api/ifs/{id}     # Update
-DELETE /api/ifs/{id}     # Delete
+GET    /api/v1/ifs          # List
+POST   /api/v1/ifs          # Create
+GET    /api/v1/ifs/{id}     # Show
+PUT    /api/v1/ifs/{id}     # Update
+DELETE /api/v1/ifs/{id}     # Delete
 ```
 
 **Example Request - Get all IFS transactions for 2025:**
 ```
-GET /api/ifs?year=2025&per_page=15
+GET /api/v1/ifs?year=2025&per_page=15
 ```
 
 **Example Request - Filter by amount range:**
 ```
-GET /api/ifs?min_amount=100000&max_amount=1000000
+GET /api/v1/ifs?min_amount=100000&max_amount=1000000
 ```
 
 **Example Request - Search by name:**
 ```
-GET /api/ifs?search=Citra&per_page=10
+GET /api/v1/ifs?search=Citra&per_page=10
 ```
 
 **Example Request - Create new IFS transaction:**
 ```json
-POST /api/ifs
+POST /api/v1/ifs
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -464,7 +464,7 @@ Content-Type: application/json
 
 **Example Request - Group donation (total_munfiq > 1):**
 ```json
-POST /api/ifs
+POST /api/v1/ifs
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -511,26 +511,26 @@ Content-Type: application/json
 ### 4.4 Fidyah
 
 ```
-GET    /api/fidyah          # List
-POST   /api/fidyah          # Create
-GET    /api/fidyah/{id}     # Show
-PUT    /api/fidyah/{id}     # Update
-DELETE /api/fidyah/{id}     # Delete
+GET    /api/v1/fidyah          # List
+POST   /api/v1/fidyah          # Create
+GET    /api/v1/fidyah/{id}     # Show
+PUT    /api/v1/fidyah/{id}     # Update
+DELETE /api/v1/fidyah/{id}     # Delete
 ```
 
 **Example Request - Get all Fidyah transactions for 2025:**
 ```
-GET /api/fidyah?year=2025&per_page=15
+GET /api/v1/fidyah?year=2025&per_page=15
 ```
 
 **Example Request - Search by name:**
 ```
-GET /api/fidyah?search=Ahmad&per_page=10
+GET /api/v1/fidyah?search=Ahmad&per_page=10
 ```
 
 **Example Request - Create new Fidyah transaction:**
 ```json
-POST /api/fidyah
+POST /api/v1/fidyah
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -575,11 +575,11 @@ Content-Type: application/json
 ### 4.5 Kotak Amal (Donation Box)
 
 ```
-GET    /api/kotak_amal          # List
-POST   /api/kotak_amal          # Create
-GET    /api/kotak_amal/{id}     # Show
-PUT    /api/kotak_amal/{id}     # Update
-DELETE /api/kotak_amal/{id}     # Delete
+GET    /api/v1/kotak_amal          # List
+POST   /api/v1/kotak_amal          # Create
+GET    /api/v1/kotak_amal/{id}     # Show
+PUT    /api/v1/kotak_amal/{id}     # Update
+DELETE /api/v1/kotak_amal/{id}     # Delete
 ```
 
 **Request Body:**
@@ -604,17 +604,17 @@ DELETE /api/kotak_amal/{id}     # Delete
 
 **Example Request - Get all Kotak Amal for 2025:**
 ```
-GET /api/kotak_amal?year=2025&per_page=15
+GET /api/v1/kotak_amal?year=2025&per_page=15
 ```
 
 **Example Request - Search by description:**
 ```
-GET /api/kotak_amal?search=Pembangunan&per_page=10
+GET /api/v1/kotak_amal?search=Pembangunan&per_page=10
 ```
 
 **Example Request - Create new Kotak Amal transaction:**
 ```json
-POST /api/kotak_amal
+POST /api/v1/kotak_amal
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -635,11 +635,11 @@ Content-Type: application/json
 🔒 **Requires Authentication**
 
 ```
-GET    /api/pendis          # List
-POST   /api/pendis          # Create
-GET    /api/pendis/{id}     # Show
-PUT    /api/pendis/{id}     # Update
-DELETE /api/pendis/{id}     # Delete
+GET    /api/v1/pendis          # List
+POST   /api/v1/pendis          # Create
+GET    /api/v1/pendis/{id}     # Show
+PUT    /api/v1/pendis/{id}     # Update
+DELETE /api/v1/pendis/{id}     # Delete
 ```
 
 **Query Parameters:**
@@ -677,17 +677,17 @@ DELETE /api/pendis/{id}     # Delete
 
 **Example Request - Get Pendis for year 2025:**
 ```
-GET /api/pendis?year=2025&fund_type=ZF&per_page=15
+GET /api/v1/pendis?year=2025&fund_type=ZF&per_page=15
 ```
 
 **Example Request - Filter by asnaf:**
 ```
-GET /api/pendis?asnaf=Fakir&fund_type=IFS
+GET /api/v1/pendis?asnaf=Fakir&fund_type=IFS
 ```
 
 **Example Request - Create new Pendis transaction:**
 ```json
-POST /api/pendis
+POST /api/v1/pendis
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -713,11 +713,11 @@ Content-Type: application/json
 🔒 **Requires Authentication**
 
 ```
-GET    /api/setor          # List
-POST   /api/setor          # Create
-GET    /api/setor/{id}     # Show
-PUT    /api/setor/{id}     # Update
-DELETE /api/setor/{id}     # Delete
+GET    /api/v1/setor          # List
+POST   /api/v1/setor          # Create
+GET    /api/v1/setor/{id}     # Show
+PUT    /api/v1/setor/{id}     # Update
+DELETE /api/v1/setor/{id}     # Delete
 ```
 
 **Request Body:**
@@ -747,7 +747,7 @@ Konfigurasi persentase alokasi dana ZIS (setor, kelola, amil).
 ### 7.1 List Allocation Configs
 
 ```
-GET /api/allocation-configs
+GET /api/v1/allocation-configs
 ```
 
 **Query Parameters:**
@@ -781,7 +781,7 @@ GET /api/allocation-configs
 ### 7.2 Show Allocation Config
 
 ```
-GET /api/allocation-configs/{id}
+GET /api/v1/allocation-configs/{id}
 ```
 
 ### 7.3 Create Allocation Config
@@ -789,7 +789,7 @@ GET /api/allocation-configs/{id}
 🔒 **Admin Only**
 
 ```
-POST /api/allocation-configs
+POST /api/v1/allocation-configs
 ```
 
 **Request Body:**
@@ -830,7 +830,7 @@ POST /api/allocation-configs
 🔒 **Admin Only**
 
 ```
-PUT /api/allocation-configs/{id}
+PUT /api/v1/allocation-configs/{id}
 ```
 
 ### 7.5 Delete Allocation Config
@@ -838,7 +838,7 @@ PUT /api/allocation-configs/{id}
 🔒 **Admin Only**
 
 ```
-DELETE /api/allocation-configs/{id}
+DELETE /api/v1/allocation-configs/{id}
 ```
 
 **Response (204):** No Content
@@ -848,7 +848,7 @@ DELETE /api/allocation-configs/{id}
 Mendapatkan konfigurasi aktif untuk jenis ZIS dan tahun tertentu.
 
 ```
-GET /api/allocation-configs-active
+GET /api/v1/allocation-configs-active
 ```
 
 **Query Parameters:**
@@ -899,17 +899,17 @@ GET /api/allocation-configs-active
 ### 4.6 Comprehensive Statistics
 
 ```
-GET /api/statistics/overview     # Overview statistics for all ZIS types
-GET /api/statistics/trends        # Trends analysis over time
-GET /api/statistics/units         # Unit-wise comparison
-GET /api/statistics/distribution # Distribution by category
-GET /api/statistics/peak-dates   # Peak donation days analysis
+GET /api/v1/statistics/overview     # Overview statistics for all ZIS types
+GET /api/v1/statistics/trends        # Trends analysis over time
+GET /api/v1/statistics/units         # Unit-wise comparison
+GET /api/v1/statistics/distribution # Distribution by category
+GET /api/v1/statistics/peak-dates   # Peak donation days analysis
 ```
 
 #### 4.6.1 Overview Statistics
 
 ```
-GET /api/statistics/overview
+GET /api/v1/statistics/overview
 ```
 
 **Query Parameters:**
@@ -956,7 +956,7 @@ GET /api/statistics/overview
 #### 4.6.2 Trends Analysis
 
 ```
-GET /api/statistics/trends
+GET /api/v1/statistics/trends
 ```
 
 **Query Parameters:**
@@ -1003,7 +1003,7 @@ GET /api/statistics/trends
 #### 4.6.3 Unit-wise Comparison
 
 ```
-GET /api/statistics/units
+GET /api/v1/statistics/units
 ```
 
 **Query Parameters:**
@@ -1047,7 +1047,7 @@ GET /api/statistics/units
 #### 4.6.4 Distribution by Category
 
 ```
-GET /api/statistics/distribution
+GET /api/v1/statistics/distribution
 ```
 
 **Query Parameters:**
@@ -1087,7 +1087,7 @@ GET /api/statistics/distribution
 #### 4.6.5 Peak Donation Days
 
 ```
-GET /api/statistics/peak-dates
+GET /api/v1/statistics/peak-dates
 ```
 
 **Query Parameters:**
@@ -1118,7 +1118,7 @@ GET /api/statistics/peak-dates
 ### 4.7 IFS Statistics
 
 ```
-GET /api/ifs/statistics
+GET /api/v1/ifs/statistics
 ```
 
 **Query Parameters:**
@@ -1153,10 +1153,10 @@ GET /api/ifs/statistics
 ### 8.1 Rekap ZIS
 
 ```
-GET /api/rekap/zis              # List dengan pagination
-GET /api/rekap/zis/{id}         # Detail
-GET /api/rekap/zis-summary      # Summary totals
-GET /api/rekap/zis-monthly      # Monthly statistics
+GET /api/v1/rekap/zis              # List dengan pagination
+GET /api/v1/rekap/zis/{id}         # Detail
+GET /api/v1/rekap/zis-summary      # Summary totals
+GET /api/v1/rekap/zis-monthly      # Monthly statistics
 ```
 
 **Query Parameters (List):**
@@ -1233,7 +1233,7 @@ Query params: `year`, `unit_id`
 ### 4.5 ZM Statistics
 
 ```
-GET /api/zm/statistics
+GET /api/v1/zm/statistics
 ```
 
 **Query Parameters:**
@@ -1264,37 +1264,37 @@ GET /api/zm/statistics
 ### 8.2 Rekap Alokasi
 
 ```
-GET /api/rekap/alokasi              # List
-GET /api/rekap/alokasi/{id}         # Detail
-GET /api/rekap/alokasi-summary      # Summary
-GET /api/rekap/alokasi-monthly      # Monthly stats
+GET /api/v1/rekap/alokasi              # List
+GET /api/v1/rekap/alokasi/{id}         # Detail
+GET /api/v1/rekap/alokasi-summary      # Summary
+GET /api/v1/rekap/alokasi-monthly      # Monthly stats
 ```
 
 ### 8.3 Rekap Pendis (Distribusi)
 
 ```
-GET /api/rekap/pendis               # List
-GET /api/rekap/pendis/{id}          # Detail
-GET /api/rekap/pendis-summary       # Summary
-GET /api/rekap/pendis-monthly       # Monthly stats
-GET /api/rekap/pendis-distribution  # Distribution by asnaf/program
+GET /api/v1/rekap/pendis               # List
+GET /api/v1/rekap/pendis/{id}          # Detail
+GET /api/v1/rekap/pendis-summary       # Summary
+GET /api/v1/rekap/pendis-monthly       # Monthly stats
+GET /api/v1/rekap/pendis-distribution  # Distribution by asnaf/program
 ```
 
 ### 8.4 Rekap Hak Amil
 
 ```
-GET /api/rekap/hak-amil               # List
-GET /api/rekap/hak-amil/{id}          # Detail
-GET /api/rekap/hak-amil-summary       # Summary
-GET /api/rekap/hak-amil-monthly       # Monthly stats
-GET /api/rekap/hak-amil-distribution  # Distribution stats
+GET /api/v1/rekap/hak-amil               # List
+GET /api/v1/rekap/hak-amil/{id}          # Detail
+GET /api/v1/rekap/hak-amil-summary       # Summary
+GET /api/v1/rekap/hak-amil-monthly       # Monthly stats
+GET /api/v1/rekap/hak-amil-distribution  # Distribution stats
 ```
 
 ### 8.5 Rekap Setor
 
 ```
-GET /api/rekap/setor          # List
-GET /api/rekap/setor/{id}     # Detail
+GET /api/v1/rekap/setor          # List
+GET /api/v1/rekap/setor/{id}     # Detail
 ```
 
 **Query Parameters:**
@@ -1310,6 +1310,98 @@ GET /api/rekap/setor/{id}     # Detail
 | sort_direction | string  | `asc` atau `desc`         |
 | per_page       | integer | Items per page            |
 
+### 8.6 Rekap ZIS Report (Consolidated)
+
+Endpoint untuk mendapatkan laporan ZIS terkonsolidasi dalam satu response, cocok untuk generate PDF.
+
+```
+GET /api/v1/rekap/zis-report
+```
+
+**Query Parameters:**
+
+| Parameter   | Type   | Required | Description                              |
+| ----------- | ------ | -------- | ---------------------------------------- |
+| unit_id     | int    | Yes      | ID unit ZIS                              |
+| periode     | string | No       | Periode: `harian`, `bulanan`, `tahunan`  |
+| from_date   | date   | No       | Tanggal mulai (Y-m-d)                    |
+| to_date     | date   | No       | Tanggal akhir (Y-m-d), harus >= from_date |
+
+**Example Request - Get consolidated report for unit:**
+```
+GET /api/v1/rekap/zis-report?unit_id=1
+```
+
+**Example Request - Filter by date range:**
+```
+GET /api/v1/rekap/zis-report?unit_id=1&from_date=2025-01-01&to_date=2025-12-31
+```
+
+**Example Request - Filter by period:**
+```
+GET /api/v1/rekap/zis-report?unit_id=1&periode=bulanan&from_date=2025-01-01&to_date=2025-03-31
+```
+
+**Response (200):**
+
+```json
+{
+    "data": {
+        "total_zf_amount": 50000000,
+        "total_zf_rice": 1000.5,
+        "total_zf_muzakki": 500,
+        "total_zm_amount": 20000000,
+        "total_zm_muzakki": 100,
+        "total_ifs_amount": 10000000,
+        "total_ifs_munfiq": 200,
+        "total_pendis_zf_amount": 15000000,
+        "total_pendis_zf_rice": 300.5,
+        "total_pendis_zm": 5000000,
+        "total_pendis_ifs": 3000000,
+        "total_pendis_amount": 23000000,
+        "total_pendis_rice": 300.5,
+        "total_pm": 150,
+        "total_hak_amil": 2875000,
+        "total_setor_zf_amount": 12000000,
+        "total_setor_zf_rice": 250.0,
+        "total_setor_zm": 3500000,
+        "total_setor_ifs": 2500000,
+        "bukti_setor": "/storage/setor/bukti_001.jpg",
+        "ketua": "Ahmad Hidayat",
+        "sekretaris": "Budi Santoso",
+        "bendahara": "Citra Dewi"
+    }
+}
+```
+
+**Response Fields:**
+
+| Field                    | Type    | Description                           |
+| ------------------------ | ------- | ------------------------------------- |
+| total_zf_amount          | int     | Total zakat fitrah uang (Rp)          |
+| total_zf_rice            | float   | Total zakat fitrah beras (kg)         |
+| total_zf_muzakki         | int     | Total muzakki zakat fitrah            |
+| total_zm_amount          | int     | Total zakat maal uang (Rp)            |
+| total_zm_muzakki         | int     | Total muzakki zakat maal              |
+| total_ifs_amount         | int     | Total infak/sedekah (Rp)              |
+| total_ifs_munfiq         | int     | Total munfiq infak/sedekah            |
+| total_pendis_zf_amount   | int     | Total distribusi ZF uang (Rp)         |
+| total_pendis_zf_rice     | float   | Total distribusi ZF beras (kg)        |
+| total_pendis_zm          | int     | Total distribusi ZM (Rp)              |
+| total_pendis_ifs         | int     | Total distribusi IFS (Rp)             |
+| total_pendis_amount      | int     | Total distribusi uang (Rp)            |
+| total_pendis_rice        | float   | Total distribusi beras (kg)           |
+| total_pm                 | int     | Total penerima manfaat                |
+| total_hak_amil           | int     | Total hak amil yang diserap (Rp)      |
+| total_setor_zf_amount    | int     | Total setoran ZF uang (Rp)            |
+| total_setor_zf_rice      | float   | Total setoran ZF beras (kg)           |
+| total_setor_zm           | int     | Total setoran ZM (Rp)                 |
+| total_setor_ifs          | int     | Total setoran IFS (Rp)                |
+| bukti_setor              | string  | URL bukti setor terakhir (nullable)   |
+| ketua                    | string  | Nama ketua unit                       |
+| sekretaris               | string  | Nama sekretaris/wakil unit            |
+| bendahara                | string  | Nama bendahara unit                   |
+
 ---
 
 ## 9. Admin Only Endpoints
@@ -1319,9 +1411,9 @@ GET /api/rekap/setor/{id}     # Detail
 ### 9.1 Manage ZF Payment Types
 
 ```
-POST   /api/zf-payment-types              # Create
-PUT    /api/zf-payment-types/{id}         # Update
-DELETE /api/zf-payment-types/{id}         # Delete
+POST   /api/v1/zf-payment-types              # Create
+PUT    /api/v1/zf-payment-types/{id}         # Update
+DELETE /api/v1/zf-payment-types/{id}         # Delete
 ```
 
 **Request Body:**
