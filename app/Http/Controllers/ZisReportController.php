@@ -14,9 +14,6 @@ use Illuminate\Http\Request;
  */
 class ZisReportController extends Controller
 {
-    /**
-     * @var ZisReportService
-     */
     protected ZisReportService $reportService;
 
     public function __construct(ZisReportService $reportService)
@@ -34,25 +31,24 @@ class ZisReportController extends Controller
      *   - periode: string (harian|bulanan|tahunan)
      *   - from_date: date (Y-m-d, start of date range)
      *   - to_date: date (Y-m-d, end of date range)
-     *
-     * @param  Request $request
-     * @return JsonResponse
      */
     public function report(Request $request): JsonResponse
     {
         // Validate incoming parameters
         $validated = $request->validate([
-            'unit_id'   => 'required|integer|exists:unit_zis,id',
-            'periode'   => 'nullable|string|in:harian,bulanan,tahunan',
+            'unit_id' => 'required|integer|exists:unit_zis,id',
+            'periode' => 'nullable|string|in:harian,bulanan,tahunan',
+            'year' => 'nullable|integer|min:2020|max:2100',
             'from_date' => 'nullable|date|date_format:Y-m-d',
-            'to_date'   => 'nullable|date|date_format:Y-m-d|after_or_equal:from_date',
+            'to_date' => 'nullable|date|date_format:Y-m-d|required_with:from_date|after_or_equal:from_date',
         ]);
 
-        $unitId  = (int) $validated['unit_id'];
+        $unitId = (int) $validated['unit_id'];
         $filters = array_filter([
-            'periode'   => $validated['periode'] ?? null,
+            'periode' => $validated['periode'] ?? null,
+            'year' => $validated['year'] ?? null,
             'from_date' => $validated['from_date'] ?? null,
-            'to_date'   => $validated['to_date'] ?? null,
+            'to_date' => $validated['to_date'] ?? null,
         ]);
 
         $reportData = $this->reportService->generateReport($unitId, $filters);

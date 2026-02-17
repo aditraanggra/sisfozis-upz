@@ -12,7 +12,6 @@ class RekapHakAmilController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
@@ -27,6 +26,11 @@ class RekapHakAmilController extends Controller
         // Filter by periode if provided
         if ($request->has('periode')) {
             $query->where('periode', $request->periode);
+        }
+
+        // Filter by year if provided
+        if ($request->has('year')) {
+            $query->whereYear('periode_date', $request->year);
         }
 
         // Date range filter
@@ -47,15 +51,14 @@ class RekapHakAmilController extends Controller
                 'total' => $rekapHakAmil->total(),
                 'per_page' => $rekapHakAmil->perPage(),
                 'current_page' => $rekapHakAmil->currentPage(),
-                'total_pages' => $rekapHakAmil->lastPage()
-            ]
+                'total_pages' => $rekapHakAmil->lastPage(),
+            ],
         ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\RekapHakAmil  $rekapHakAmil
      * @return \App\Http\Resources\RekapHakAmilResource
      */
     public function show(RekapHakAmil $rekapHakAmil)

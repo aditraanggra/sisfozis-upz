@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RekapZis;
 use App\Http\Resources\RekapZisResource;
-use App\Http\Resources\RekapZisCollection;
+use App\Models\RekapZis;
 use Illuminate\Http\Request;
 
 class RekapZisController extends Controller
@@ -12,7 +11,6 @@ class RekapZisController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
@@ -27,6 +25,11 @@ class RekapZisController extends Controller
         // Filter by period if provided
         if ($request->has('period')) {
             $query->where('period', $request->period);
+        }
+
+        // Filter by year if provided
+        if ($request->has('year')) {
+            $query->whereYear('period_date', $request->year);
         }
 
         // Date range filter
@@ -47,15 +50,14 @@ class RekapZisController extends Controller
                 'total' => $rekapZis->total(),
                 'per_page' => $rekapZis->perPage(),
                 'current_page' => $rekapZis->currentPage(),
-                'total_pages' => $rekapZis->lastPage()
-            ]
+                'total_pages' => $rekapZis->lastPage(),
+            ],
         ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\RekapZis  $rekapZis
      * @return \App\Http\Resources\RekapZisResource
      */
     public function show(RekapZis $rekapZis)
@@ -66,7 +68,6 @@ class RekapZisController extends Controller
     /**
      * Get summary statistics for dashboard.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function summary(Request $request)
@@ -104,7 +105,6 @@ class RekapZisController extends Controller
     /**
      * Get monthly statistics grouped by period.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function monthlyStats(Request $request)
@@ -114,7 +114,7 @@ class RekapZisController extends Controller
         // Date range filter
         if ($request->has('year')) {
             $year = $request->year;
-            $query->whereRaw("YEAR(period_date) = ?", [$year]);
+            $query->whereRaw('YEAR(period_date) = ?', [$year]);
         }
 
         // Filter by unit if provided

@@ -202,7 +202,7 @@ class ZisReportService
     /**
      * Apply common period and date range filters to a rekap query.
      *
-     * Supports filters: periode, from_date, to_date.
+     * Supports filters: periode, year, from_date, to_date.
      * Uses the correct column names for the target table.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
@@ -213,6 +213,10 @@ class ZisReportService
     {
         if (! empty($filters['periode'])) {
             $query->where($periodeCol, $filters['periode']);
+        }
+
+        if (! empty($filters['year'])) {
+            $query->whereYear($periodeDateCol, $filters['year']);
         }
 
         if (! empty($filters['from_date']) && ! empty($filters['to_date'])) {

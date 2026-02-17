@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RekapPendis;
 use App\Http\Resources\RekapPendisResource;
+use App\Models\RekapPendis;
 use Illuminate\Http\Request;
 
 class RekapPendisController extends Controller
@@ -11,7 +11,6 @@ class RekapPendisController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
@@ -26,6 +25,11 @@ class RekapPendisController extends Controller
         // Filter by periode if provided
         if ($request->has('periode')) {
             $query->where('periode', $request->periode);
+        }
+
+        // Filter by year if provided
+        if ($request->has('year')) {
+            $query->whereYear('periode_date', $request->year);
         }
 
         // Date range filter
@@ -46,15 +50,14 @@ class RekapPendisController extends Controller
                 'total' => $rekapPendis->total(),
                 'per_page' => $rekapPendis->perPage(),
                 'current_page' => $rekapPendis->currentPage(),
-                'total_pages' => $rekapPendis->lastPage()
-            ]
+                'total_pages' => $rekapPendis->lastPage(),
+            ],
         ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\RekapPendis  $rekapPendis
      * @return \App\Http\Resources\RekapPendisResource
      */
     public function show(RekapPendis $rekapPendis)
@@ -65,7 +68,6 @@ class RekapPendisController extends Controller
     /**
      * Get summary statistics for dashboard.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function summary(Request $request)
@@ -127,7 +129,6 @@ class RekapPendisController extends Controller
     /**
      * Get monthly statistics grouped by periode.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function monthlyStats(Request $request)
@@ -137,7 +138,7 @@ class RekapPendisController extends Controller
         // Date range filter
         if ($request->has('year')) {
             $year = $request->year;
-            $query->whereRaw("YEAR(periode_date) = ?", [$year]);
+            $query->whereRaw('YEAR(periode_date) = ?', [$year]);
         }
 
         // Filter by unit if provided
@@ -165,7 +166,6 @@ class RekapPendisController extends Controller
     /**
      * Get distribution statistics by asnaf and program.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function distributionStats(Request $request)
@@ -180,7 +180,7 @@ class RekapPendisController extends Controller
         // Filter by year if provided
         if ($request->has('year')) {
             $year = $request->year;
-            $query->whereRaw("YEAR(periode_date) = ?", [$year]);
+            $query->whereRaw('YEAR(periode_date) = ?', [$year]);
         }
 
         // Filter by unit if provided
@@ -188,7 +188,7 @@ class RekapPendisController extends Controller
             $query->where('unit_id', $request->unit_id);
         }
 
-        $totals = $query->selectRaw("
+        $totals = $query->selectRaw('
             SUM(t_pendis_fakir_amount) as fakir_amount,
             SUM(t_pendis_miskin_amount) as miskin_amount,
             SUM(t_pendis_fisabilillah_amount) as fisabilillah_amount,
@@ -199,7 +199,7 @@ class RekapPendisController extends Controller
             SUM(t_pendis_fisabilillah_rice) as fisabilillah_rice,
             SUM(t_pendis_kemanusiaan_rice) as kemanusiaan_rice,
             SUM(t_pendis_dakwah_rice) as dakwah_rice
-        ")
+        ')
             ->first()
             ->toArray();
 

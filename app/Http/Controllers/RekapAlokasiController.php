@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RekapAlokasi;
 use App\Http\Resources\RekapAlokasiResource;
+use App\Models\RekapAlokasi;
 use Illuminate\Http\Request;
 
 class RekapAlokasiController extends Controller
@@ -11,7 +11,6 @@ class RekapAlokasiController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
@@ -26,6 +25,11 @@ class RekapAlokasiController extends Controller
         // Filter by periode if provided
         if ($request->has('periode')) {
             $query->where('periode', $request->periode);
+        }
+
+        // Filter by year if provided
+        if ($request->has('year')) {
+            $query->whereYear('periode_date', $request->year);
         }
 
         // Date range filter
@@ -48,15 +52,14 @@ class RekapAlokasiController extends Controller
                 'total' => $rekapAlokasi->total(),
                 'per_page' => $rekapAlokasi->perPage(),
                 'current_page' => $rekapAlokasi->currentPage(),
-                'total_pages' => $rekapAlokasi->lastPage()
-            ]
+                'total_pages' => $rekapAlokasi->lastPage(),
+            ],
         ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\RekapAlokasi  $rekapAlokasi
      * @return \App\Http\Resources\RekapAlokasiResource
      */
     public function show(RekapAlokasi $rekapAlokasi)
@@ -67,7 +70,6 @@ class RekapAlokasiController extends Controller
     /**
      * Get summary statistics for dashboard.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function summary(Request $request)
@@ -126,7 +128,6 @@ class RekapAlokasiController extends Controller
     /**
      * Get monthly statistics grouped by periode.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function monthlyStats(Request $request)
@@ -136,7 +137,7 @@ class RekapAlokasiController extends Controller
         // Date range filter
         if ($request->has('year')) {
             $year = $request->year;
-            $query->whereRaw("YEAR(periode_date) = ?", [$year]);
+            $query->whereRaw('YEAR(periode_date) = ?', [$year]);
         }
 
         // Filter by unit if provided

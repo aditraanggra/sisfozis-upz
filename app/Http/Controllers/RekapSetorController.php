@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Resources\RekapSetorResource;
 use App\Models\RekapSetor;
 use Illuminate\Http\Request;
@@ -12,7 +11,6 @@ class RekapSetorController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
@@ -27,6 +25,11 @@ class RekapSetorController extends Controller
         // Filter by periode if provided
         if ($request->has('periode')) {
             $query->where('periode', $request->periode);
+        }
+
+        // Filter by year if provided
+        if ($request->has('year')) {
+            $query->whereYear('periode_date', $request->year);
         }
 
         // Filter by date range if provided
@@ -54,8 +57,8 @@ class RekapSetorController extends Controller
                 'total' => $rekapSetors->total(),
                 'per_page' => $rekapSetors->perPage(),
                 'current_page' => $rekapSetors->currentPage(),
-                'total_pages' => $rekapSetors->lastPage()
-            ]
+                'total_pages' => $rekapSetors->lastPage(),
+            ],
         ]);
     }
 
@@ -74,7 +77,6 @@ class RekapSetorController extends Controller
     /**
      * Get total statistics.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function statistics(Request $request)
@@ -105,7 +107,7 @@ class RekapSetorController extends Controller
         ];
 
         return response()->json([
-            'data' => $stats
+            'data' => $stats,
         ]);
     }
 }
