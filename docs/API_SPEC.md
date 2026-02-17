@@ -1165,6 +1165,7 @@ GET /api/v1/rekap/zis-monthly      # Monthly statistics
 | ---------- | ------- | ------------------------------------------------ |
 | unit_id    | integer | Filter by unit                                   |
 | period     | string  | Filter by period: `harian`, `bulanan`, `tahunan` |
+| year       | integer | Filter by year (e.g., 2025)                      |
 | from_date  | date    | Tanggal mulai                                    |
 | to_date    | date    | Tanggal akhir                                    |
 | sort_by    | string  | Field untuk sorting (default: `period_date`)     |
@@ -1270,6 +1271,19 @@ GET /api/v1/rekap/alokasi-summary      # Summary
 GET /api/v1/rekap/alokasi-monthly      # Monthly stats
 ```
 
+**Query Parameters (List):**
+
+| Parameter  | Type    | Description                                      |
+| ---------- | ------- | ------------------------------------------------ |
+| unit_id    | integer | Filter by unit                                   |
+| periode    | string  | Filter by periode: `harian`, `bulanan`, `tahunan`|
+| year       | integer | Filter by year (e.g., 2025)                      |
+| from_date  | date    | Tanggal mulai                                    |
+| to_date    | date    | Tanggal akhir                                    |
+| sort_by    | string  | Field untuk sorting (default: `periode_date`)    |
+| sort_order | string  | `asc` atau `desc` (default: `desc`)              |
+| per_page   | integer | Items per page (default: 15)                     |
+
 ### 8.3 Rekap Pendis (Distribusi)
 
 ```
@@ -1280,6 +1294,19 @@ GET /api/v1/rekap/pendis-monthly       # Monthly stats
 GET /api/v1/rekap/pendis-distribution  # Distribution by asnaf/program
 ```
 
+**Query Parameters (List):**
+
+| Parameter  | Type    | Description                                      |
+| ---------- | ------- | ------------------------------------------------ |
+| unit_id    | integer | Filter by unit                                   |
+| periode    | string  | Filter by periode: `harian`, `bulanan`, `tahunan`|
+| year       | integer | Filter by year (e.g., 2025)                      |
+| from_date  | date    | Tanggal mulai                                    |
+| to_date    | date    | Tanggal akhir                                    |
+| sort_by    | string  | Field untuk sorting (default: `periode_date`)    |
+| sort_order | string  | `asc` atau `desc` (default: `desc`)              |
+| per_page   | integer | Items per page (default: 15)                     |
+
 ### 8.4 Rekap Hak Amil
 
 ```
@@ -1289,6 +1316,19 @@ GET /api/v1/rekap/hak-amil-summary       # Summary
 GET /api/v1/rekap/hak-amil-monthly       # Monthly stats
 GET /api/v1/rekap/hak-amil-distribution  # Distribution stats
 ```
+
+**Query Parameters (List):**
+
+| Parameter  | Type    | Description                                      |
+| ---------- | ------- | ------------------------------------------------ |
+| unit_id    | integer | Filter by unit                                   |
+| periode    | string  | Filter by periode: `harian`, `bulanan`, `tahunan`|
+| year       | integer | Filter by year (e.g., 2025)                      |
+| from_date  | date    | Tanggal mulai                                    |
+| to_date    | date    | Tanggal akhir                                    |
+| sort_by    | string  | Field untuk sorting (default: `periode_date`)    |
+| sort_order | string  | `asc` atau `desc` (default: `desc`)              |
+| per_page   | integer | Items per page (default: 15)                     |
 
 ### 8.5 Rekap Setor
 
@@ -1303,6 +1343,7 @@ GET /api/v1/rekap/setor/{id}     # Detail
 | -------------- | ------- | ------------------------- |
 | unit_id        | integer | Filter by unit            |
 | periode        | string  | Filter by periode         |
+| year           | integer | Filter by year (e.g., 2025)|
 | from_date      | date    | Tanggal mulai             |
 | to_date        | date    | Tanggal akhir             |
 | with_unit      | string  | `true` untuk include unit |
@@ -1324,12 +1365,18 @@ GET /api/v1/rekap/zis-report
 | ----------- | ------ | -------- | ---------------------------------------- |
 | unit_id     | int    | Yes      | ID unit ZIS                              |
 | periode     | string | No       | Periode: `harian`, `bulanan`, `tahunan`  |
+| year        | int    | No       | Filter by year (e.g., 2025)              |
 | from_date   | date   | No       | Tanggal mulai (Y-m-d)                    |
 | to_date     | date   | No       | Tanggal akhir (Y-m-d), harus >= from_date |
 
 **Example Request - Get consolidated report for unit:**
 ```
 GET /api/v1/rekap/zis-report?unit_id=1
+```
+
+**Example Request - Filter by year:**
+```
+GET /api/v1/rekap/zis-report?unit_id=1&year=2025
 ```
 
 **Example Request - Filter by date range:**
