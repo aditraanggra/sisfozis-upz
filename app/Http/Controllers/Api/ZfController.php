@@ -108,12 +108,12 @@ class ZfController extends Controller
      * Update the specified resource in storage.
      */
     public function update(ZfRequest $request, string $id)
+    {
+        try {
             $zf = Zf::findOrFail($id);
 
             // Check if user can update this record
             if (! User::currentIsAdmin() && $zf->unit?->user_id !== Auth::id()) {
-                abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
-            }
                 abort(Response::HTTP_FORBIDDEN, 'Unauthorized access');
             }
 
