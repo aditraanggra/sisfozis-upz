@@ -3,25 +3,16 @@
 namespace App\Observers;
 
 use App\Models\Distribution;
-use App\Services\RekapPendisService;
 use App\Jobs\UpdateRekapPendis;
 
 class PendisObserver
 {
-
-    protected $rekapPendisService;
-
-    public function __construct(RekapPendisService $rekapPendisService)
-    {
-        $this->rekapPendisService = $rekapPendisService;
-    }
     /**
      * Handle the Distribution "created" event.
      */
     public function created(Distribution $distribution): void
     {
-        //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->dispatchUpdateJob($distribution);
     }
 
     /**
@@ -29,8 +20,13 @@ class PendisObserver
      */
     public function updated(Distribution $distribution): void
     {
-        //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        if ($distribution->isDirty('trx_date') || $distribution->isDirty('unit_id')) {
+            $oldDate = $distribution->getOriginal('trx_date');
+            $oldUnitId = $distribution->getOriginal('unit_id');
+            UpdateRekapPendis::updateAllPeriods($oldDate, $oldUnitId);
+        }
+
+        $this->dispatchUpdateJob($distribution);
     }
 
     /**
@@ -38,8 +34,7 @@ class PendisObserver
      */
     public function deleted(Distribution $distribution): void
     {
-        //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->dispatchUpdateJob($distribution);
     }
 
     /**
@@ -47,8 +42,7 @@ class PendisObserver
      */
     public function restored(Distribution $distribution): void
     {
-        //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->dispatchUpdateJob($distribution);
     }
 
     /**
@@ -56,13 +50,14 @@ class PendisObserver
      */
     public function forceDeleted(Distribution $distribution): void
     {
-        //
-        $this->rekapPendisService->updateDailyRekapPendis($distribution->trx_date, $distribution->unit_id);
+        $this->dispatchUpdateJob($distribution);
     }
 
-    /* private function dispatchUpdateJob(Distribution $distribution): void
+    /**
+     * Dispatch jobs to update rekapitulasi for all periods
+     */
+    private function dispatchUpdateJob(Distribution $distribution): void
     {
-        UpdateRekapPendis::dispatch($distribution->trx_date, $distribution->unit_id);
-    } 
-        */
+        UpdateRekapPendis::updateAllPeriods($distribution->trx_date, $distribution->unit_id);
+    }
 }

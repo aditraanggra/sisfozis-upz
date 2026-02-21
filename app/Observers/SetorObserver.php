@@ -3,36 +3,30 @@
 namespace App\Observers;
 
 use App\Models\SetorZis;
-use App\Services\RekapSetorService;
+use App\Jobs\UpdateRekapSetor;
 
 class SetorObserver
 {
-
-    protected $rekapSetorService;
-
-    public function __construct(RekapSetorService $rekapSetorService)
-    {
-        $this->rekapSetorService = $rekapSetorService;
-    }
     /**
      * Handle the SetorZis "created" event.
      */
     public function created(SetorZis $setorZis): void
     {
-        //
-        $this->rekapSetorService->updateDailyRekapitulasi($setorZis->trx_date, $setorZis->unit_id);
+        $this->dispatchUpdateJob($setorZis);
     }
 
-    /** 
+    /**
      * Handle the SetorZis "updated" event.
      */
     public function updated(SetorZis $setorZis): void
     {
-        //
         if ($setorZis->isDirty('trx_date') || $setorZis->isDirty('unit_id')) {
             $oldDate = $setorZis->getOriginal('trx_date');
-            $this->rekapSetorService->updateDailyRekapitulasi($oldDate, $setorZis->unit_id);
+            $oldUnitId = $setorZis->getOriginal('unit_id');
+            UpdateRekapSetor::updateAllPeriods($oldDate, $oldUnitId);
         }
+
+        $this->dispatchUpdateJob($setorZis);
     }
 
     /**
@@ -40,8 +34,7 @@ class SetorObserver
      */
     public function deleted(SetorZis $setorZis): void
     {
-        //
-        $this->rekapSetorService->updateDailyRekapitulasi($setorZis->trx_date, $setorZis->unit_id);
+        $this->dispatchUpdateJob($setorZis);
     }
 
     /**
@@ -49,8 +42,7 @@ class SetorObserver
      */
     public function restored(SetorZis $setorZis): void
     {
-        //
-        $this->rekapSetorService->updateDailyRekapitulasi($setorZis->trx_date, $setorZis->unit_id);
+        $this->dispatchUpdateJob($setorZis);
     }
 
     /**
@@ -58,7 +50,14 @@ class SetorObserver
      */
     public function forceDeleted(SetorZis $setorZis): void
     {
-        //
-        $this->rekapSetorService->updateDailyRekapitulasi($setorZis->trx_date, $setorZis->unit_id);
+        $this->dispatchUpdateJob($setorZis);
+    }
+
+    /**
+     * Dispatch jobs to update rekapitulasi for all periods
+     */
+    private function dispatchUpdateJob(SetorZis $setorZis): void
+    {
+        UpdateRekapSetor::updateAllPeriods($setorZis->trx_date, $setorZis->unit_id);
     }
 }

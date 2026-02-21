@@ -3,24 +3,16 @@
 namespace App\Observers;
 
 use App\Models\Distribution;
-use App\Services\RekapHakAmilService;
+use App\Jobs\UpdateRekapHakAmil;
 
 class HakAmilObserver
 {
-
-    protected $rekapHakAmilService;
-
-    public function __construct(RekapHakAmilService $rekapHakAmilService)
-    {
-        $this->rekapHakAmilService = $rekapHakAmilService;
-    }
     /**
      * Handle the Distribution "created" event.
      */
     public function created(Distribution $distribution): void
     {
-        //
-        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
+        $this->dispatchUpdateJob($distribution);
     }
 
     /**
@@ -28,8 +20,13 @@ class HakAmilObserver
      */
     public function updated(Distribution $distribution): void
     {
-        //
-        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
+        if ($distribution->wasChanged('trx_date') || $distribution->wasChanged('unit_id')) {
+            $oldDate = $distribution->getOriginal('trx_date');
+            $oldUnitId = $distribution->getOriginal('unit_id');
+            UpdateRekapHakAmil::updateAllPeriods($oldDate, $oldUnitId);
+        }
+
+        $this->dispatchUpdateJob($distribution);
     }
 
     /**
@@ -37,8 +34,7 @@ class HakAmilObserver
      */
     public function deleted(Distribution $distribution): void
     {
-        //
-        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
+        $this->dispatchUpdateJob($distribution);
     }
 
     /**
@@ -46,8 +42,7 @@ class HakAmilObserver
      */
     public function restored(Distribution $distribution): void
     {
-        //
-        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
+        $this->dispatchUpdateJob($distribution);
     }
 
     /**
@@ -55,12 +50,14 @@ class HakAmilObserver
      */
     public function forceDeleted(Distribution $distribution): void
     {
-        //
-        $this->rekapHakAmilService->updateDailyRekapHakAmil($distribution->trx_date, $distribution->unit_id);
+        $this->dispatchUpdateJob($distribution);
     }
 
-    /* private function dispatchUpdateJob(Distribution $distribution): void
+    /**
+     * Dispatch jobs to update rekapitulasi for all periods
+     */
+    private function dispatchUpdateJob(Distribution $distribution): void
     {
-        UpdateRekapHakAmil::dispatch($distribution->trx_date, $distribution->unit_id);
-    } */
+        UpdateRekapHakAmil::updateAllPeriods($distribution->trx_date, $distribution->unit_id);
+    }
 }

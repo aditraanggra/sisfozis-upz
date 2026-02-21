@@ -13,6 +13,8 @@ use Filament\Forms;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -73,22 +75,35 @@ class SetorZisResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('validation')
                     ->label('Validasi'),
+                Forms\Components\Placeholder::make('current_upload')
+                    ->label('Gambar Bukti Setor Saat Ini')
+                    ->content(function ($record) {
+                        if (!$record || !$record->upload) {
+                            return 'Belum ada gambar';
+                        }
+                        $url = \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($record->upload);
+                        return new \Illuminate\Support\HtmlString(
+                            '<img src="' . e($url) . '" style="max-width: 400px; max-height: 300px; border-radius: 8px; object-fit: contain;" />'
+                        );
+                    })
+                    ->visible(fn ($record) => $record !== null),
                 Forms\Components\FileUpload::make('upload')
-                    ->label('Bukti Setor')
+                    ->label('Upload Bukti Setor Baru')
                     ->disk('cloudinary')
                     ->directory('bukti-setor')
                     ->visibility('public')
                     ->acceptedFileTypes(['image/*', 'application/pdf'])
                     ->maxSize(5120)
                     ->openable()
-                    ->downloadable()
-                    ->required(),
+                    ->downloadable(),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(null)
+            ->recordAction('view')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->sortable()
@@ -222,6 +237,39 @@ class SetorZisResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->infolist([
+                        Infolists\Components\TextEntry::make('unit.unit_name')
+                            ->label('Nama UPZ'),
+                        Infolists\Components\TextEntry::make('trx_date')
+                            ->label('Tanggal Transaksi')
+                            ->date(),
+                        Infolists\Components\TextEntry::make('zf_amount_deposit')
+                            ->label('Setor Zakat Fitrah (Uang)')
+                            ->numeric(),
+                        Infolists\Components\TextEntry::make('zf_rice_deposit')
+                            ->label('Setor Zakat Fitrah (Beras)')
+                            ->numeric(),
+                        Infolists\Components\TextEntry::make('zm_amount_deposit')
+                            ->label('Setor Zakat Mal (Uang)')
+                            ->numeric(),
+                        Infolists\Components\TextEntry::make('ifs_amount_deposit')
+                            ->label('Setor Infaq Sedekah (Uang)')
+                            ->numeric(),
+                        Infolists\Components\TextEntry::make('total_deposit')
+                            ->label('Total Setor')
+                            ->numeric(),
+                        Infolists\Components\TextEntry::make('status')
+                            ->label('Status')
+                            ->badge(),
+                        Infolists\Components\TextEntry::make('validation')
+                            ->label('Validasi'),
+                        Infolists\Components\ImageEntry::make('upload')
+                            ->label('Bukti Setor')
+                            ->disk('cloudinary')
+                            ->width(400)
+                            ->height(300),
+                    ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
