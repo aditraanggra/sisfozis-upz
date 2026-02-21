@@ -99,5 +99,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Consolidated ZIS Report (single endpoint for PDF report generation)
         Route::get('zis-report', [App\Http\Controllers\ZisReportController::class, 'report']);
+
+        // Alokasi Report (updated allocation data per ZIS type)
+        Route::get('alokasi-report', [App\Http\Controllers\AlokasiReportController::class, 'report']);
     });
 });

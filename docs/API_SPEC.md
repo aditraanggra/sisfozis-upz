@@ -1449,6 +1449,81 @@ GET /api/v1/rekap/zis-report?unit_id=1&periode=bulanan&from_date=2025-01-01&to_d
 | sekretaris               | string  | Nama sekretaris/wakil unit            |
 | bendahara                | string  | Nama bendahara unit                   |
 
+### 8.7 Alokasi Report (Updated Allocations)
+
+Endpoint untuk mendapatkan data alokasi terupdate per jenis ZIS. Menghitung selisih antara alokasi yang direncanakan (`rekap_alokasi`) dan realisasi (`rekap_setor`, `rekap_pendis`, `rekap_hak_amil`) untuk periode **tahunan**.
+
+```
+GET /api/v1/rekap/alokasi-report
+```
+
+**Query Parameters:**
+
+| Parameter | Type    | Required | Description                             |
+| --------- | ------- | -------- | --------------------------------------- |
+| unit_id   | int     | Yes      | ID unit ZIS                             |
+| year      | int     | No       | Tahun fiskal (default: tahun sekarang)  |
+
+**Example Request - Get allocation report:**
+```
+GET /api/v1/rekap/alokasi-report?unit_id=1
+```
+
+**Example Request - Filter by year:**
+```
+GET /api/v1/rekap/alokasi-report?unit_id=1&year=2026
+```
+
+**Response (200):**
+
+```json
+{
+    "data": {
+        "alokasi_kelola_zf_uang": 7000000,
+        "alokasi_kelola_zf_beras": 175.35,
+        "alokasi_kelola_zm": 5600000,
+        "alokasi_kelola_ifs": 2400000,
+        "alokasi_setor_zf_uang": 2000000,
+        "alokasi_setor_zf_beras": 30.5,
+        "alokasi_setor_zm": 1000000,
+        "alokasi_setor_ifs": 500000,
+        "alokasi_pendis_zf_uang": 1500000,
+        "alokasi_pendis_zf_beras": 50.0,
+        "alokasi_pendis_zm": 800000,
+        "alokasi_pendis_ifs": 400000,
+        "alokasi_ha_zf_uang": 375000,
+        "alokasi_ha_zf_beras": 5.0,
+        "alokasi_ha_zm": 200000,
+        "alokasi_ha_ifs": 100000,
+        "alokasi_op_uang": 500000,
+        "alokasi_op_beras": 10.0
+    }
+}
+```
+
+**Response Fields:**
+
+| Field                    | Type  | Description                                                      |
+| ------------------------ | ----- | ---------------------------------------------------------------- |
+| alokasi_kelola_zf_uang   | int   | Alokasi kelola ZF uang (langsung dari rekap_alokasi)             |
+| alokasi_kelola_zf_beras  | float | Alokasi kelola ZF beras (langsung dari rekap_alokasi)            |
+| alokasi_kelola_zm        | int   | Alokasi kelola ZM (langsung dari rekap_alokasi)                  |
+| alokasi_kelola_ifs       | int   | Alokasi kelola IFS (langsung dari rekap_alokasi)                 |
+| alokasi_setor_zf_uang    | int   | Sisa alokasi setor ZF uang = rekap_alokasi − rekap_setor        |
+| alokasi_setor_zf_beras   | float | Sisa alokasi setor ZF beras = rekap_alokasi − rekap_setor       |
+| alokasi_setor_zm         | int   | Sisa alokasi setor ZM = rekap_alokasi − rekap_setor             |
+| alokasi_setor_ifs        | int   | Sisa alokasi setor IFS = rekap_alokasi − rekap_setor            |
+| alokasi_pendis_zf_uang   | int   | Sisa alokasi pendis ZF uang = rekap_alokasi − rekap_pendis      |
+| alokasi_pendis_zf_beras  | float | Sisa alokasi pendis ZF beras = rekap_alokasi − rekap_pendis     |
+| alokasi_pendis_zm        | int   | Sisa alokasi pendis ZM = rekap_alokasi − rekap_pendis           |
+| alokasi_pendis_ifs       | int   | Sisa alokasi pendis IFS = rekap_alokasi − rekap_pendis          |
+| alokasi_ha_zf_uang       | int   | Sisa alokasi hak amil ZF uang = rekap_alokasi − rekap_hak_amil  |
+| alokasi_ha_zf_beras      | float | Sisa alokasi hak amil ZF beras = rekap_alokasi − rekap_hak_amil |
+| alokasi_ha_zm            | int   | Sisa alokasi hak amil ZM = rekap_alokasi − rekap_hak_amil       |
+| alokasi_ha_ifs           | int   | Sisa alokasi hak amil IFS = rekap_alokasi − rekap_hak_amil      |
+| alokasi_op_uang          | int   | Alokasi operasional uang (langsung dari rekap_alokasi)           |
+| alokasi_op_beras         | float | Alokasi operasional beras (langsung dari rekap_alokasi)          |
+
 ---
 
 ## 9. Admin Only Endpoints
