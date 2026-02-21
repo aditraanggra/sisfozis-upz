@@ -173,8 +173,6 @@ class RekapZisResource extends Resource
         }
 
         return $query
-            ->where('period', 'tahunan')
-            ->whereYear('period_date', 2025)
             ->with(['district', 'unit']);
     }
 

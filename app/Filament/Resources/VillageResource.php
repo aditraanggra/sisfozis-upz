@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -63,102 +64,114 @@ class VillageResource extends Resource
 
                 Tables\Columns\TextColumn::make('total')
                     ->label('Total ZIS')
-                    ->getStateUsing(function ($record) {
-                        $currentYear = date('Y') . '-01-01';
-                        return $record->rekapZis
+                    ->getStateUsing(function ($record, $livewire) {
+                        $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
+                        $periodDate = $selectedYear . '-01-01';
+                        $rekap = $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
-                            ->sum('total_zf_amount') +
-                            $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
-                            ->sum('total_zm_amount') +
-                            $record->rekapZis
-                            ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
-                            ->sum('total_ifs_amount');
+                            ->where('period_date', $periodDate);
+                        return $rekap->sum('total_zf_amount') +
+                            $rekap->sum('total_zm_amount') +
+                            $rekap->sum('total_ifs_amount');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zf_rice')
                     ->label('Zakat Fitrah (Beras)')
-                    ->getStateUsing(function ($record) {
-                        $currentYear = date('Y') . '-01-01';
+                    ->getStateUsing(function ($record, $livewire) {
+                        $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
+                        $periodDate = $selectedYear . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
+                            ->where('period_date', $periodDate)
                             ->sum('total_zf_rice');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zf_amount')
                     ->label('Zakat Fitrah (Uang)')
-                    ->getStateUsing(function ($record) {
-                        $currentYear = date('Y') . '-01-01';
+                    ->getStateUsing(function ($record, $livewire) {
+                        $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
+                        $periodDate = $selectedYear . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
+                            ->where('period_date', $periodDate)
                             ->sum('total_zf_amount');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zm_amount')
                     ->label('Zakat Mal')
-                    ->getStateUsing(function ($record) {
-                        $currentYear = date('Y') . '-01-01';
+                    ->getStateUsing(function ($record, $livewire) {
+                        $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
+                        $periodDate = $selectedYear . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
+                            ->where('period_date', $periodDate)
                             ->sum('total_zm_amount');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_ifs_amount')
                     ->label('Infak Sedekah')
-                    ->getStateUsing(function ($record) {
-                        $currentYear = date('Y') . '-01-01';
+                    ->getStateUsing(function ($record, $livewire) {
+                        $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
+                        $periodDate = $selectedYear . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
+                            ->where('period_date', $periodDate)
                             ->sum('total_ifs_amount');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zf_muzakki')
                     ->label('Muzakki ZF')
-                    ->getStateUsing(function ($record) {
-                        $currentYear = date('Y') . '-01-01';
+                    ->getStateUsing(function ($record, $livewire) {
+                        $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
+                        $periodDate = $selectedYear . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
+                            ->where('period_date', $periodDate)
                             ->sum('total_zf_muzakki');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_zm_muzakki')
                     ->label('Muzakki ZM')
-                    ->getStateUsing(function ($record) {
-                        $currentYear = date('Y') . '-01-01';
+                    ->getStateUsing(function ($record, $livewire) {
+                        $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
+                        $periodDate = $selectedYear . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
+                            ->where('period_date', $periodDate)
                             ->sum('total_zm_muzakki');
                     })
                     ->numeric(),
 
                 Tables\Columns\TextColumn::make('total_ifs_munfiq')
                     ->label('Munfiq')
-                    ->getStateUsing(function ($record) {
-                        $currentYear = date('Y') . '-01-01';
+                    ->getStateUsing(function ($record, $livewire) {
+                        $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
+                        $periodDate = $selectedYear . '-01-01';
                         return $record->rekapZis
                             ->where('period', 'tahunan')
-                            ->where('period_date', $currentYear)
+                            ->where('period_date', $periodDate)
                             ->sum('total_ifs_munfiq');
                     })
                     ->numeric(),
             ])
             ->filters([
-                //
+                SelectFilter::make('tahun')
+                    ->label('Tahun')
+                    ->options(
+                        collect(range(0, 4))
+                            ->mapWithKeys(fn($i) => [
+                                now()->subYears($i)->format('Y') => now()->subYears($i)->format('Y')
+                            ])
+                            ->toArray()
+                    )
+                    ->default(now()->format('Y'))
+                    ->query(fn ($query) => $query),
             ])
             ->actions([
                 ActionGroup::make([

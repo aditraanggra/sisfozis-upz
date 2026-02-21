@@ -2,12 +2,14 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\SetorZis;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class SetorZisOverview extends BaseWidget
 {
+    use InteractsWithPageTable;
+
     protected int|string|array $columnSpan = 'full';
 
     protected function getColumns(): int
@@ -15,14 +17,21 @@ class SetorZisOverview extends BaseWidget
         return 4;
     }
 
+    protected function getTablePage(): string
+    {
+        return \App\Filament\Resources\SetorZisResource\Pages\ListSetorZis::class;
+    }
+
     protected function getStats(): array
     {
-        $totalDeposit = SetorZis::sum('total_deposit');
-        $totalZfAmount = SetorZis::sum('zf_amount_deposit');
-        $totalZfRice = SetorZis::sum('zf_rice_deposit');
-        $totalZmAmount = SetorZis::sum('zm_amount_deposit');
-        $totalIfsAmount = SetorZis::sum('ifs_amount_deposit');
-        $totalTransactions = SetorZis::count();
+        $query = $this->getPageTableQuery();
+
+        $totalDeposit = $query->sum('total_deposit');
+        $totalZfAmount = $query->sum('zf_amount_deposit');
+        $totalZfRice = $query->sum('zf_rice_deposit');
+        $totalZmAmount = $query->sum('zm_amount_deposit');
+        $totalIfsAmount = $query->sum('ifs_amount_deposit');
+        $totalTransactions = $query->count();
 
         return [
             Stat::make('Total Setoran', 'Rp ' . number_format($totalDeposit, 0, ',', '.'))
