@@ -272,8 +272,11 @@ class SetorZisResource extends Resource
                         Infolists\Components\ImageEntry::make('upload')
                             ->label('Bukti Setor')
                             ->disk('cloudinary')
-                            ->width(400)
-                            ->height(300),
+                            ->width('100%')
+                            ->height('auto')
+                            ->extraImgAttributes([
+                                'style' => 'max-width: 500px; object-fit: contain;',
+                            ]),
                     ]),
             ])
             ->bulkActions([
