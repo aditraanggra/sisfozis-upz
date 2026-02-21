@@ -15,6 +15,8 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'cloud' => env('FILESYSTEM_CLOUD', 'cloudinary'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
