@@ -153,10 +153,16 @@ class SetorZisResource extends Resource
                     ->sortable()
                     ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Setor')),
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Jenis Setor')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('validation')
+                Tables\Columns\SelectColumn::make('validation')
                     ->label('Validasi')
+                    ->options([
+                        'Valid' => 'Valid',
+                        'Tidak Valid' => 'Tidak Valid',
+                    ])
+                    ->selectablePlaceholder(false)
+                    ->disabled(fn () => !User::currentIsSuperAdmin() && !User::currentIsAdmin())
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('upload')
                     ->label('Bukti Setor')
@@ -236,7 +242,6 @@ class SetorZisResource extends Resource
                     ->visible(fn() => !User::currentIsUpzDesa()),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make()
                     ->infolist([
                         Infolists\Components\TextEntry::make('unit.unit_name')
@@ -290,7 +295,7 @@ class SetorZisResource extends Resource
         return [
             'index' => Pages\ListSetorZis::route('/'),
             'create' => Pages\CreateSetorZis::route('/create'),
-            'edit' => Pages\EditSetorZis::route('/{record}/edit'),
+
         ];
     }
 
