@@ -205,7 +205,7 @@ class RekapPendisService extends BaseRekapService
             ->selectRaw("COALESCE(SUM(CASE WHEN program='dakwah' AND total_amount > 0 THEN total_amount ELSE 0 END), 0) as total_dakwah_amount")
             ->selectRaw("COALESCE(SUM(CASE WHEN program='kemanusiaan' AND total_rice > 0 THEN total_rice ELSE 0 END), 0) as total_kemanusiaan_rice")
             ->selectRaw("COALESCE(SUM(CASE WHEN program='dakwah' AND total_rice > 0 THEN total_rice ELSE 0 END), 0) as total_dakwah_rice")
-            ->selectRaw("COUNT(DISTINCT beneficiary) as total_pm")
+            ->selectRaw("SUM(beneficiary) as total_pm")
             ->groupByRaw($dateFormat)
             ->get()
             ->toArray();
@@ -400,7 +400,7 @@ class RekapPendisService extends BaseRekapService
                 SUM(CASE WHEN program='dakwah' AND total_amount > 0 THEN total_amount ELSE 0 END) as total_dakwah_amount,
                 SUM(CASE WHEN program='kemanusiaan' AND total_rice > 0 THEN total_rice ELSE 0 END) as total_kemanusiaan_rice,
                 SUM(CASE WHEN program='dakwah' AND total_rice > 0 THEN total_rice ELSE 0 END) as total_dakwah_rice,
-                COUNT(DISTINCT beneficiary) as total_pm
+                SUM(beneficiary) as total_pm
             ")
             ->first();
     }

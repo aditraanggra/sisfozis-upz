@@ -185,7 +185,7 @@ class RekapHakAmilService extends BaseRekapService
             ->selectRaw("COALESCE(SUM(CASE WHEN fund_type='zakat fitrah' AND asnaf='amil' AND total_rice > 0 THEN total_rice ELSE 0 END), 0) as t_pendis_ha_zf_rice")
             ->selectRaw("COALESCE(SUM(CASE WHEN fund_type='zakat mal' AND asnaf='amil' THEN total_amount ELSE 0 END), 0) as t_pendis_ha_zm")
             ->selectRaw("COALESCE(SUM(CASE WHEN fund_type='infak' AND program='operasional' THEN total_amount ELSE 0 END), 0) as t_pendis_ha_ifs")
-            ->selectRaw("COUNT(DISTINCT beneficiary) as total_pm")
+            ->selectRaw("SUM(beneficiary) as total_pm")
             ->groupByRaw($dateFormat)
             ->get()
             ->toArray();
@@ -370,7 +370,7 @@ class RekapHakAmilService extends BaseRekapService
                 SUM(CASE WHEN fund_type='zakat fitrah' AND asnaf='amil' AND total_rice > 0 THEN total_rice ELSE 0 END) as t_pendis_ha_zf_rice,
                 SUM(CASE WHEN fund_type='zakat mal' AND asnaf='amil' THEN total_amount ELSE 0 END) as t_pendis_ha_zm,
                 SUM(CASE WHEN fund_type='infak' AND program='operasional' THEN total_amount ELSE 0 END) as t_pendis_ha_ifs,
-                COUNT(DISTINCT beneficiary) as total_pm
+                SUM(beneficiary) as total_pm
             ")
             ->first();
     }

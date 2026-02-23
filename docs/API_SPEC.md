@@ -1389,6 +1389,21 @@ GET /api/v1/rekap/zis-report?unit_id=1&from_date=2025-01-01&to_date=2025-12-31
 GET /api/v1/rekap/zis-report?unit_id=1&periode=bulanan&from_date=2025-01-01&to_date=2025-03-31
 ```
 
+> **🚨 BREAKING CHANGE NOTICE: Hak Amil Fields Replacement**
+> The unified `total_hak_amil` field is being replaced by granular fields (`hak_amil_zf_beras`, `hak_amil_zf_uang`, `hak_amil_zm`, `hak_amil_ifs`) to better distinguish between money and rice, as well as distinct ZIS types.
+> 
+> **Migration Mapping:**
+> - `total money` = `hak_amil_zf_uang` + `hak_amil_zm` + `hak_amil_ifs`
+> - `total rice` = `hak_amil_zf_beras`
+>
+> **Temporary Backward Compatibility:**
+> `total_hak_amil` is temporarily kept alongside the new fields to prevent breaking existing clients. It contains the sum of all money fields as it did previously. This field is **DEPRECATED** and will be fully removed in **v2 API**. Clients should migrate to using the individual granular fields as soon as possible.
+> 
+> **Example Before vs After for Migration:**
+> *Old Behavior:* `{"total_hak_amil": 2600000 }` (only accounted for money)
+> *New Behavior:* `{"hak_amil_zf_beras": 20.5, "hak_amil_zf_uang": 1500000, "hak_amil_zm": 600000, "hak_amil_ifs": 500000, "total_hak_amil": 2600000}`
+> *(Notice that clients can now track rice amil rights separately!)*
+
 **Response (200):**
 
 ```json
@@ -1408,7 +1423,11 @@ GET /api/v1/rekap/zis-report?unit_id=1&periode=bulanan&from_date=2025-01-01&to_d
         "total_pendis_amount": 23000000,
         "total_pendis_rice": 300.5,
         "total_pm": 150,
-        "total_hak_amil": 2875000,
+        "hak_amil_zf_beras": 20.5,
+        "hak_amil_zf_uang": 1500000,
+        "hak_amil_zm": 600000,
+        "hak_amil_ifs": 500000,
+        "total_hak_amil": 2600000,
         "total_setor_zf_amount": 12000000,
         "total_setor_zf_rice": 250.0,
         "total_setor_zm": 3500000,
@@ -1439,7 +1458,11 @@ GET /api/v1/rekap/zis-report?unit_id=1&periode=bulanan&from_date=2025-01-01&to_d
 | total_pendis_amount      | int     | Total distribusi uang (Rp)            |
 | total_pendis_rice        | float   | Total distribusi beras (kg)           |
 | total_pm                 | int     | Total penerima manfaat                |
-| total_hak_amil           | int     | Total hak amil yang diserap (Rp)      |
+| hak_amil_zf_beras        | float   | Hak amil dari ZF beras (kg)         |
+| hak_amil_zf_uang         | int     | Hak amil dari ZF uang (Rp)          |
+| hak_amil_zm              | int     | Hak amil dari ZM (Rp)               |
+| hak_amil_ifs             | int     | Hak amil dari IFS (Rp)              |
+| total_hak_amil           | int     | **(DEPRECATED)** Total hak amil (uang). Akan dihapus pada API v2. |
 | total_setor_zf_amount    | int     | Total setoran ZF uang (Rp)            |
 | total_setor_zf_rice      | float   | Total setoran ZF beras (kg)           |
 | total_setor_zm           | int     | Total setoran ZM (Rp)                 |

@@ -136,18 +136,20 @@ class ZisReportTest extends TestCase
         });
 
         // SetorZis: deposit record with upload (bukti setor)
-        SetorZis::withoutGlobalScopes()->create([
-            'unit_id' => $unit->id,
-            'trx_date' => '2026-01-15',
-            'zf_amount_deposit' => 8000000,
-            'zf_rice_deposit' => 120.0,
-            'zm_amount_deposit' => 4000000,
-            'ifs_amount_deposit' => 1500000,
-            'total_deposit' => 13500000,
-            'status' => 'approved',
-            'validation' => 'valid',
-            'upload' => 'uploads/bukti_setor_test.jpg',
-        ]);
+        SetorZis::withoutEvents(function () use ($unit) {
+            SetorZis::withoutGlobalScopes()->create([
+                'unit_id' => $unit->id,
+                'trx_date' => '2026-01-15',
+                'zf_amount_deposit' => 8000000,
+                'zf_rice_deposit' => 120.0,
+                'zm_amount_deposit' => 4000000,
+                'ifs_amount_deposit' => 1500000,
+                'total_deposit' => 13500000,
+                'status' => 'approved',
+                'validation' => 'valid',
+                'upload' => 'uploads/bukti_setor_test.jpg',
+            ]);
+        });
 
         return [$user, $unit];
     }
@@ -170,8 +172,12 @@ class ZisReportTest extends TestCase
                     'total_zm_muzakki',
                     'total_ifs_amount',
                     'total_ifs_munfiq',
-                    'total_pendis',
-                    'total_hak_amil',
+                    'total_pendis_amount',
+                    'total_pendis_rice',
+                    'hak_amil_zf_beras',
+                    'hak_amil_zf_uang',
+                    'hak_amil_zm',
+                    'hak_amil_ifs',
                     'total_setor_zf_amount',
                     'total_setor_zf_rice',
                     'total_setor_zm',
@@ -195,16 +201,19 @@ class ZisReportTest extends TestCase
         $this->assertEquals(35, $data['total_ifs_munfiq']);
 
         // Pendis total (zf_amount + zm + ifs = 6M + 3M + 1M)
-        $this->assertEquals(10000000, $data['total_pendis']);
+        $this->assertEquals(10000000, $data['total_pendis_amount']);
 
-        // Hak amil total (zf_amount + zm + ifs = 1.5M + 600K + 500K)
-        $this->assertEquals(2600000, $data['total_hak_amil']);
+        // Hak amil detail
+        $this->assertEquals(20, $data['hak_amil_zf_beras']);
+        $this->assertEquals(1500000, $data['hak_amil_zf_uang']);
+        $this->assertEquals(600000, $data['hak_amil_zm']);
+        $this->assertEquals(500000, $data['hak_amil_ifs']);
 
         // Setor totals
-        $this->assertEquals(16000000, $data['total_setor_zf_amount']);
-        $this->assertEquals(240.0, $data['total_setor_zf_rice']);
-        $this->assertEquals(8000000, $data['total_setor_zm']);
-        $this->assertEquals(3000000, $data['total_setor_ifs']);
+        $this->assertEquals(8000000, $data['total_setor_zf_amount']);
+        $this->assertEquals(120.0, $data['total_setor_zf_rice']);
+        $this->assertEquals(4000000, $data['total_setor_zm']);
+        $this->assertEquals(1500000, $data['total_setor_ifs']);
 
         // Bukti setor URL
         $this->assertNotNull($data['bukti_setor']);
@@ -249,8 +258,12 @@ class ZisReportTest extends TestCase
         $this->assertEquals(0, $data['total_zf_amount']);
         $this->assertEquals(0, $data['total_zm_amount']);
         $this->assertEquals(0, $data['total_ifs_amount']);
-        $this->assertEquals(0, $data['total_pendis']);
-        $this->assertEquals(0, $data['total_hak_amil']);
+        $this->assertEquals(0, $data['total_pendis_amount']);
+        $this->assertEquals(0, $data['total_pendis_rice']);
+        $this->assertEquals(0, $data['hak_amil_zf_beras']);
+        $this->assertEquals(0, $data['hak_amil_zf_uang']);
+        $this->assertEquals(0, $data['hak_amil_zm']);
+        $this->assertEquals(0, $data['hak_amil_ifs']);
         $this->assertEquals(0, $data['total_setor_zf_amount']);
         $this->assertNull($data['bukti_setor']);
         $this->assertEquals('Test Leader', $data['ketua']);

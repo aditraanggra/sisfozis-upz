@@ -113,7 +113,8 @@ class ZisReportService
     /**
      * Aggregate absorbed amil rights from rekap_hak_amil.
      *
-     * Sums all hak amil fields to produce total_hak_amil.
+     * Sums all hak amil fields to produce individual properties:
+     * hak_amil_zf_beras, hak_amil_zf_uang, hak_amil_zm, hak_amil_ifs.
      */
     protected function getHakAmilSummary(int $unitId, array $filters): array
     {
@@ -121,13 +122,23 @@ class ZisReportService
         $this->applyRekapFilters($query, $filters, 'periode', 'periode_date');
 
         $result = $query->selectRaw('
-            COALESCE(SUM(t_pendis_ha_zf_amount), 0)
-            + COALESCE(SUM(t_pendis_ha_zm), 0)
-            + COALESCE(SUM(t_pendis_ha_ifs), 0) as total_hak_amil
+            COALESCE(SUM(t_pendis_ha_zf_rice), 0) as hak_amil_zf_beras,
+            COALESCE(SUM(t_pendis_ha_zf_amount), 0) as hak_amil_zf_uang,
+            COALESCE(SUM(t_pendis_ha_zm), 0) as hak_amil_zm,
+            COALESCE(SUM(t_pendis_ha_ifs), 0) as hak_amil_ifs
         ')->first();
 
+        $hakAmilZfUang = (int) ($result->hak_amil_zf_uang ?? 0);
+        $hakAmilZm = (int) ($result->hak_amil_zm ?? 0);
+        $hakAmilIfs = (int) ($result->hak_amil_ifs ?? 0);
+
         return [
-            'total_hak_amil' => (int) ($result->total_hak_amil ?? 0),
+            'hak_amil_zf_beras' => (float) ($result->hak_amil_zf_beras ?? 0),
+            'hak_amil_zf_uang' => $hakAmilZfUang,
+            'hak_amil_zm' => $hakAmilZm,
+            'hak_amil_ifs' => $hakAmilIfs,
+            // @deprecated - Kept for backward compatibility. Use granular fields instead.
+            'total_hak_amil' => $hakAmilZfUang + $hakAmilZm + $hakAmilIfs,
         ];
     }
 
