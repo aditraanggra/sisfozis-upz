@@ -1574,6 +1574,84 @@ DELETE /api/v1/zf-payment-types/{id}         # Delete
 
 ---
 
+## 10. Laporan Pengelolaan ZIS (LPZ)
+
+🔒 **Requires Authentication**
+
+Endpoint untuk mengelola data Laporan Pengelolaan ZIS beserta file pendukungnya yang di-upload ke Cloudinary. 
+
+```
+GET    /api/v1/lpz          # List
+POST   /api/v1/lpz          # Create
+GET    /api/v1/lpz/{id}     # Show
+POST   /api/v1/lpz/{id}     # Update (Gunakan `_method=PUT` dengan form-data untuk Laravel method spoofing)
+DELETE /api/v1/lpz/{id}     # Delete
+```
+
+**Request Body (Multipart Form-Data for Uploads):**
+
+| Field   | Type    | Required | Description                     |
+| ------- | ------- | -------- | ------------------------------- |
+| unit_id | integer | Yes      | ID unit ZIS                     |
+| trx_date| date    | Yes      | Tanggal laporan (Y-m-d)         |
+| lpz_year| integer | Yes      | Tahun laporan                   |
+| form101 | file    | No       | Form 1.01 (PDF, max 10MB)       |
+| form102 | file    | No       | Form 1.02 (PDF, max 10MB)       |
+| lpz     | file    | No       | File LPZ (PDF, max 10MB)        |
+
+**Validation Rules:**
+
+- `lpz_year` harus sama dengan tahun dari `trx_date` (e.g., jika `trx_date = 2026-02-25` maka `lpz_year` harus `2026`).
+
+**Query Parameters (List):**
+
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| unit_id   | int    | Filter berdasarkan UPZ         |
+| lpz_year  | int    | Filter berdasarkan tahun       |
+| per_page  | int    | Items per page (default: 15)   |
+| page      | int    | Page number (default: 1)       |
+
+**Example Request - Create LPZ:**
+```http
+POST /api/v1/lpz
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+unit_id: 1
+trx_date: 2026-02-25
+lpz_year: 2026
+form101: (binary file)
+form102: (binary file)
+lpz: (binary file)
+```
+
+**Response (200/201):**
+
+```json
+{
+    "success": true,
+    "message": "LPZ saved successfully",
+    "data": {
+        "id": 1,
+        "unit_id": 1,
+        "trx_date": "2026-02-25",
+        "lpz_year": 2026,
+        "form101": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/form101/xxxxx.pdf",
+        "form102": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/form102/xxxxx.pdf",
+        "lpz": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/dokumen/xxxxx.pdf",
+        "created_at": "2026-02-25T10:00:00.000000Z",
+        "updated_at": "2026-02-25T10:00:00.000000Z",
+        "unit": {
+            "id": 1,
+            "unit_name": "UPZ Masjid Al-Ikhlas"
+        }
+    }
+}
+```
+
+---
+
 ## Error Responses
 
 ### 400 Bad Request

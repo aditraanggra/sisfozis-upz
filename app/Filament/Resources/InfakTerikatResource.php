@@ -88,6 +88,7 @@ class InfakTerikatResource extends Resource
                         }
                         return $years;
                     })
+                    ->default(now()->year)
                     ->query(
                         fn(Builder $query, array $data): Builder =>
                         $query->when($data['value'] ?? null, fn(Builder $q, $year) => $q->whereYear('trx_date', $year))

@@ -117,4 +117,9 @@ class UnitZis extends Model
     {
         return $this->hasMany(InfakTerikat::class, 'unit_id');
     }
+
+    public function lpzs()
+    {
+        return $this->hasMany(Lpz::class, 'unit_id');
+    }
 }
