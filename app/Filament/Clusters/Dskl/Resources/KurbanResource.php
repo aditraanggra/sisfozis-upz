@@ -109,7 +109,7 @@ class KurbanResource extends Resource
                     ->query(
                         fn(Builder $query, array $data): Builder =>
                         $query->when(
-                            $data['value'],
+                            $data['value'] ?? null,
                             fn(Builder $q, $districtId) =>
                             $q->whereHas('unit', fn($q) => $q->where('district_id', $districtId))
                         )
@@ -128,7 +128,7 @@ class KurbanResource extends Resource
                     ->query(
                         fn(Builder $query, array $data): Builder =>
                         $query->when(
-                            $data['value'],
+                            $data['value'] ?? null,
                             fn(Builder $q, $villageId) =>
                             $q->whereHas('unit', fn($q) => $q->where('village_id', $villageId))
                         )

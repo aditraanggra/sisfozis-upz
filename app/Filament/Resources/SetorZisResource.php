@@ -190,7 +190,7 @@ class SetorZisResource extends Resource
                     })
                     ->query(
                         fn(Builder $query, array $data): Builder =>
-                        $query->when($data['value'], fn(Builder $q, $year) => $q->whereYear('trx_date', $year))
+                        $query->when($data['value'] ?? null, fn(Builder $q, $year) => $q->whereYear('trx_date', $year))
                     ),
                 SelectFilter::make('status')
                     ->label('Status')
@@ -204,7 +204,7 @@ class SetorZisResource extends Resource
                     ->query(
                         fn(Builder $query, array $data): Builder =>
                         $query->when(
-                            $data['value'],
+                            $data['value'] ?? null,
                             fn(Builder $q, $districtId) =>
                             $q->whereHas('unit', fn($q) => $q->where('district_id', $districtId))
                         )
@@ -223,7 +223,7 @@ class SetorZisResource extends Resource
                     ->query(
                         fn(Builder $query, array $data): Builder =>
                         $query->when(
-                            $data['value'],
+                            $data['value'] ?? null,
                             fn(Builder $q, $villageId) =>
                             $q->whereHas('unit', fn($q) => $q->where('village_id', $villageId))
                         )
