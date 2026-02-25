@@ -10,6 +10,8 @@ class SetorZisOverview extends BaseWidget
 {
     use InteractsWithPageTable;
 
+    public array $tableColumnSearches = [];
+
     protected int|string|array $columnSpan = 'full';
 
     protected function getColumns(): int
