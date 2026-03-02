@@ -11,6 +11,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -71,6 +73,36 @@ class LpzResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informasi LPZ')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('unit.unit_name')->label('Nama UPZ'),
+                        Infolists\Components\TextEntry::make('trx_date')->label('Tanggal Laporan')->date(),
+                        Infolists\Components\TextEntry::make('lpz_year')->label('Tahun'),
+                        Infolists\Components\TextEntry::make('created_at')->label('Dibuat Pada')->dateTime(),
+                        Infolists\Components\TextEntry::make('updated_at')->label('Diubah Pada')->dateTime(),
+                    ])->columns(2),
+                Infolists\Components\Section::make('Dokumen')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('form101')
+                            ->label('Form 101')
+                            ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
+                            ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null, shouldOpenInNewTab: true),
+                        Infolists\Components\TextEntry::make('form102')
+                            ->label('Form 102')
+                            ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
+                            ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null, shouldOpenInNewTab: true),
+                        Infolists\Components\TextEntry::make('lpz')
+                            ->label('LPZ')
+                            ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
+                            ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null, shouldOpenInNewTab: true),
+                    ])->columns(3),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -86,6 +118,30 @@ class LpzResource extends Resource
                 Tables\Columns\TextColumn::make('lpz_year')
                     ->label('Tahun')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('form101')
+                    ->label('Form 101')
+                    ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
+                    ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null)
+                    ->openUrlInNewTab()
+                    ->copyable()
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('form102')
+                    ->label('Form 102')
+                    ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
+                    ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null)
+                    ->openUrlInNewTab()
+                    ->copyable()
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('lpz')
+                    ->label('LPZ')
+                    ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
+                    ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null)
+                    ->openUrlInNewTab()
+                    ->copyable()
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -1578,76 +1578,99 @@ DELETE /api/v1/zf-payment-types/{id}         # Delete
 
 🔒 **Requires Authentication**
 
-Endpoint untuk mengelola data Laporan Pengelolaan ZIS beserta file pendukungnya yang di-upload ke Cloudinary. 
+Endpoint untuk mengelola data Laporan Pengelolaan ZIS (LPZ). File dokumen (Form 1.01, Form 1.02, LPZ) disimpan sebagai URL string (e.g. URL Cloudinary).
+
+### 10.1 CRUD LPZ
 
 ```
 GET    /api/v1/lpz          # List
 POST   /api/v1/lpz          # Create
 GET    /api/v1/lpz/{id}     # Show
-POST   /api/v1/lpz/{id}     # Update (Gunakan `_method=PUT` dengan form-data untuk Laravel method spoofing)
+PUT    /api/v1/lpz/{id}     # Update
 DELETE /api/v1/lpz/{id}     # Delete
 ```
 
-**Request Body (Multipart Form-Data for Uploads):**
+**Request Body (Create/Update):**
 
-| Field   | Type    | Required | Description                     |
-| ------- | ------- | -------- | ------------------------------- |
-| unit_id | integer | Yes      | ID unit ZIS                     |
-| trx_date| date    | Yes      | Tanggal laporan (Y-m-d)         |
-| lpz_year| integer | Yes      | Tahun laporan                   |
-| form101 | file    | No       | Form 1.01 (PDF, max 10MB)       |
-| form102 | file    | No       | Form 1.02 (PDF, max 10MB)       |
-| lpz     | file    | No       | File LPZ (PDF, max 10MB)        |
-
-**Validation Rules:**
-
-- `lpz_year` harus sama dengan tahun dari `trx_date` (e.g., jika `trx_date = 2026-02-25` maka `lpz_year` harus `2026`).
+| Field    | Type    | Required | Description                                        |
+| -------- | ------- | -------- | -------------------------------------------------- |
+| unit_id  | integer | Yes      | ID unit ZIS                                        |
+| trx_date | date    | Yes      | Tanggal laporan (Y-m-d)                            |
+| lpz_year | integer | Yes      | Tahun laporan (4 digit)                            |
+| form101  | string  | No       | URL file Form 1.01 (max 255 karakter)              |
+| form102  | string  | No       | URL file Form 1.02 (max 255 karakter)              |
+| lpz      | string  | No       | URL file LPZ (max 255 karakter)                    |
+| desc     | string  | No       | Keterangan                                         |
 
 **Query Parameters (List):**
 
-| Parameter | Type   | Description                    |
-| --------- | ------ | ------------------------------ |
-| unit_id   | int    | Filter berdasarkan UPZ         |
-| lpz_year  | int    | Filter berdasarkan tahun       |
-| per_page  | int    | Items per page (default: 15)   |
-| page      | int    | Page number (default: 1)       |
+| Parameter  | Type   | Description                    |
+| ---------- | ------ | ------------------------------ |
+| year       | int    | Filter berdasarkan `lpz_year`  |
+| start_date | date   | Filter tanggal mulai           |
+| end_date   | date   | Filter tanggal akhir           |
+
+**Access Control:**
+- Admin dapat mengakses semua data LPZ.
+- User biasa hanya dapat mengakses data LPZ milik unit-nya sendiri.
 
 **Example Request - Create LPZ:**
-```http
+```json
 POST /api/v1/lpz
 Authorization: Bearer {token}
-Content-Type: multipart/form-data
+Content-Type: application/json
 
-unit_id: 1
-trx_date: 2026-02-25
-lpz_year: 2026
-form101: (binary file)
-form102: (binary file)
-lpz: (binary file)
+{
+    "unit_id": 1,
+    "trx_date": "2026-02-25",
+    "lpz_year": 2026,
+    "form101": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/form101/xxxxx.pdf",
+    "form102": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/form102/xxxxx.pdf",
+    "lpz": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/dokumen/xxxxx.pdf"
+}
 ```
 
-**Response (200/201):**
+**Example Request - Update LPZ:**
+```json
+PUT /api/v1/lpz/1
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "unit_id": 1,
+    "trx_date": "2026-03-01",
+    "lpz_year": 2026,
+    "form101": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/form101/updated.pdf"
+}
+```
+
+**Example Request - List LPZ filtered by year:**
+```
+GET /api/v1/lpz?year=2026
+```
+
+**Response (201 - Created):**
 
 ```json
 {
-    "success": true,
-    "message": "LPZ saved successfully",
     "data": {
         "id": 1,
-        "unit_id": 1,
+        "unit": {
+            "id": 1,
+            "unit_name": "UPZ Masjid Al-Ikhlas"
+        },
         "trx_date": "2026-02-25",
         "lpz_year": 2026,
         "form101": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/form101/xxxxx.pdf",
         "form102": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/form102/xxxxx.pdf",
         "lpz": "https://res.cloudinary.com/<cloud_name>/raw/upload/lpz/dokumen/xxxxx.pdf",
-        "created_at": "2026-02-25T10:00:00.000000Z",
-        "updated_at": "2026-02-25T10:00:00.000000Z",
-        "unit": {
-            "id": 1,
-            "unit_name": "UPZ Masjid Al-Ikhlas"
-        }
+        "created_at": "2026-02-25 10:00:00",
+        "updated_at": "2026-02-25 10:00:00"
     }
 }
+```
+
+**Response (204 - Delete):** No Content
 ```
 
 ---
