@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DistributionController;
 use App\Http\Controllers\Api\DonationBoxController;
 use App\Http\Controllers\Api\FidyahController;
 use App\Http\Controllers\Api\IfsController;
+use App\Http\Controllers\Api\LpzController;
 use App\Http\Controllers\Api\SetorZisController;
 use App\Http\Controllers\Api\UnitZisController;
 use App\Http\Controllers\Api\ZfController;
@@ -52,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'pendis' => DistributionController::class,
         'setor' => SetorZisController::class,
         'unit-zis' => UnitZisController::class,
+        'lpz' => LpzController::class,
     ]);
 
 
