@@ -67,6 +67,21 @@ class LpzResource extends Resource
         }
     }
 
+    /**
+     * Generate a Cloudinary URL that forces file download (fl_attachment).
+     */
+    private static function getCloudinaryDownloadUrl(?string $path): ?string
+    {
+        $url = self::getCloudinaryUrl($path);
+        if (!$url) {
+            return null;
+        }
+
+        // Append fl_attachment flag to force download
+        $separator = str_contains($url, '?') ? '&' : '?';
+        return $url . $separator . 'fl_attachment=true';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -129,16 +144,16 @@ class LpzResource extends Resource
                     ->schema([
                         Infolists\Components\TextEntry::make('form101')
                             ->label('Form 101')
-                            ->formatStateUsing(fn ($state) => $state ? 'Lihat Dokumen' : '-')
-                            ->url(fn ($state) => self::getCloudinaryUrl($state), shouldOpenInNewTab: true),
+                            ->formatStateUsing(fn ($state) => $state ? 'Download Dokumen' : '-')
+                            ->url(fn ($state) => self::getCloudinaryDownloadUrl($state), shouldOpenInNewTab: true),
                         Infolists\Components\TextEntry::make('form102')
                             ->label('Form 102')
-                            ->formatStateUsing(fn ($state) => $state ? 'Lihat Dokumen' : '-')
-                            ->url(fn ($state) => self::getCloudinaryUrl($state), shouldOpenInNewTab: true),
+                            ->formatStateUsing(fn ($state) => $state ? 'Download Dokumen' : '-')
+                            ->url(fn ($state) => self::getCloudinaryDownloadUrl($state), shouldOpenInNewTab: true),
                         Infolists\Components\TextEntry::make('lpz')
                             ->label('LPZ')
-                            ->formatStateUsing(fn ($state) => $state ? 'Lihat Dokumen' : '-')
-                            ->url(fn ($state) => self::getCloudinaryUrl($state), shouldOpenInNewTab: true),
+                            ->formatStateUsing(fn ($state) => $state ? 'Download Dokumen' : '-')
+                            ->url(fn ($state) => self::getCloudinaryDownloadUrl($state), shouldOpenInNewTab: true),
                     ])->columns(3),
             ]);
     }
@@ -160,20 +175,20 @@ class LpzResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('form101')
                     ->label('Form 101')
-                    ->formatStateUsing(fn ($state) => $state ? 'Lihat' : '-')
-                    ->url(fn ($state) => self::getCloudinaryUrl($state))
+                    ->formatStateUsing(fn ($state) => $state ? 'Download' : '-')
+                    ->url(fn ($state) => self::getCloudinaryDownloadUrl($state))
                     ->openUrlInNewTab()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('form102')
                     ->label('Form 102')
-                    ->formatStateUsing(fn ($state) => $state ? 'Lihat' : '-')
-                    ->url(fn ($state) => self::getCloudinaryUrl($state))
+                    ->formatStateUsing(fn ($state) => $state ? 'Download' : '-')
+                    ->url(fn ($state) => self::getCloudinaryDownloadUrl($state))
                     ->openUrlInNewTab()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('lpz')
                     ->label('LPZ')
-                    ->formatStateUsing(fn ($state) => $state ? 'Lihat' : '-')
-                    ->url(fn ($state) => self::getCloudinaryUrl($state))
+                    ->formatStateUsing(fn ($state) => $state ? 'Download' : '-')
+                    ->url(fn ($state) => self::getCloudinaryDownloadUrl($state))
                     ->openUrlInNewTab()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
