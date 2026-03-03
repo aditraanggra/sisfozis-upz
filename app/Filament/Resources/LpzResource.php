@@ -89,16 +89,40 @@ class LpzResource extends Resource
                     ->schema([
                         Infolists\Components\TextEntry::make('form101')
                             ->label('Form 101')
-                            ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
-                            ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null, shouldOpenInNewTab: true),
+                            ->formatStateUsing(function ($state) {
+                                if (!$state) return '-';
+                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                                catch (\Exception $e) { return '-'; }
+                            })
+                            ->url(function ($state) {
+                                if (!$state) return null;
+                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                                catch (\Exception $e) { return null; }
+                            }, shouldOpenInNewTab: true),
                         Infolists\Components\TextEntry::make('form102')
                             ->label('Form 102')
-                            ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
-                            ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null, shouldOpenInNewTab: true),
+                            ->formatStateUsing(function ($state) {
+                                if (!$state) return '-';
+                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                                catch (\Exception $e) { return '-'; }
+                            })
+                            ->url(function ($state) {
+                                if (!$state) return null;
+                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                                catch (\Exception $e) { return null; }
+                            }, shouldOpenInNewTab: true),
                         Infolists\Components\TextEntry::make('lpz')
                             ->label('LPZ')
-                            ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
-                            ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null, shouldOpenInNewTab: true),
+                            ->formatStateUsing(function ($state) {
+                                if (!$state) return '-';
+                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                                catch (\Exception $e) { return '-'; }
+                            })
+                            ->url(function ($state) {
+                                if (!$state) return null;
+                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                                catch (\Exception $e) { return null; }
+                            }, shouldOpenInNewTab: true),
                     ])->columns(3),
             ]);
     }
@@ -120,24 +144,48 @@ class LpzResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('form101')
                     ->label('Form 101')
-                    ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
-                    ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null)
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) return '-';
+                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                        catch (\Exception $e) { return '-'; }
+                    })
+                    ->url(function ($state) {
+                        if (!$state) return null;
+                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                        catch (\Exception $e) { return null; }
+                    })
                     ->openUrlInNewTab()
                     ->copyable()
                     ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('form102')
                     ->label('Form 102')
-                    ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
-                    ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null)
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) return '-';
+                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                        catch (\Exception $e) { return '-'; }
+                    })
+                    ->url(function ($state) {
+                        if (!$state) return null;
+                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                        catch (\Exception $e) { return null; }
+                    })
                     ->openUrlInNewTab()
                     ->copyable()
                     ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('lpz')
                     ->label('LPZ')
-                    ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : '-')
-                    ->url(fn ($state) => $state ? \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state) : null)
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) return '-';
+                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                        catch (\Exception $e) { return '-'; }
+                    })
+                    ->url(function ($state) {
+                        if (!$state) return null;
+                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
+                        catch (\Exception $e) { return null; }
+                    })
                     ->openUrlInNewTab()
                     ->copyable()
                     ->searchable()
