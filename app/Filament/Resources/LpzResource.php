@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\LpzResource\Pages;
 use App\Models\Lpz;
 use App\Models\UnitZis;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,7 +13,6 @@ use Filament\Tables\Table;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
 
 class LpzResource extends Resource
 {
@@ -26,6 +24,30 @@ class LpzResource extends Resource
     protected static ?string $pluralModelLabel = 'Laporan LPZ';
     protected static ?string $navigationGroup = 'Rekap & Transaksi';
     protected static ?int $navigationSort = 5;
+
+    /**
+     * Construct Cloudinary URL locally to avoid expensive Admin API calls.
+     * PDFs are stored as 'raw' resource type in Cloudinary.
+     */
+    private static function getCloudinaryUrl(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        $cloudinaryUrl = env('CLOUDINARY_URL');
+        $cloudName = parse_url($cloudinaryUrl, PHP_URL_HOST);
+
+        if (!$cloudName) {
+            return null;
+        }
+
+        // Remove file extension from path for the public ID (Cloudinary convention)
+        $info = pathinfo($path);
+        $publicId = $info['dirname'] . '/' . $info['filename'];
+
+        return "https://res.cloudinary.com/{$cloudName}/raw/upload/v1/{$publicId}";
+    }
 
     public static function form(Form $form): Form
     {
@@ -89,40 +111,16 @@ class LpzResource extends Resource
                     ->schema([
                         Infolists\Components\TextEntry::make('form101')
                             ->label('Form 101')
-                            ->formatStateUsing(function ($state) {
-                                if (!$state) return '-';
-                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                                catch (\Exception $e) { return '-'; }
-                            })
-                            ->url(function ($state) {
-                                if (!$state) return null;
-                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                                catch (\Exception $e) { return null; }
-                            }, shouldOpenInNewTab: true),
+                            ->formatStateUsing(fn ($state) => $state ? 'Lihat Dokumen' : '-')
+                            ->url(fn ($state) => self::getCloudinaryUrl($state), shouldOpenInNewTab: true),
                         Infolists\Components\TextEntry::make('form102')
                             ->label('Form 102')
-                            ->formatStateUsing(function ($state) {
-                                if (!$state) return '-';
-                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                                catch (\Exception $e) { return '-'; }
-                            })
-                            ->url(function ($state) {
-                                if (!$state) return null;
-                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                                catch (\Exception $e) { return null; }
-                            }, shouldOpenInNewTab: true),
+                            ->formatStateUsing(fn ($state) => $state ? 'Lihat Dokumen' : '-')
+                            ->url(fn ($state) => self::getCloudinaryUrl($state), shouldOpenInNewTab: true),
                         Infolists\Components\TextEntry::make('lpz')
                             ->label('LPZ')
-                            ->formatStateUsing(function ($state) {
-                                if (!$state) return '-';
-                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                                catch (\Exception $e) { return '-'; }
-                            })
-                            ->url(function ($state) {
-                                if (!$state) return null;
-                                try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                                catch (\Exception $e) { return null; }
-                            }, shouldOpenInNewTab: true),
+                            ->formatStateUsing(fn ($state) => $state ? 'Lihat Dokumen' : '-')
+                            ->url(fn ($state) => self::getCloudinaryUrl($state), shouldOpenInNewTab: true),
                     ])->columns(3),
             ]);
     }
@@ -144,51 +142,21 @@ class LpzResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('form101')
                     ->label('Form 101')
-                    ->formatStateUsing(function ($state) {
-                        if (!$state) return '-';
-                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                        catch (\Exception $e) { return '-'; }
-                    })
-                    ->url(function ($state) {
-                        if (!$state) return null;
-                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                        catch (\Exception $e) { return null; }
-                    })
+                    ->formatStateUsing(fn ($state) => $state ? 'Lihat' : '-')
+                    ->url(fn ($state) => self::getCloudinaryUrl($state))
                     ->openUrlInNewTab()
-                    ->copyable()
-                    ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('form102')
                     ->label('Form 102')
-                    ->formatStateUsing(function ($state) {
-                        if (!$state) return '-';
-                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                        catch (\Exception $e) { return '-'; }
-                    })
-                    ->url(function ($state) {
-                        if (!$state) return null;
-                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                        catch (\Exception $e) { return null; }
-                    })
+                    ->formatStateUsing(fn ($state) => $state ? 'Lihat' : '-')
+                    ->url(fn ($state) => self::getCloudinaryUrl($state))
                     ->openUrlInNewTab()
-                    ->copyable()
-                    ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('lpz')
                     ->label('LPZ')
-                    ->formatStateUsing(function ($state) {
-                        if (!$state) return '-';
-                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                        catch (\Exception $e) { return '-'; }
-                    })
-                    ->url(function ($state) {
-                        if (!$state) return null;
-                        try { return \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($state); }
-                        catch (\Exception $e) { return null; }
-                    })
+                    ->formatStateUsing(fn ($state) => $state ? 'Lihat' : '-')
+                    ->url(fn ($state) => self::getCloudinaryUrl($state))
                     ->openUrlInNewTab()
-                    ->copyable()
-                    ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
