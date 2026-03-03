@@ -10,6 +10,10 @@ class Lpz extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'trx_date' => 'date',
+    ];
+
     protected $fillable = [
         'unit_id',
         'trx_date',
