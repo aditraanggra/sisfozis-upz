@@ -35,6 +35,11 @@ class LpzResource extends Resource
             return null;
         }
 
+        // If the stored value is already a full URL, return it directly
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
         $cloudinaryUrl = env('CLOUDINARY_URL');
         $cloudName = parse_url($cloudinaryUrl, PHP_URL_HOST);
 
