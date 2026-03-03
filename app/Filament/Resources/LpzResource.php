@@ -51,11 +51,8 @@ class LpzResource extends Resource
                 }
             }
 
-            // Remove file extension (Cloudinary stores public IDs without extension for raw files)
-            $info = pathinfo($publicId);
-            if (isset($info['extension'])) {
-                $publicId = $info['dirname'] . '/' . $info['filename'];
-            }
+            // NOTE: For raw files (PDFs), the extension IS part of the public ID.
+            // Do NOT strip it, otherwise Cloudinary returns 404.
 
             // Use Cloudinary SDK to generate a signed URL (no HTTP calls)
             $cloudinary = app(\Cloudinary\Cloudinary::class);
