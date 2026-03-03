@@ -26,8 +26,8 @@ class LpzResource extends Resource
     protected static ?int $navigationSort = 5;
 
     /**
-     * Construct Cloudinary URL locally to avoid expensive Admin API calls.
-     * PDFs are stored as 'raw' resource type in Cloudinary.
+     * Generate a signed Cloudinary URL for raw files (PDFs).
+     * Uses the Cloudinary SDK locally — no HTTP API calls.
      */
     private static function getCloudinaryUrl(?string $path): ?string
     {
@@ -35,23 +35,36 @@ class LpzResource extends Resource
             return null;
         }
 
-        // If the stored value is already a full URL, return it directly
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
+        try {
+            // Extract public ID from the stored value
+            $publicId = $path;
+
+            // If stored as full URL, extract the public ID from it
+            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                // URL format: https://res.cloudinary.com/{cloud}/raw/upload/v{version}/{publicId}
+                $parsed = parse_url($path, PHP_URL_PATH);
+                // Remove /raw/upload/vXXX/ prefix to get the public ID
+                if (preg_match('#/raw/upload/v\d+/(.+)$#', $parsed, $matches)) {
+                    $publicId = $matches[1];
+                } elseif (preg_match('#/(?:image|video|raw)/upload/(?:v\d+/)?(.+)$#', $parsed, $matches)) {
+                    $publicId = $matches[1];
+                }
+            }
+
+            // Remove file extension (Cloudinary stores public IDs without extension for raw files)
+            $info = pathinfo($publicId);
+            if (isset($info['extension'])) {
+                $publicId = $info['dirname'] . '/' . $info['filename'];
+            }
+
+            // Use Cloudinary SDK to generate a signed URL (no HTTP calls)
+            $cloudinary = app(\Cloudinary\Cloudinary::class);
+
+            return (string) $cloudinary->raw($publicId)->signUrl()->toUrl();
+        } catch (\Exception $e) {
+            // Fallback: return the original path if it's already a URL
+            return str_starts_with($path, 'http') ? $path : null;
         }
-
-        $cloudinaryUrl = env('CLOUDINARY_URL');
-        $cloudName = parse_url($cloudinaryUrl, PHP_URL_HOST);
-
-        if (!$cloudName) {
-            return null;
-        }
-
-        // Remove file extension from path for the public ID (Cloudinary convention)
-        $info = pathinfo($path);
-        $publicId = $info['dirname'] . '/' . $info['filename'];
-
-        return "https://res.cloudinary.com/{$cloudName}/raw/upload/v1/{$publicId}";
     }
 
     public static function form(Form $form): Form
