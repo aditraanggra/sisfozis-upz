@@ -720,21 +720,216 @@ PUT    /api/v1/setor/{id}     # Update
 DELETE /api/v1/setor/{id}     # Delete
 ```
 
-**Request Body:**
+**Request Body (Create/Update):**
 
-| Field              | Type    | Required | Description        |
-| ------------------ | ------- | -------- | ------------------ |
-| unit_id            | integer | Yes      | ID unit ZIS        |
-| trx_date           | date    | Yes      | Tanggal transaksi  |
-| zf_amount_deposit  | integer | Yes      | Setoran ZF uang    |
-| zf_rice_deposit    | numeric | Yes      | Setoran ZF beras   |
-| zm_amount_deposit  | integer | Yes      | Setoran ZM         |
-| ifs_amount_deposit | integer | Yes      | Setoran IFS        |
-| total_deposit      | integer | Yes      | Total setoran      |
-| status             | string  | Yes      | Status setoran     |
-| validation         | string  | Yes      | Status validasi    |
-| upload             | string  | Yes      | URL bukti transfer |
-| desc               | string  | No       | Keterangan         |
+| Field                | Type    | Required | Description                                          |
+| -------------------- | ------- | -------- | ---------------------------------------------------- |
+| unit_id              | integer | Yes      | ID unit ZIS                                          |
+| trx_date             | date    | Yes      | Tanggal transaksi                                    |
+| zf_amount_deposit    | integer | Yes      | Setoran ZF uang (Rp)                                |
+| zf_rice_deposit      | numeric | Yes      | Setoran ZF beras (Kg)                                |
+| zf_rice_sold_amount  | integer | No       | Nilai uang (Rp) dari beras yang terjual (default: 0) |
+| zf_rice_sold_price   | integer | No       | Harga beras per Kg saat dijual (default: 0)          |
+| zf_rice_sold_proof   | string  | No       | URL bukti penjualan beras (max 500 karakter)         |
+| zm_amount_deposit    | integer | Yes      | Setoran ZM (Rp)                                     |
+| ifs_amount_deposit   | integer | Yes      | Setoran IFS (Rp)                                    |
+| total_deposit        | integer | Yes      | Total setoran (Rp)                                  |
+| status               | string  | Yes      | Status setoran                                       |
+| validation           | string  | Yes      | Status validasi                                      |
+| upload               | string  | Yes      | URL bukti transfer                                   |
+| deposit_destination  | string  | No       | Tujuan setoran: `upz_desa` atau `upz_kecamatan`     |
+| desc                 | string  | No       | Keterangan                                           |
+
+**Query Parameters (List):**
+
+| Parameter   | Type   | Description                    |
+| ----------- | ------ | ------------------------------ |
+| search      | string | Pencarian teks                 |
+| year        | int    | Filter berdasarkan tahun       |
+| start_date  | date   | Filter tanggal mulai           |
+| end_date    | date   | Filter tanggal akhir           |
+
+**Response (200 - Show / 201 - Created):**
+
+```json
+{
+    "data": {
+        "id": 1,
+        "unit_id": 1,
+        "unit": { "id": 1, "unit_name": "UPZ Masjid Al-Ikhlas" },
+        "trx_date": "2026-03-01",
+        "zf_amount_deposit": 5000000,
+        "zf_rice_deposit": 100.5,
+        "zf_rice_sold_amount": 1105500,
+        "zf_rice_sold_price": 11000,
+        "zf_rice_sold_proof": "https://res.cloudinary.com/<cloud_name>/raw/upload/sisfo/bap/xxxxx.pdf",
+        "is_rice_sold": true,
+        "unsold_rice": 0,
+        "original_rice_qty": 100.5,
+        "zm_amount_deposit": 2000000,
+        "ifs_amount_deposit": 1000000,
+        "total_deposit": 8000000,
+        "status": "sudah_setor",
+        "validation": "valid",
+        "upload": "https://res.cloudinary.com/<cloud_name>/raw/upload/sisfo/bukti_setor/xxxxx.pdf",
+        "deposit_destination": "upz_desa",
+        "desc": "Setoran bulan Maret"
+    }
+}
+```
+
+**Response Fields (Computed — read-only):**
+
+| Field              | Type    | Description                                                             |
+| ------------------ | ------- | ----------------------------------------------------------------------- |
+| is_rice_sold       | boolean | `true` jika beras sudah terjual (`zf_rice_sold_amount > 0`)            |
+| unsold_rice        | float   | Sisa beras belum terjual (= `zf_rice_deposit` jika belum, `0` jika sudah) |
+| original_rice_qty  | float   | Kuantitas beras asli (derive dari `zf_rice_sold_amount / zf_rice_sold_price`) |
+
+> [!NOTE]
+> **Dua skenario penjualan beras:**
+> 1. **Unit jual langsung** (via Flutter) — unit mengisi `zf_rice_sold_amount` dan `zf_rice_sold_price` sendiri saat input SetorZis.
+> 2. **Desa/Kecamatan jual batch** (via Filament admin) — BulkAction "Jual Beras" otomatis mengisi `zf_rice_sold_amount`, `zf_rice_sold_price`, `zf_rice_sold_proof`, dan set `zf_rice_deposit = 0` secara massal.
+>
+> Saat beras terjual, `zf_rice_deposit` di-set ke `0` dan nilai uangnya disimpan di `zf_rice_sold_amount`. Kuantitas beras asli selalu bisa dihitung ulang dari `zf_rice_sold_amount / zf_rice_sold_price`.
+
+**Example Request - Create new SetorZis:**
+```json
+POST /api/v1/setor
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "unit_id": 1,
+    "trx_date": "2026-03-01",
+    "zf_amount_deposit": 5000000,
+    "zf_rice_deposit": 100.5,
+    "zm_amount_deposit": 2000000,
+    "ifs_amount_deposit": 1000000,
+    "total_deposit": 8000000,
+    "status": "sudah_setor",
+    "validation": "valid",
+    "upload": "https://res.cloudinary.com/<cloud_name>/raw/upload/sisfo/bukti_setor/xxxxx.pdf",
+    "deposit_destination": "upz_desa"
+}
+```
+
+**Example Request - Update with rice sale data (unit jual langsung):**
+```json
+PUT /api/v1/setor/1
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "unit_id": 1,
+    "trx_date": "2026-03-01",
+    "zf_amount_deposit": 5000000,
+    "zf_rice_deposit": 0,
+    "zf_rice_sold_amount": 1105500,
+    "zf_rice_sold_price": 11000,
+    "zf_rice_sold_proof": "https://res.cloudinary.com/<cloud_name>/raw/upload/sisfo/bap/xxxxx.pdf",
+    "zm_amount_deposit": 2000000,
+    "ifs_amount_deposit": 1000000,
+    "total_deposit": 9105500,
+    "status": "sudah_setor",
+    "validation": "valid",
+    "upload": "https://res.cloudinary.com/<cloud_name>/raw/upload/sisfo/bukti_setor/xxxxx.pdf",
+    "deposit_destination": "upz_desa"
+}
+```
+
+### 6.2 Rice Consolidation (Konsolidasi Beras)
+
+🔒 **Requires Authentication**
+
+Endpoint untuk mendapatkan data konsolidasi beras yang belum terjual, dikelompokkan berdasarkan `deposit_destination` dan per unit.
+
+```
+GET /api/v1/setor/rice-consolidation
+```
+
+**Access Control:**
+- **Admin**: Melihat semua data.
+- **UPZ Kecamatan**: Hanya data unit di kecamatan yang sama.
+- **UPZ Desa**: Hanya data unit di desa yang sama.
+- **User biasa**: Hanya data unit miliknya sendiri.
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description                             |
+| --------- | ---- | -------- | --------------------------------------- |
+| year      | int  | No       | Filter berdasarkan tahun (default: all) |
+
+**Example Request:**
+```
+GET /api/v1/setor/rice-consolidation?year=2026
+```
+
+**Response (200):**
+
+```json
+{
+    "total_unsold_rice": 170.0,
+    "by_destination": {
+        "upz_desa": {
+            "total_rice": 150.0,
+            "total_records": 2,
+            "units": [
+                {
+                    "id": 1,
+                    "unit_id": 1,
+                    "unit_name": "UPZ Masjid Al-Ikhlas",
+                    "village": "Desa A",
+                    "district": "Kecamatan A",
+                    "rice_kg": 100.0,
+                    "trx_date": "2026-03-01"
+                },
+                {
+                    "id": 2,
+                    "unit_id": 2,
+                    "unit_name": "UPZ Masjid Baiturrahman",
+                    "village": "Desa A",
+                    "district": "Kecamatan A",
+                    "rice_kg": 50.0,
+                    "trx_date": "2026-03-02"
+                }
+            ]
+        },
+        "upz_kecamatan": {
+            "total_rice": 20.0,
+            "total_records": 1,
+            "units": [
+                {
+                    "id": 3,
+                    "unit_id": 3,
+                    "unit_name": "UPZ Musholla As-Syafi'i",
+                    "village": "Desa B",
+                    "district": "Kecamatan A",
+                    "rice_kg": 20.0,
+                    "trx_date": "2026-03-01"
+                }
+            ]
+        }
+    }
+}
+```
+
+**Response Fields:**
+
+| Field                         | Type   | Description                                      |
+| ----------------------------- | ------ | ------------------------------------------------ |
+| total_unsold_rice             | float  | Total beras belum terjual (Kg)                   |
+| by_destination                | object | Data dikelompokkan per `deposit_destination`     |
+| by_destination.*.total_rice   | float  | Total beras (Kg) per destination                 |
+| by_destination.*.total_records| int    | Jumlah record per destination                    |
+| by_destination.*.units        | array  | Detail per unit                                  |
+| by_destination.*.units[].id   | int    | ID record SetorZis                               |
+| by_destination.*.units[].unit_id | int | ID unit ZIS                                      |
+| by_destination.*.units[].unit_name | string | Nama unit                                   |
+| by_destination.*.units[].village | string | Nama desa (nullable)                          |
+| by_destination.*.units[].district | string | Nama kecamatan (nullable)                    |
+| by_destination.*.units[].rice_kg | float | Jumlah beras belum terjual (Kg)                |
+| by_destination.*.units[].trx_date | date | Tanggal transaksi (Y-m-d)                      |
 
 ---
 
@@ -1767,6 +1962,13 @@ GET /api/v1/lpz?year=2026
 | Kesehatan   | Program kesehatan   |
 | Ekonomi     | Program ekonomi     |
 
+### Deposit Destination (Setor ZIS)
+
+| Value          | Description                              |
+| -------------- | ---------------------------------------- |
+| upz_desa       | Setoran ke UPZ Desa (batch sale by desa) |
+| upz_kecamatan  | Setoran ke UPZ Kecamatan                 |
+
 ---
 
 ## Notes
@@ -1779,3 +1981,7 @@ GET /api/v1/lpz?year=2026
    - Minimum value: 1 (individual donor)
    - Existing records akan otomatis diisi dengan nilai 1
    - Digunakan untuk analisis pola donasi individu vs kelompok
+6. Setor ZIS mendukung tracking penjualan beras via kolom `zf_rice_sold_amount`, `zf_rice_sold_price`, `zf_rice_sold_proof`, dan `deposit_destination`.
+   - Saat beras terjual, `zf_rice_deposit` di-set ke `0` dan hasil penjualan dicatat di `zf_rice_sold_amount`.
+   - Batch sale dilakukan via Filament admin oleh role `upz_desa` / `upz_kecamatan`.
+   - File bukti penjualan (BAP) disimpan di Cloudinary folder `sisfo/bap`, bukti setor di `sisfo/bukti_setor`.
