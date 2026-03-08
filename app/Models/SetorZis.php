@@ -17,12 +17,16 @@ class SetorZis extends Model
         'trx_date',
         'zf_amount_deposit',
         'zf_rice_deposit',
+        'zf_rice_sold_amount',
+        'zf_rice_sold_price',
+        'zf_rice_sold_proof',
         'zm_amount_deposit',
         'ifs_amount_deposit',
         'total_deposit',
         'status',
         'validation',
         'upload',
+        'deposit_destination',
     ];
 
     protected static function booted()
@@ -57,13 +61,79 @@ class SetorZis extends Model
         'amount' => 'integer',
         'zf_amount_deposit' => 'integer',
         'zf_rice_deposit' => 'float',
+        'zf_rice_sold_amount' => 'integer',
+        'zf_rice_sold_price' => 'integer',
         'zm_amount_deposit' => 'integer',
         'ifs_amount_deposit' => 'integer',
         'total_deposit' => 'integer',
         'status' => 'string',
         'validation' => 'string',
         'upload' => 'string',
+        'zf_rice_sold_proof' => 'string',
+        'deposit_destination' => 'string',
     ];
+
+    // =========================================================================
+    // Computed Accessors
+    // =========================================================================
+
+    /**
+     * Apakah beras sudah terjual (baik langsung oleh unit maupun batch oleh desa/kec).
+     */
+    public function getIsRiceSoldAttribute(): bool
+    {
+        return $this->zf_rice_sold_amount > 0;
+    }
+
+    /**
+     * Jumlah beras yang belum terjual (Kg).
+     * Jika sudah terjual, return 0.
+     */
+    public function getUnsoldRiceAttribute(): float
+    {
+        return $this->is_rice_sold ? 0.0 : (float) $this->zf_rice_deposit;
+    }
+
+    /**
+     * Hitung ulang jumlah beras asli dari data penjualan (untuk audit trail).
+     * Berguna saat zf_rice_deposit sudah di-0-kan setelah penjualan.
+     */
+    public function getOriginalRiceQtyAttribute(): float
+    {
+        if ($this->zf_rice_sold_price > 0 && $this->zf_rice_sold_amount > 0) {
+            return round($this->zf_rice_sold_amount / $this->zf_rice_sold_price, 2);
+        }
+
+        return (float) $this->zf_rice_deposit;
+    }
+
+    // =========================================================================
+    // Query Scopes
+    // =========================================================================
+
+    /**
+     * Scope: hanya record yang berasnya belum terjual.
+     */
+    public function scopeUnsoldRice(Builder $query): Builder
+    {
+        return $query->where('zf_rice_deposit', '>', 0)
+                     ->where(function ($q) {
+                         $q->where('zf_rice_sold_amount', 0)
+                           ->orWhereNull('zf_rice_sold_amount');
+                     });
+    }
+
+    /**
+     * Scope: filter berdasarkan tujuan setoran.
+     */
+    public function scopeByDestination(Builder $query, string $destination): Builder
+    {
+        return $query->where('deposit_destination', $destination);
+    }
+
+    // =========================================================================
+    // Relationships
+    // =========================================================================
 
     public function unit()
     {

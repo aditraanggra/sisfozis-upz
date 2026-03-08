@@ -160,6 +160,61 @@ class SetorZisController extends Controller
     }
 
     /**
+     * Get rice consolidation data — unsold rice grouped by destination.
+     */
+    public function riceConsolidation(Request $request)
+    {
+        $query = SetorZis::with(['unit', 'unit.village', 'unit.district'])
+            ->unsoldRice();
+
+        // Scope by role
+        if (User::currentIsAdmin()) {
+            // Admin sees all data - no filter
+        } elseif (User::currentIsUpzKecamatan()) {
+            $user = Auth::user();
+            $query->whereHas('unit', fn($q) => $q->where('district_id', $user->district_id));
+        } elseif (User::currentIsUpzDesa()) {
+            $user = Auth::user();
+            $query->whereHas('unit', fn($q) => $q->where('village_id', $user->village_id));
+        } else {
+            // Fallback: restrict to user's own units
+            $query->whereHas('unit', fn($q) => $q->where('user_id', Auth::id()));
+        }
+
+        // Year filter
+        if ($request->has('year') && $request->year !== 'all') {
+            $query->whereYear('trx_date', (int) $request->year);
+        }
+
+        $records = $query->get();
+
+        $totalUnsoldRice = $records->sum('zf_rice_deposit');
+
+        $byDestination = $records->groupBy('deposit_destination')->map(function ($group, $destination) {
+            return [
+                'total_rice' => $group->sum('zf_rice_deposit'),
+                'total_records' => $group->count(),
+                'units' => $group->map(function ($record) {
+                    return [
+                        'id' => $record->id,
+                        'unit_id' => $record->unit_id,
+                        'unit_name' => $record->unit?->unit_name,
+                        'village' => $record->unit?->village?->name,
+                        'district' => $record->unit?->district?->name,
+                        'rice_kg' => $record->zf_rice_deposit,
+                        'trx_date' => $record->trx_date?->format('Y-m-d'),
+                    ];
+                })->values(),
+            ];
+        });
+
+        return response()->json([
+            'total_unsold_rice' => $totalUnsoldRice,
+            'by_destination' => $byDestination,
+        ]);
+    }
+
+    /**
      * Check if authenticated user owns the unit or is admin
      */
     private function checkUnitOwnership(int $unitId): void

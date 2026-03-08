@@ -44,6 +44,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/unit-zis/{id}', [\App\Http\Controllers\Api\UnitZisController::class, 'update']);
 
+    // Rice consolidation endpoint (must be before apiResources to avoid route conflict)
+    Route::get('setor/rice-consolidation', [SetorZisController::class, 'riceConsolidation']);
+
     Route::apiResources([
         'zf' => ZfController::class,
         'zm' => ZmController::class,
