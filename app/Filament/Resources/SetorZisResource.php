@@ -410,12 +410,18 @@ class SetorZisResource extends Resource
                             ->badge(),
                         Infolists\Components\TextEntry::make('validation')
                             ->label('Validasi'),
+                        Infolists\Components\ImageEntry::make('upload')
+                            ->label('Bukti Setor')
+                            ->disk('cloudinary')
+                            ->height(300)
+                            ->visible(fn ($record) => $record->upload && !str_ends_with(strtolower($record->upload), '.pdf')),
                         Infolists\Components\TextEntry::make('upload')
                             ->label('Bukti Setor')
                             ->formatStateUsing(fn ($state) => $state ? 'Download Bukti Setor' : '-')
                             ->url(fn ($state) => self::getCloudinaryDownloadUrl($state), shouldOpenInNewTab: true)
                             ->color('primary')
-                            ->icon(fn ($state) => $state ? 'heroicon-m-arrow-down-tray' : null),
+                            ->icon(fn ($state) => $state ? 'heroicon-m-arrow-down-tray' : null)
+                            ->visible(fn ($record) => $record->upload && str_ends_with(strtolower($record->upload), '.pdf')),
                         Infolists\Components\TextEntry::make('zf_rice_sold_proof')
                             ->label('Berita Acara Penjualan Beras')
                             ->formatStateUsing(fn ($state) => $state ? 'Download Berita Acara' : '-')
