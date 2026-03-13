@@ -205,6 +205,9 @@ class VillageResource extends Resource
             ->headerActions([
                 Tables\Actions\ExportAction::make()
                     ->exporter(VillageExporter::class)
+                    ->options(fn ($livewire) => [
+                        'tahun' => $livewire->tableFilters['tahun']['value'] ?? date('Y')
+                    ])
             ])
             ->recordUrl(null)
             ->defaultPaginationPageOption(25);

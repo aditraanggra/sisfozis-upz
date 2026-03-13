@@ -258,6 +258,9 @@ class DistrictResource extends Resource
             ->headerActions([
                 ActionsExportAction::make()
                     ->exporter(DistrictExporter::class)
+                    ->options(fn ($livewire) => [
+                        'tahun' => $livewire->tableFilters['tahun']['value'] ?? date('Y')
+                    ])
             ])
             ->defaultSort(static::TOTAL_ALIAS, 'desc')
             ->recordUrl(null)

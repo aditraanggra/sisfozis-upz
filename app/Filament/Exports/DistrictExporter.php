@@ -22,88 +22,104 @@ class DistrictExporter extends Exporter
             // Total ZIS Amounts
             ExportColumn::make('total_zis')
                 ->label('Total ZIS')
-                ->getStateUsing(function ($record) {
+                ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
+                    $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
+                    $periodDate = $tahun . '-01-01';
                     return $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_zf_amount') +
                         $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_zm_amount') +
                         $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_ifs_amount');
                 }),
 
             // Zakat Fitrah (Rice)
             ExportColumn::make('total_zf_rice')
                 ->label('Zakat Fitrah (Beras)')
-                ->getStateUsing(function ($record) {
+                ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
+                    $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
+                    $periodDate = $tahun . '-01-01';
                     return $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_zf_rice');
                 }),
 
             // Zakat Fitrah (Amount)
             ExportColumn::make('total_zf_amount')
                 ->label('Zakat Fitrah (Uang)')
-                ->getStateUsing(function ($record) {
+                ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
+                    $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
+                    $periodDate = $tahun . '-01-01';
                     return $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_zf_amount');
                 }),
 
             // Zakat Mal
             ExportColumn::make('total_zm_amount')
                 ->label('Zakat Mal')
-                ->getStateUsing(function ($record) {
+                ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
+                    $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
+                    $periodDate = $tahun . '-01-01';
                     return $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_zm_amount');
                 }),
 
             // Infak Sedekah
             ExportColumn::make('total_ifs_amount')
                 ->label('Infak Sedekah')
-                ->getStateUsing(function ($record) {
+                ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
+                    $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
+                    $periodDate = $tahun . '-01-01';
                     return $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_ifs_amount');
                 }),
 
             // Muzakki Zakat Fitrah
             ExportColumn::make('total_zf_muzakki')
                 ->label('Muzakki Zakat Fitrah')
-                ->getStateUsing(function ($record) {
+                ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
+                    $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
+                    $periodDate = $tahun . '-01-01';
                     return $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_zf_muzakki');
                 }),
 
             // Muzakki Zakat Mal
             ExportColumn::make('total_zm_muzakki')
                 ->label('Muzakki Zakat Mal')
-                ->getStateUsing(function ($record) {
+                ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
+                    $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
+                    $periodDate = $tahun . '-01-01';
                     return $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_zm_muzakki');
                 }),
 
             // Munfiq (Infak Sedekah Contributors)
             ExportColumn::make('total_ifs_munfiq')
                 ->label('Munfiq')
-                ->getStateUsing(function ($record) {
+                ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
+                    $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
+                    $periodDate = $tahun . '-01-01';
                     return $record->rekapZis
                         ->where('period', 'tahunan')
-                        ->where('period_date', '2025-01-01')
+                        ->where('period_date', $periodDate)
                         ->sum('total_ifs_munfiq');
                 }),
         ];

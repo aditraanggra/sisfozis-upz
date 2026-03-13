@@ -23,6 +23,9 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
+use App\Filament\Exports\SetorZisExporter;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
 
 class SetorZisResource extends Resource
 {
@@ -434,6 +437,10 @@ class SetorZisResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    ExportBulkAction::make()
+                        ->exporter(SetorZisExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->label('Export Excel'),
 
                     // =========================================================
                     // BulkAction: Jual Beras
@@ -529,6 +536,10 @@ class SetorZisResource extends Resource
                                 ->send();
                         }),
                 ]),
+            ])
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(SetorZisExporter::class)
             ]);
     }
 
