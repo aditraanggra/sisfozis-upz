@@ -242,12 +242,12 @@ class SetorZisResource extends Resource
                     ->color(fn (?string $state): string => match ($state) {
          'upz_desa' => 'success',
          'upz_kecamatan' => 'info',
-         default => 'gray',
+         'BAZNAS' => 'gray',
      })
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'upz_desa' => 'UPZ Desa',
                         'upz_kecamatan' => 'UPZ Kecamatan',
-                        default => '-',
+                        'baznas' => 'BAZNAS',
                     })
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
@@ -256,8 +256,8 @@ class SetorZisResource extends Resource
                 Tables\Columns\SelectColumn::make('validation')
                     ->label('Validasi')
                     ->options([
-                        'Valid' => 'Valid',
-                        'Tidak Valid' => 'Tidak Valid',
+                        'Belum verifikasi' => 'Belum verifikasi',
+                        'Terverifikasi' => 'Terverifikasi',
                     ])
                     ->selectablePlaceholder(false)
                     ->disabled(fn () => !User::currentIsSuperAdmin() && !User::currentIsAdmin())
