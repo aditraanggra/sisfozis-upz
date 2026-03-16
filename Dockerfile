@@ -45,7 +45,7 @@ RUN apk add --no-cache \
     supervisor \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" gd intl mbstring opcache zip bcmath \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql \
     && apk add --no-cache --virtual .phpredis-deps $PHPIZE_DEPS \
     && pecl install redis \
     && docker-php-ext-enable redis \
