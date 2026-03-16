@@ -103,7 +103,9 @@ class LpzResource extends Resource
                     ->acceptedFileTypes(['application/pdf'])
                     ->maxSize(10240)
                     ->openable()
-                    ->downloadable(),
+                    ->downloadable()
+                    ->formatStateUsing(fn () => null)
+                    ->dehydrated(fn ($state) => filled($state)),
                 Forms\Components\FileUpload::make('form102')
                     ->label('Form 102')
                     ->disk('cloudinary')
@@ -112,7 +114,9 @@ class LpzResource extends Resource
                     ->acceptedFileTypes(['application/pdf'])
                     ->maxSize(10240)
                     ->openable()
-                    ->downloadable(),
+                    ->downloadable()
+                    ->formatStateUsing(fn () => null)
+                    ->dehydrated(fn ($state) => filled($state)),
                 Forms\Components\FileUpload::make('lpz')
                     ->label('LPZ')
                     ->disk('cloudinary')
@@ -121,7 +125,9 @@ class LpzResource extends Resource
                     ->acceptedFileTypes(['application/pdf'])
                     ->maxSize(10240)
                     ->openable()
-                    ->downloadable(),
+                    ->downloadable()
+                    ->formatStateUsing(fn () => null)
+                    ->dehydrated(fn ($state) => filled($state)),
             ]);
     }
 

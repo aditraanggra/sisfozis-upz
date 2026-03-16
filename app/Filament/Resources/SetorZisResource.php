@@ -160,6 +160,8 @@ class SetorZisResource extends Resource
                     ->maxSize(5120)
                     ->openable()
                     ->downloadable()
+                    ->formatStateUsing(fn () => null)
+                    ->dehydrated(fn ($state) => filled($state))
                     ->getUploadedFileNameForStorageUsing(function (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file, Forms\Get $get): string {
                         $unitId = $get('unit_id');
                         $unit = $unitId ? \App\Models\UnitZis::find($unitId) : null;
@@ -195,6 +197,8 @@ class SetorZisResource extends Resource
                     ->maxSize(5120)
                     ->openable()
                     ->downloadable()
+                    ->formatStateUsing(fn () => null)
+                    ->dehydrated(fn ($state) => filled($state))
                     ->getUploadedFileNameForStorageUsing(function (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file, Forms\Get $get): string {
                         $unitId = $get('unit_id');
                         $unit = $unitId ? \App\Models\UnitZis::find($unitId) : null;
