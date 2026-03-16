@@ -139,7 +139,13 @@ class SetorZisResource extends Resource
                         if (!$record || !$record->upload) {
                             return 'Belum ada gambar';
                         }
-                        $url = \Illuminate\Support\Facades\Storage::disk('cloudinary')->url($record->upload);
+                        
+                        $url = self::getCloudinaryUrl($record->upload);
+                        
+                        if (!$url) {
+                            return 'Gambar tidak ditemukan atau URL tidak valid';
+                        }
+
                         return new \Illuminate\Support\HtmlString(
                             '<img src="' . e($url) . '" style="max-width: 400px; max-height: 300px; border-radius: 8px; object-fit: contain;" />'
                         );

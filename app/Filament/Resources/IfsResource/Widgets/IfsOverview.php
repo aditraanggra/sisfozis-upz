@@ -23,7 +23,7 @@ class IfsOverview extends BaseWidget
         }
 
         $totalAmount = (clone $baseQuery)->sum('amount');
-        $totalMunfik = (clone $baseQuery)->count('munfiq_name');
+        $totalMunfik = (clone $baseQuery)->sum('total_munfiq');
 
         return [
             Stat::make('Total Infak Sedekah', 'Rp ' . number_format($totalAmount, 0, ',', '.')),
