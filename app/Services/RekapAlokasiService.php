@@ -401,18 +401,66 @@ class RekapAlokasiService extends BaseRekapService
     /**
      * Update or create rekap alokasi based on rekap zis data (legacy method)
      */
-    public function updateOrCreateRekapAlokasi(int $unitId, string $period): RekapAlokasi
+    public function updateOrCreateRekapAlokasi(int $unitId, string $period, ?string $periodDate = null): RekapAlokasi
     {
         try {
             DB::beginTransaction();
 
-            // Get rekap_zis data
-            $rekapZis = RekapZis::where('unit_id', $unitId)
-                ->where('period', $period)
-                ->first();
+            // Get rekap_zis data, filtered by period_date when available
+            $query = RekapZis::where('unit_id', $unitId)
+                ->where('period', $period);
+
+            if ($periodDate !== null) {
+                $query->where('period_date', $periodDate);
+            }
+
+            $rekapZis = $query->first();
 
             if (! $rekapZis) {
-                throw new \Exception("RekapZis record not found for unit_id: {$unitId} and period: {$period}");
+                // For tahunan: aggregate from harian rekap_zis records for the year.
+                // Many units don't have rekap_zis with period='tahunan', but tahunan
+                // rekap_alokasi is used by the frontend API, so we must create it.
+                if ($period === 'tahunan' && $periodDate !== null) {
+                    $year = (int) substr($periodDate, 0, 4);
+                    $yearStart = Carbon::create($year, 1, 1)->startOfDay();
+                    $yearEnd = Carbon::create($year, 12, 31)->endOfDay();
+
+                    $aggregated = DB::table('rekap_zis')
+                        ->where('unit_id', $unitId)
+                        ->where('period', 'harian')
+                        ->whereBetween('period_date', [$yearStart->format('Y-m-d'), $yearEnd->format('Y-m-d')])
+                        ->selectRaw('COALESCE(SUM(total_zf_amount), 0) as total_zf_amount')
+                        ->selectRaw('COALESCE(SUM(total_zf_rice), 0) as total_zf_rice')
+                        ->selectRaw('COALESCE(SUM(total_zm_amount), 0) as total_zm_amount')
+                        ->selectRaw('COALESCE(SUM(total_ifs_amount), 0) as total_ifs_amount')
+                        ->first();
+
+                    $hasData = ($aggregated->total_zf_amount ?? 0) > 0
+                            || ($aggregated->total_zf_rice ?? 0) > 0
+                            || ($aggregated->total_zm_amount ?? 0) > 0
+                            || ($aggregated->total_ifs_amount ?? 0) > 0;
+
+                    if (! $hasData) {
+                        Log::info("No harian data found for unit_id: {$unitId}, year: {$year}. Skipping tahunan rekap_alokasi.");
+                        DB::rollBack();
+
+                        return new RekapAlokasi();
+                    }
+
+                    // Build a synthetic object matching the structure expected below
+                    $rekapZis = (object) [
+                        'period_date' => $periodDate,
+                        'total_zf_amount' => $aggregated->total_zf_amount,
+                        'total_zf_rice' => $aggregated->total_zf_rice,
+                        'total_zm_amount' => $aggregated->total_zm_amount,
+                        'total_ifs_amount' => $aggregated->total_ifs_amount,
+                    ];
+                } else {
+                    Log::warning("RekapZis record not found for unit_id: {$unitId}, period: {$period}, period_date: {$periodDate}. Skipping.");
+                    DB::rollBack();
+
+                    return new RekapAlokasi();
+                }
             }
 
             // Get the period date for allocation lookup
@@ -490,13 +538,14 @@ class RekapAlokasiService extends BaseRekapService
             $hakOpZfRice = $this->bcPercent($totalSetorZfRice, self::PCT_HAK_OP, self::RICE_SCALE);
 
             // Update or create rekap_alokasi record
+            // Key includes periode_date to match unique constraint (unit_id, periode, periode_date)
             $rekapAlokasi = RekapAlokasi::updateOrCreate(
                 [
                     'unit_id' => $unitId,
                     'periode' => $period,
+                    'periode_date' => $rekapZis->period_date,
                 ],
                 [
-                    'periode_date' => $rekapZis->period_date,
                     'total_setor_zf_amount' => (int) $totalSetorZfAmount,
                     'total_setor_zf_rice' => $totalSetorZfRice,
                     'total_setor_zm' => (int) $totalSetorZm,

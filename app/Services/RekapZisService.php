@@ -342,6 +342,25 @@ class RekapZisService extends BaseRekapService
                             SUM(amount) as total_amount')
                 ->first();
 
+            // Check if there are any transactions at all
+            $hasData = ($zfData->total_muzakki ?? 0) > 0
+                    || ($zfData->total_rice ?? 0) > 0
+                    || ($zfData->total_amount ?? 0) > 0
+                    || ($zmData->total_muzakki ?? 0) > 0
+                    || ($zmData->total_amount ?? 0) > 0
+                    || ($ifsData->total_munfiq ?? 0) > 0
+                    || ($ifsData->total_amount ?? 0) > 0;
+
+            if (! $hasData) {
+                // No transactions — delete existing record if any
+                RekapZis::where('unit_id', $unitId)
+                    ->where('period', 'harian')
+                    ->where('period_date', $startDate->format('Y-m-d'))
+                    ->delete();
+
+                return new RekapZis();
+            }
+
             // Simpan atau update rekapitulasi
             $rekapitulasi = RekapZis::updateOrCreate(
                 [
@@ -407,6 +426,24 @@ class RekapZisService extends BaseRekapService
                             SUM(amount) as total_amount')
                 ->first();
 
+            // Check if there are any transactions at all
+            $hasData = ($zfData->total_muzakki ?? 0) > 0
+                    || ($zfData->total_rice ?? 0) > 0
+                    || ($zfData->total_amount ?? 0) > 0
+                    || ($zmData->total_muzakki ?? 0) > 0
+                    || ($zmData->total_amount ?? 0) > 0
+                    || ($ifsData->total_munfiq ?? 0) > 0
+                    || ($ifsData->total_amount ?? 0) > 0;
+
+            if (! $hasData) {
+                RekapZis::where('unit_id', $unitId)
+                    ->where('period', 'bulanan')
+                    ->where('period_date', $startDate->format('Y-m-01'))
+                    ->delete();
+
+                return new RekapZis();
+            }
+
             // Simpan atau update rekapitulasi bulanan
             $rekapitulasi = RekapZis::updateOrCreate(
                 [
@@ -466,6 +503,24 @@ class RekapZisService extends BaseRekapService
                 ->selectRaw('SUM(total_munfiq) as total_munfiq, 
                             SUM(amount) as total_amount')
                 ->first();
+
+            // Check if there are any transactions at all
+            $hasData = ($zfData->total_muzakki ?? 0) > 0
+                    || ($zfData->total_rice ?? 0) > 0
+                    || ($zfData->total_amount ?? 0) > 0
+                    || ($zmData->total_muzakki ?? 0) > 0
+                    || ($zmData->total_amount ?? 0) > 0
+                    || ($ifsData->total_munfiq ?? 0) > 0
+                    || ($ifsData->total_amount ?? 0) > 0;
+
+            if (! $hasData) {
+                RekapZis::where('unit_id', $unitId)
+                    ->where('period', 'tahunan')
+                    ->where('period_date', $startDate->format('Y-01-01'))
+                    ->delete();
+
+                return new RekapZis();
+            }
 
             // Simpan atau update rekapitulasi tahunan
             $rekapitulasi = RekapZis::updateOrCreate(

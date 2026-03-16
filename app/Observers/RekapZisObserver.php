@@ -67,15 +67,26 @@ class RekapZisObserver
      */
     private function dispatchUpdateJobs(RekapZis $rekapZis)
     {
-        // Dispatch jobs for all periods that may be affected:
-        // - The specific period (harian, bulanan, tahunan)
-        // - All related periods if needed
-        $periods = ['harian', 'bulanan', 'tahunan'];
+        $periodDate = $rekapZis->period_date instanceof \Carbon\Carbon
+            ? $rekapZis->period_date->format('Y-m-d')
+            : $rekapZis->period_date;
 
-        foreach ($periods as $period) {
+        // Dispatch job for the specific period that was changed
+        UpdateRekapAlokasi::dispatch(
+            $rekapZis->unit_id,
+            $rekapZis->period,
+            $periodDate
+        );
+
+        // Also dispatch for tahunan when harian/bulanan changes,
+        // since any period change affects yearly totals.
+        // This ensures rekap_alokasi tahunan stays up-to-date for the API.
+        if ($rekapZis->period !== 'tahunan') {
+            $year = substr($periodDate, 0, 4);
             UpdateRekapAlokasi::dispatch(
                 $rekapZis->unit_id,
-                $period
+                'tahunan',
+                "{$year}-01-01"
             );
         }
     }

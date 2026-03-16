@@ -29,6 +29,13 @@ class UpdateRekapAlokasi implements ShouldQueue
     protected $period;
 
     /**
+     * The period date to update.
+     *
+     * @var string|null
+     */
+    protected $periodDate;
+
+    /**
      * The number of times the job may be attempted.
      *
      * @var int
@@ -40,10 +47,11 @@ class UpdateRekapAlokasi implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(int $unitId, string $period)
+    public function __construct(int $unitId, string $period, ?string $periodDate = null)
     {
         $this->unitId = $unitId;
         $this->period = $period;
+        $this->periodDate = $periodDate;
     }
 
     /**
@@ -58,7 +66,8 @@ class UpdateRekapAlokasi implements ShouldQueue
 
             $rekapAlokasi = $rekapAlokasiService->updateOrCreateRekapAlokasi(
                 $this->unitId,
-                $this->period
+                $this->period,
+                $this->periodDate
             );
 
             Log::info("Successfully updated rekap alokasi ID: {$rekapAlokasi->id}");

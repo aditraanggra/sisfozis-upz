@@ -42,9 +42,14 @@ RUN apk add --no-cache \
     libpng-dev libjpeg-turbo-dev libwebp-dev freetype-dev \
     mariadb-connector-c-dev postgresql-dev \
     libzip-dev zlib-dev zip \
+    supervisor \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" gd intl mbstring opcache zip bcmath \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql
+    && apk add --no-cache --virtual .phpredis-deps $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .phpredis-deps
 
 # (opsional) client tools jika perlu debugging
 # RUN apk add --no-cache postgresql-client mariadb-client
@@ -55,6 +60,9 @@ COPY --from=vendor /app /app
 # Caddyfile (pastikan listen :8000 di file ini)
 COPY ./deploy/Caddyfile /etc/caddy/Caddyfile
 
+# Copy supervisord config                              
+COPY ./deploy/supervisord.conf /etc/supervisor/conf.d/laravel.conf
+
 # Permission folder writable Laravel
 RUN chown -R www-data:www-data storage bootstrap/cache
 
@@ -62,4 +70,4 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 EXPOSE 8000
 
 # Jalankan FrankenPHP/Caddy
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/laravel.conf"]

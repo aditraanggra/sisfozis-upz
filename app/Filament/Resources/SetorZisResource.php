@@ -52,7 +52,7 @@ class SetorZisResource extends Resource
                 }
             }
             $cloudinary = app(\Cloudinary\Cloudinary::class);
-            return (string) $cloudinary->raw($publicId)->signUrl()->toUrl();
+            return (string) $cloudinary->image($publicId)->toUrl();
         } catch (\Exception $e) {
             return str_starts_with($path, 'http') ? $path : null;
         }
@@ -90,46 +90,49 @@ class SetorZisResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('zf_amount_deposit')
                     ->label('Setor Zakat Fitrah (Uang)')
-                    ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('zf_rice_deposit')
                     ->label('Setor Zakat Fitrah (Beras)')
-                    ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('zf_rice_sold_amount')
                     ->label('Konversi Beras ke Uang (Rp)')
-                    ->readOnly()
                     ->numeric(),
                 Forms\Components\TextInput::make('zf_rice_sold_price')
                     ->label('Harga Beras per Kg (Rp)')
-                    ->readOnly()
                     ->numeric(),
                 Forms\Components\TextInput::make('zm_amount_deposit')
                     ->label('Setor Zakat Mal (Uang)')
-                    ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('ifs_amount_deposit')
                     ->label('Setor Infaq Sedekah (Uang)')
-                    ->readOnly()
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('total_deposit')
                     ->label('Total Setor')
-                    ->readOnly()
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('deposit_destination')
+                Forms\Components\Select::make('deposit_destination')
                     ->label('Tujuan Setoran')
-                    ->readOnly(),
-                Forms\Components\TextInput::make('status')
+                    ->options([
+                        'upz_desa' => 'UPZ Desa',
+                        'upz_kecamatan' => 'UPZ Kecamatan',
+                        'baznas' => 'BAZNAS',
+                    ]),
+                Forms\Components\Select::make('status')
                     ->label('Status')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('validation')
-                    ->label('Validasi'),
+                    ->options([
+                        'tunai' => 'Tunai',
+                        'non-tunai' => 'Non Tunai',
+                    ]),
+                Forms\Components\Select::make('validation')
+                    ->label('Validasi')
+                    ->options([
+                        'belum verifikasi' => 'Belum Verifikasi',
+                        'terverifikasi' => 'Terverifikasi',
+                    ]),
                 Forms\Components\Placeholder::make('current_upload')
                     ->label('Gambar Bukti Setor Saat Ini')
                     ->content(function ($record) {
@@ -151,7 +154,7 @@ class SetorZisResource extends Resource
                     ->maxSize(5120)
                     ->openable()
                     ->downloadable()
-                    ->saveUploadedFileUsing(function (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file, Forms\Get $get): string {
+                    ->getUploadedFileNameForStorageUsing(function (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file, Forms\Get $get): string {
                         $unitId = $get('unit_id');
                         $unit = $unitId ? \App\Models\UnitZis::find($unitId) : null;
                         $noRegister = $unit ? $unit->no_register : 'admin';
@@ -159,17 +162,42 @@ class SetorZisResource extends Resource
                         $tanggal = date('Ymd');
                         $timestamp = time();
                         $extension = $file->getClientOriginalExtension();
-                        $customName = "setor_{$tanggal}_{$noRegister}_{$namaUnit}_{$timestamp}";
-                        $folder = 'sisfo/bukti_setor';
-
-                        $cloudinary = app(\Cloudinary\Cloudinary::class);
-                        $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-                            'folder' => $folder,
-                            'public_id' => $customName,
-                            'resource_type' => 'auto',
-                        ]);
-
-                        return $result['public_id'] . '.' . ($result['format'] ?? $extension);
+                        return "setor_{$tanggal}_{$noRegister}_{$namaUnit}_{$timestamp}.{$extension}";
+                    }),
+                Forms\Components\Placeholder::make('current_zf_rice_sold_proof')
+                    ->label('Berita Acara Penjualan Saat Ini (PDF)')
+                    ->content(function ($record) {
+                        if (!$record || empty($record->zf_rice_sold_proof)) {
+                            return 'Belum ada file';
+                        }
+                        return new \Illuminate\Support\HtmlString(
+                            '<div class="flex items-center gap-2">
+                                <x-heroicon-o-document-text class="w-6 h-6 text-primary-500" />
+                                <a href="' . self::getCloudinaryUrl($record->zf_rice_sold_proof) . '" target="_blank" class="text-primary-600 hover:underline">
+                                    Buka File
+                                </a>
+                            </div>'
+                        );
+                    })
+                    ->visible(fn ($record) => $record !== null && !empty($record->zf_rice_sold_proof)),
+                Forms\Components\FileUpload::make('zf_rice_sold_proof')
+                    ->label('Upload Berita Acara Penjualan Baru')
+                    ->disk('cloudinary')
+                    ->directory('sisfo/bap')
+                    ->visibility('public')
+                    ->acceptedFileTypes(['application/pdf'])
+                    ->maxSize(5120)
+                    ->openable()
+                    ->downloadable()
+                    ->getUploadedFileNameForStorageUsing(function (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file, Forms\Get $get): string {
+                        $unitId = $get('unit_id');
+                        $unit = $unitId ? \App\Models\UnitZis::find($unitId) : null;
+                        $noRegister = $unit ? $unit->no_register : 'admin';
+                        $namaUnit = $unit ? \Illuminate\Support\Str::slug($unit->unit_name) : 'admin';
+                        $tanggal = date('Ymd');
+                        $timestamp = time();
+                        $extension = $file->getClientOriginalExtension();
+                        return "bap_{$tanggal}_{$noRegister}_{$namaUnit}_{$timestamp}.{$extension}";
                     }),
             ]);
     }
@@ -245,25 +273,27 @@ class SetorZisResource extends Resource
                     ->color(fn (?string $state): string => match ($state) {
          'upz_desa' => 'success',
          'upz_kecamatan' => 'info',
-         'BAZNAS' => 'gray',
+         'baznas', 'BAZNAS' => 'gray',
+         default => 'primary',
      })
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'upz_desa' => 'UPZ Desa',
                         'upz_kecamatan' => 'UPZ Kecamatan',
-                        'baznas' => 'BAZNAS',
+                        'baznas', 'BAZNAS' => 'BAZNAS',
+                        default => $state ?? '-',
                     })
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Jenis Setor')
                     ->searchable(),
-                Tables\Columns\SelectColumn::make('validation')
+                Tables\Columns\TextColumn::make('validation')
                     ->label('Validasi')
-                    ->options([
-                        'Belum verifikasi' => 'Belum verifikasi',
-                        'Terverifikasi' => 'Terverifikasi',
-                    ])
-                    ->selectablePlaceholder(false)
-                    ->disabled(fn () => !User::currentIsSuperAdmin() && !User::currentIsAdmin())
+                    ->badge()
+                    ->color(fn (?string $state): string => match (str($state)->lower()->toString()) {
+                        'belum verifikasi' => 'danger',
+                        'terverifikasi' => 'success',
+                        default => 'gray',
+                    })
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('upload')
                     ->label('Bukti Setor')
@@ -370,6 +400,7 @@ class SetorZisResource extends Resource
                     ->visible(fn() => !User::currentIsUpzDesa()),
             ])
             ->actions([
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make()
                     ->infolist([
                         Infolists\Components\TextEntry::make('unit.unit_name')
@@ -406,7 +437,8 @@ class SetorZisResource extends Resource
                             ->formatStateUsing(fn (?string $state): string => match ($state) {
                                 'upz_desa' => 'UPZ Desa',
                                 'upz_kecamatan' => 'UPZ Kecamatan',
-                                default => '-',
+                                'baznas', 'BAZNAS' => 'BAZNAS',
+                                default => $state ?? '-',
                             }),
                         Infolists\Components\TextEntry::make('status')
                             ->label('Status')
@@ -555,7 +587,7 @@ class SetorZisResource extends Resource
         return [
             'index' => Pages\ListSetorZis::route('/'),
             'create' => Pages\CreateSetorZis::route('/create'),
-
+            'edit' => Pages\EditSetorZis::route('/{record}/edit'),
         ];
     }
 
