@@ -34,6 +34,8 @@ class UpdateRekapUnit implements ShouldQueue
      * @var int
      */
     public $tries = 3;
+    public $backoff = [30, 60, 120];
+    public $timeout = 120;
 
     /**
      * Create a new job instance.
@@ -54,7 +56,7 @@ class UpdateRekapUnit implements ShouldQueue
     public function handle(RekapUnitService $RekapUnitService)
     {
         try {
-            Log::info("Updating rekap alokasi for unit_id: {$this->unitId}, period: {$this->period}");
+            Log::info("Updating rekap alokasi for unit_id: {$this->unitId}");
 
             $rekapAlokasi = $RekapUnitService->updateOrCreateRekapUnit(
                 $this->unitId,
@@ -62,12 +64,26 @@ class UpdateRekapUnit implements ShouldQueue
             );
 
             Log::info("Successfully updated rekap unit ID: {$rekapAlokasi->id}");
+
         } catch (\Exception $e) {
             Log::error('Failed to update rekap unit: '.$e->getMessage());
 
-            // Rethrow the exception to retry the job
-            throw $e;
+            // Hanya rethrow jika masih ada sisa attempt
+            if ($this->attempts() < $this->tries) {
+                throw $e; // Retry dengan backoff
+            }
+
+            // Jika sudah max attempts, fail dengan bersih
+            $this->fail($e);
         }
+    }
+
+    // Dipanggil otomatis saat job benar-benar gagal total
+    public function failed(\Exception $e)
+    {
+        Log::critical("Job UpdateRekapUnit PERMANENTLY failed for unit_id: {$this->unitId}, period: {$this->period}. Error: {$e->getMessage()}");
+
+        // Opsional: kirim notifikasi ke Slack/email/dll
     }
 
     /**
@@ -75,10 +91,10 @@ class UpdateRekapUnit implements ShouldQueue
      *
      * @return void
      */
-    public function failed(\Throwable $exception)
+    /* public function failed(\Throwable $exception)
     {
         Log::error("UpdateRekapUnit job failed after {$this->tries} attempts. Unit ID: {$this->unitId}, Period: {$this->period}. Error: {$exception->getMessage()}");
-    }
+    } */
 
     /**
      * Create and dispatch daily update job
