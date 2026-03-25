@@ -124,14 +124,14 @@ class SetorZisResource extends Resource
                 Forms\Components\Select::make('status')
                     ->label('Status')
                     ->options([
-                        'tunai' => 'Tunai',
-                        'non-tunai' => 'Non Tunai',
+                        'Tunai' => 'Tunai',
+                        'Non Tunai' => 'Non Tunai',
                     ]),
                 Forms\Components\Select::make('validation')
                     ->label('Validasi')
                     ->options([
-                        'belum verifikasi' => 'Belum Verifikasi',
-                        'terverifikasi' => 'Terverifikasi',
+                        'Belum Verifikasi' => 'Belum Verifikasi',
+                        'Terverifikasi' => 'Terverifikasi',
                     ]),
                 Forms\Components\Placeholder::make('current_upload')
                     ->label('Gambar Bukti Setor Saat Ini')
@@ -299,9 +299,9 @@ class SetorZisResource extends Resource
                 Tables\Columns\TextColumn::make('validation')
                     ->label('Validasi')
                     ->badge()
-                    ->color(fn (?string $state): string => match (str($state)->lower()->toString()) {
-                        'belum verifikasi' => 'danger',
-                        'terverifikasi' => 'success',
+                    ->color(fn (?string $state): string => match ($state) {
+                        'Belum Verifikasi' => 'danger',
+                        'Terverifikasi' => 'success',
                         default => 'gray',
                     })
                     ->searchable(),
