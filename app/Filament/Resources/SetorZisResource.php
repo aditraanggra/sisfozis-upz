@@ -295,6 +295,12 @@ class SetorZisResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Jenis Setor')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'Tunai' => 'success',
+                        'Non Tunai' => 'info',
+                        default => 'gray',
+                    })
                     ->searchable(),
                 Tables\Columns\TextColumn::make('validation')
                     ->label('Validasi')
