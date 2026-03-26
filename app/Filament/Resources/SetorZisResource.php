@@ -132,6 +132,7 @@ class SetorZisResource extends Resource
                     ->options([
                         'Belum Verifikasi' => 'Belum Verifikasi',
                         'Terverifikasi' => 'Terverifikasi',
+                        'Perlu Konfirmasi' => 'Perlu Konfirmasi',
                     ]),
                 Forms\Components\Placeholder::make('current_upload')
                     ->label('Gambar Bukti Setor Saat Ini')
@@ -217,6 +218,7 @@ class SetorZisResource extends Resource
         return $table
             ->recordUrl(null)
             ->recordAction('view')
+            ->persistFiltersInSession()
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->sortable()
@@ -305,12 +307,20 @@ class SetorZisResource extends Resource
                 Tables\Columns\TextColumn::make('validation')
                     ->label('Validasi')
                     ->badge()
+                    ->icon(fn (?string $state): ?string => match ($state) {
+                        'Belum Verifikasi' => 'heroicon-o-x-circle',
+                        'Terverifikasi' => 'heroicon-o-check-circle',
+                        'Perlu Konfirmasi' => 'heroicon-o-exclamation-triangle',
+                        default => null,
+                    })
                     ->color(fn (?string $state): string => match ($state) {
                         'Belum Verifikasi' => 'danger',
                         'Terverifikasi' => 'success',
+                        'Perlu Konfirmasi' => 'warning',
                         default => 'gray',
                     })
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\ImageColumn::make('upload')
                     ->label('Bukti Setor')
                     ->disk('cloudinary')
