@@ -180,14 +180,18 @@ class VillageResource extends Resource
                         ->label('Rekap DKM')
                         ->color('success')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->url(fn(Model $record) => route('village.pdf', $record))
+                        ->url(fn(Model $record, $livewire) => route('village.pdf', $record) . '?' . http_build_query([
+                            'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
+                        ]))
                         ->openUrlInNewTab(),
 
                     Tables\Actions\Action::make('pdf')
                         ->label('Rekap Hak OP')
                         ->color('info')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->url(fn(Model $record) => route('op.pdf', $record))
+                        ->url(fn(Model $record, $livewire) => route('op.pdf', $record) . '?' . http_build_query([
+                            'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
+                        ]))
                         ->openUrlInNewTab()
                 ])
                     ->icon('heroicon-o-cloud-arrow-down')

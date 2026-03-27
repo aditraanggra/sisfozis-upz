@@ -65,8 +65,9 @@ class AppServiceProvider extends ServiceProvider
         // Register view composer for allocation data in PDF and report views
         // This provides dynamic allocation percentages to all PDF and report templates
         View::composer([
-            'filament.resources.village-resource.pdf',
-            'filament.resources.village-resource.op',
+            'filament.resources.Village-resource.pdf',
+            'filament.resources.Village-resource.op',
+            'filament.resources.district-resource.report',
             'pdf.*',
             'reports.*',
         ], AllocationComposer::class);

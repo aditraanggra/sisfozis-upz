@@ -28,6 +28,10 @@ class IfsImporter extends Importer
                 ->requiredMapping()
                 ->numeric()
                 ->rules(['required', 'integer']),
+            ImportColumn::make('total_munfiq')
+                ->requiredMapping()
+                ->numeric()
+                ->rules(['required', 'integer']),
             ImportColumn::make('desc'),
         ];
     }

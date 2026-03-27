@@ -240,18 +240,20 @@ class DistrictResource extends Resource
                     ->query(fn ($query) => $query),
             ])
             ->actions([
-                /*  ActionGroup::make([
+                ActionGroup::make([
 
-                    Tables\Actions\Action::make('pdf')
-                        ->label('Report UPZ DKM/RT/RW')
+                    Tables\Actions\Action::make('rekap-desa')
+                        ->label('Rekap Per Desa')
                         ->color('success')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->url(fn(Model $record) => route('report.pdf', $record))
+                        ->url(fn(Model $record, $livewire) => route('district.rekap-desa.pdf', $record) . '?' . http_build_query([
+                            'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
+                        ]))
                         ->openUrlInNewTab(),
-
                 ])
                     ->icon('heroicon-o-cloud-arrow-down')
-                    ->size('lg') */], position: ActionsPosition::BeforeColumns)
+                    ->size('lg')
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 //
             ])

@@ -70,7 +70,7 @@
 
 <body>
     <div class="header">
-        DAFTAR REKAPITULASI HAK OPERATOR SISFO TAHUN 1446 H/2025 M
+        DAFTAR REKAPITULASI HAK OPERATOR SISFO TAHUN {{ $year }}
     </div>
 
     <div class="unit-title">Unit Pengumpul Zakat (UPZ) Desa {{ $record->name }} | Kecamatan {{$record->district->name}}</div>
@@ -82,13 +82,12 @@
                 <th rowspan="2">No Register</th>
                 <th rowspan="2">Unit Pengumpul Zakat (UPZ)</th>
                 <th colspan="1">Setor ZF ({{ $allocations['zf']['setor'] }}%)</th>
-                <th colspan="1">Hak OP (5%)</th>
+                <th colspan="1">Hak OP (3.5%)</th>
                 <th rowspan="2">Jumlah Muzakki</th>
-                <th rowspan="2">Total Transaksi ZF</th>
             </tr>
             <tr>
                 <th>1</th>
-                <th>2=1*5%</th>
+                <th>2=1*3.5%</th>
             </tr>
         </thead>
         <tbody>
@@ -99,7 +98,7 @@
             $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
             $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
             $setor_zf = $total_zf * $zfSetorPct;
-            $hak_op = $setor_zf * 0.05;
+            $hak_op = $setor_zf * 0.035;
             $jml_baris_transaksi = $rekap->zf->count();
             @endphp
             <tr>
@@ -109,7 +108,6 @@
                 <td>{{ number_format($setor_zf, 2) }}</td>
                 <td>{{ number_format($hak_op, 2) }}</td>
                 <td>{{ $rekap->total_zf_muzakki }}</td>
-                <td>{{ $jml_baris_transaksi }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -128,12 +126,9 @@
                     $total_zf_rice_value = ($rekap->unit->rice_price) * ($rekap->total_zf_rice);
                     $total_zf = ($rekap->total_zf_amount) + $total_zf_rice_value;
                     $setor_zf = $total_zf * $zfSetorPctFooter;
-                    return $setor_zf * 0.05;
+                    return $setor_zf * 0.035;
                 }), 2) }}</td>
                 <td>{{ $rekapZis->sum('total_zf_muzakki') }}</td>
-                <td>{{ $rekapZis->sum(function($rekap) {
-                    return $rekap->zf->count();
-                }) }}</td>
             </tr>
         </tfoot>
         @endif
@@ -159,6 +154,11 @@
             <td><span class="italic">Ketua</span></td>
         </tr>
     </table>
+
+    <div style="margin-top: 20px; font-size: 11px;">
+        <p><strong>Catatan:</strong></p>
+        <p>Alokasi 1,5% dari hak operator akan digunakan untuk pelaksanaan bimbingan teknis (Bimtek) aplikasi SISFO tingkat kecamatan.</p>
+    </div>
 </body>
 
 </html>

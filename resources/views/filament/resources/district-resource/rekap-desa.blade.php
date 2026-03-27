@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Rekapitulasi Penerimaan ZIS Per DKM</title>
+    <title>Rekapitulasi Penerimaan ZIS Per Desa</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -117,10 +117,10 @@
     {{-- HALAMAN 1: ZAKAT FITRAH --}}
     {{-- ============================================= --}}
     @php
-        $kelolaZf = ($allocations['zf']['kelola'] ?? 0) / 100;
-        $setorZf = ($allocations['zf']['setor'] ?? 0) / 100;
-        $amilZf = ($allocations['zf']['amil'] ?? 0) / 100;
-        $penyaluranZf = ($allocations['zf']['penyaluran'] ?? 0) / 100;
+        $kelolaZf = $allocations['zf']['kelola'] / 100;
+        $setorZf = $allocations['zf']['setor'] / 100;
+        $amilZf = $allocations['zf']['amil'] / 100;
+        $penyaluranZf = $allocations['zf']['penyaluran'] / 100;
     @endphp
 
     <div class="header">
@@ -128,7 +128,7 @@
         BERBASIS SISFOZIS
     </div>
 
-    <div class="unit-title">Unit Pengumpul Zakat (UPZ) Desa &nbsp;&nbsp;&nbsp;&nbsp; {{ strtoupper($record->name) }}</div>
+    <div class="unit-title">Unit Pengumpul Zakat (UPZ) Kecamatan &nbsp;&nbsp;&nbsp;&nbsp; {{ strtoupper($record->name) }}</div>
 
     <table>
         <thead>
@@ -183,7 +183,7 @@
             </tr>
             <tr>
                 <td></td>
-                <td class="text-left">UPZ DESA {{ strtoupper($record->name) }}</td>
+                <td class="text-left">UPZ KECAMATAN {{ strtoupper($record->name) }}</td>
                 <td>{{ number_format($directCollection['total_zf_muzakki'] ?? 0) }}</td>
                 <td>{{ number_format($directCollection['total_zf_rice'] ?? 0, 2) }}</td>
                 <td>{{ ($directCollection['avg_rice_price'] ?? 0) > 0 ? number_format($directCollection['avg_rice_price'], 2) : '-' }}</td>
@@ -196,19 +196,13 @@
             </tr>
             <tr class="section-row">
                 <td>B</td>
-                <td colspan="10" class="text-left">Penghimpunan Via UPZ DKM</td>
+                <td colspan="10" class="text-left">Penghimpunan Via UPZ DESA</td>
             </tr>
             @php $no = 1; @endphp
-            @foreach($dkmSummaries as $summary)
+            @foreach($villageSummaries as $summary)
             @php
-                $safeUnitName = $summary['unit_name'] ?? '';
-                $safeZfMuzakki = $summary['total_zf_muzakki'] ?? 0;
-                $safeZfRice = $summary['total_zf_rice'] ?? 0;
-                $safeAvgRicePrice = $summary['avg_rice_price'] ?? 0;
-                $safeZfAmount = $summary['total_zf_amount'] ?? 0;
-
-                $totalZfRiceValue = $safeZfRice * $safeAvgRicePrice;
-                $totalZf = $safeZfAmount + $totalZfRiceValue;
+                $totalZfRiceValue = $summary['total_zf_rice'] * $summary['avg_rice_price'];
+                $totalZf = $summary['total_zf_amount'] + $totalZfRiceValue;
                 $kelolaAmount = $totalZf * $kelolaZf;
                 $penyaluranAmount = $kelolaAmount * $penyaluranZf;
                 $amilAmount = $kelolaAmount * $amilZf;
@@ -216,11 +210,11 @@
             @endphp
             <tr>
                 <td>{{ $no++ }}</td>
-                <td class="text-left">{{ strtoupper($safeUnitName) }}</td>
-                <td>{{ number_format($safeZfMuzakki) }}</td>
-                <td>{{ number_format($safeZfRice, 2) }}</td>
-                <td>{{ $safeAvgRicePrice > 0 ? number_format($safeAvgRicePrice, 2) : '-' }}</td>
-                <td>{{ number_format($safeZfAmount, 2) }}</td>
+                <td class="text-left">{{ strtoupper($summary['village_name']) }}</td>
+                <td>{{ number_format($summary['total_zf_muzakki']) }}</td>
+                <td>{{ number_format($summary['total_zf_rice'], 2) }}</td>
+                <td>{{ $summary['avg_rice_price'] > 0 ? number_format($summary['avg_rice_price'], 2) : '-' }}</td>
+                <td>{{ number_format($summary['total_zf_amount'], 2) }}</td>
                 <td>{{ number_format($totalZfRiceValue, 2) }}</td>
                 <td>{{ number_format($totalZf, 2) }}</td>
                 <td>{{ number_format($penyaluranAmount, 2) }}</td>
@@ -230,40 +224,60 @@
             @endforeach
         </tbody>
         @php
-            $grandMuzakkiZf = $dkmSummaries->sum('total_zf_muzakki') + ($directCollection['total_zf_muzakki'] ?? 0);
-            $grandRice = $dkmSummaries->sum('total_zf_rice') + ($directCollection['total_zf_rice'] ?? 0);
-            $grandZfAmount = $dkmSummaries->sum('total_zf_amount') + ($directCollection['total_zf_amount'] ?? 0);
-            $grandRiceValue = $dkmSummaries->sum(fn($s) => ($s['total_zf_rice'] ?? 0) * ($s['avg_rice_price'] ?? 0)) + $directTotalZfRiceValue;
-            $grandTotalZf = $grandZfAmount + $grandRiceValue;
-            $grandKelolaZf = $grandTotalZf * $kelolaZf;
-            $grandPenyaluranZf = $grandKelolaZf * $penyaluranZf;
-            $grandAmilZf = $grandKelolaZf * $amilZf;
-            $grandSetorZf = $grandTotalZf * $setorZf;
+            $directMuzakkiZf = $directCollection['total_zf_muzakki'] ?? 0;
+            $directRice = $directCollection['total_zf_rice'] ?? 0;
+            $directZfAmount = $directCollection['total_zf_amount'] ?? 0;
+            $directRiceValue = $directTotalZfRiceValue;
+            $directTotalZf = $directZfAmount + $directRiceValue;
+            $directKelolaZf = $directTotalZf * $kelolaZf;
+            $directPenyaluranZf = $directKelolaZf * $penyaluranZf;
+            $directAmilZf = $directKelolaZf * $amilZf;
+            $directSetorZf = $directTotalZf * $setorZf;
+
+            $villageMuzakkiZf = $villageSummaries->sum('total_zf_muzakki');
+            $villageRice = $villageSummaries->sum('total_zf_rice');
+            $villageZfAmount = $villageSummaries->sum('total_zf_amount');
+            $villageRiceValue = $villageSummaries->sum(fn($s) => $s['total_zf_rice'] * $s['avg_rice_price']);
+            $villageTotalZf = $villageZfAmount + $villageRiceValue;
+            $villageKelolaZf = $villageTotalZf * $kelolaZf;
+            $villagePenyaluranZf = $villageKelolaZf * $penyaluranZf;
+            $villageAmilZf = $villageKelolaZf * $amilZf;
+            $villageSetorZf = $villageTotalZf * $setorZf;
+
+            $grandMuzakkiZf = $directMuzakkiZf + $villageMuzakkiZf;
+            $grandRice = $directRice + $villageRice;
+            $grandZfAmount = $directZfAmount + $villageZfAmount;
+            $grandRiceValue = $directRiceValue + $villageRiceValue;
+            $grandTotalZf = $directTotalZf + $villageTotalZf;
+            $grandKelolaZf = $directKelolaZf + $villageKelolaZf;
+            $grandPenyaluranZf = $directPenyaluranZf + $villagePenyaluranZf;
+            $grandAmilZf = $directAmilZf + $villageAmilZf;
+            $grandSetorZf = $directSetorZf + $villageSetorZf;
         @endphp
         <tfoot>
             <tr class="bold">
                 <td colspan="2">Jumlah Pengumpulan Langsung</td>
-                <td>{{ number_format($directCollection['total_zf_muzakki'] ?? 0) }}</td>
-                <td>{{ number_format($directCollection['total_zf_rice'] ?? 0, 2) }}</td>
+                <td>{{ number_format($directMuzakkiZf) }}</td>
+                <td>{{ number_format($directRice, 2) }}</td>
                 <td></td>
-                <td>{{ number_format($directCollection['total_zf_amount'] ?? 0, 2) }}</td>
-                <td>{{ number_format($directTotalZfRiceValue, 2) }}</td>
+                <td>{{ number_format($directZfAmount, 2) }}</td>
+                <td>{{ number_format($directRiceValue, 2) }}</td>
                 <td>{{ number_format($directTotalZf, 2) }}</td>
-                <td>{{ number_format($directPenyaluranAmount, 2) }}</td>
-                <td>{{ number_format($directAmilAmount, 2) }}</td>
-                <td>{{ number_format($directSetorAmount, 2) }}</td>
+                <td>{{ number_format($directPenyaluranZf, 2) }}</td>
+                <td>{{ number_format($directAmilZf, 2) }}</td>
+                <td>{{ number_format($directSetorZf, 2) }}</td>
             </tr>
             <tr class="bold">
-                <td colspan="2">Jumlah Pengumpulan UPZ DKM</td>
-                <td>{{ number_format($grandMuzakkiZf - ($directCollection['total_zf_muzakki'] ?? 0)) }}</td>
-                <td>{{ number_format($grandRice - ($directCollection['total_zf_rice'] ?? 0), 2) }}</td>
+                <td colspan="2">Jumlah Pengumpulan UPZ DESA</td>
+                <td>{{ number_format($villageMuzakkiZf) }}</td>
+                <td>{{ number_format($villageRice, 2) }}</td>
                 <td></td>
-                <td>{{ number_format($grandZfAmount - ($directCollection['total_zf_amount'] ?? 0), 2) }}</td>
-                <td>{{ number_format($grandRiceValue - $directTotalZfRiceValue, 2) }}</td>
-                <td>{{ number_format($grandTotalZf - $directTotalZf, 2) }}</td>
-                <td>{{ number_format($grandPenyaluranZf - $directPenyaluranAmount, 2) }}</td>
-                <td>{{ number_format($grandAmilZf - $directAmilAmount, 2) }}</td>
-                <td>{{ number_format($grandSetorZf - $directSetorAmount, 2) }}</td>
+                <td>{{ number_format($villageZfAmount, 2) }}</td>
+                <td>{{ number_format($villageRiceValue, 2) }}</td>
+                <td>{{ number_format($villageTotalZf, 2) }}</td>
+                <td>{{ number_format($villagePenyaluranZf, 2) }}</td>
+                <td>{{ number_format($villageAmilZf, 2) }}</td>
+                <td>{{ number_format($villageSetorZf, 2) }}</td>
             </tr>
             <tr class="bold">
                 <td colspan="2">TOTAL</td>
@@ -280,7 +294,7 @@
         </tfoot>
     </table>
 
-    @include('filament.resources.Village-resource.partials.signature', ['record' => $record])
+    @include('filament.resources.district-resource.partials.signature', ['record' => $record])
 
 
     {{-- ============================================= --}}
@@ -300,13 +314,13 @@
         BERBASIS SISFOZIS
     </div>
 
-    <div class="unit-title">Unit Pengumpul Zakat (UPZ) Desa &nbsp;&nbsp;&nbsp;&nbsp; {{ strtoupper($record->name) }}</div>
+    <div class="unit-title">Unit Pengumpul Zakat (UPZ) Kecamatan &nbsp;&nbsp;&nbsp;&nbsp; {{ strtoupper($record->name) }}</div>
 
     <table>
         <thead>
             <tr>
                 <th rowspan="2" style="width: 25px;">No</th>
-                <th rowspan="2" style="width: 180px;">Unit Pengumpul Zakat (UPZ) DKM</th>
+                <th rowspan="2" style="width: 180px;">Desa</th>
                 <th rowspan="2">Muzaki</th>
                 <th rowspan="2">Jumlah Penerimaan<br>(Rupiah)<br>(100%)</th>
                 <th colspan="2">Dana Yang dikelola UPZ<br>{{ $allocations['zm']['kelola'] }} %</th>
@@ -340,7 +354,7 @@
             @endphp
             <tr>
                 <td></td>
-                <td class="text-left">UPZ DESA {{ strtoupper($record->name) }}</td>
+                <td class="text-left">UPZ KECAMATAN {{ strtoupper($record->name) }}</td>
                 <td>{{ number_format($directCollection['total_zm_muzakki'] ?? 0) }}</td>
                 <td>{{ number_format($directTotalZm, 2) }}</td>
                 <td>{{ number_format($directPenyaluranAmountZm, 2) }}</td>
@@ -349,15 +363,12 @@
             </tr>
             <tr class="section-row">
                 <td>B</td>
-                <td colspan="6" class="text-left">Penghimpunan Via UPZ DKM</td>
+                <td colspan="6" class="text-left">Penghimpunan Via UPZ DESA</td>
             </tr>
             @php $no = 1; @endphp
-            @foreach($dkmSummaries as $summary)
+            @foreach($villageSummaries as $summary)
             @php
-                $safeUnitName = $summary['unit_name'] ?? '';
-                $safeZmMuzakki = $summary['total_zm_muzakki'] ?? 0;
-                $totalZm = $summary['total_zm_amount'] ?? 0;
-
+                $totalZm = $summary['total_zm_amount'];
                 $kelolaAmountZm = $totalZm * $kelolaZm;
                 $penyaluranAmountZm = $kelolaAmountZm * $penyaluranZm;
                 $amilAmountZm = $kelolaAmountZm * $amilZm;
@@ -365,8 +376,8 @@
             @endphp
             <tr>
                 <td>{{ $no++ }}</td>
-                <td class="text-left">{{ strtoupper($safeUnitName) }}</td>
-                <td>{{ number_format($safeZmMuzakki) }}</td>
+                <td class="text-left">{{ strtoupper($summary['village_name']) }}</td>
+                <td>{{ number_format($summary['total_zm_muzakki']) }}</td>
                 <td>{{ number_format($totalZm, 2) }}</td>
                 <td>{{ number_format($penyaluranAmountZm, 2) }}</td>
                 <td>{{ number_format($amilAmountZm, 2) }}</td>
@@ -375,8 +386,22 @@
             @endforeach
         </tbody>
         @php
-            $grandMuzakkiZm = $dkmSummaries->sum('total_zm_muzakki') + ($directCollection['total_zm_muzakki'] ?? 0);
-            $grandTotalZm = $dkmSummaries->sum('total_zm_amount') + ($directCollection['total_zm_amount'] ?? 0);
+            $directMuzakkiZm = $directCollection['total_zm_muzakki'] ?? 0;
+            $directTotalZmAmount = $directCollection['total_zm_amount'] ?? 0;
+            $directKelolaZm = $directTotalZmAmount * $kelolaZm;
+            $directPenyaluranZm = $directKelolaZm * $penyaluranZm;
+            $directAmilZm = $directKelolaZm * $amilZm;
+            $directSetorZm = $directTotalZmAmount * $setorZm;
+
+            $villageMuzakkiZm = $villageSummaries->sum('total_zm_muzakki');
+            $villageTotalZmAmount = $villageSummaries->sum('total_zm_amount');
+            $villageKelolaZm = $villageTotalZmAmount * $kelolaZm;
+            $villagePenyaluranZm = $villageKelolaZm * $penyaluranZm;
+            $villageAmilZm = $villageKelolaZm * $amilZm;
+            $villageSetorZm = $villageTotalZmAmount * $setorZm;
+
+            $grandMuzakkiZm = $directMuzakkiZm + $villageMuzakkiZm;
+            $grandTotalZm = $directTotalZmAmount + $villageTotalZmAmount;
             $grandKelolaZm = $grandTotalZm * $kelolaZm;
             $grandPenyaluranZm = $grandKelolaZm * $penyaluranZm;
             $grandAmilZm = $grandKelolaZm * $amilZm;
@@ -385,19 +410,19 @@
         <tfoot>
             <tr class="bold">
                 <td colspan="2">Jumlah Pengumpulan Langsung</td>
-                <td>{{ number_format($directCollection['total_zm_muzakki'] ?? 0) }}</td>
-                <td>{{ number_format($directTotalZm, 2) }}</td>
-                <td>{{ number_format($directPenyaluranAmountZm, 2) }}</td>
-                <td>{{ number_format($directAmilAmountZm, 2) }}</td>
-                <td>{{ number_format($directSetorAmountZm, 2) }}</td>
+                <td>{{ number_format($directMuzakkiZm) }}</td>
+                <td>{{ number_format($directTotalZmAmount, 2) }}</td>
+                <td>{{ number_format($directPenyaluranZm, 2) }}</td>
+                <td>{{ number_format($directAmilZm, 2) }}</td>
+                <td>{{ number_format($directSetorZm, 2) }}</td>
             </tr>
             <tr class="bold">
-                <td colspan="2">Jumlah Pengumpulan UPZ DKM</td>
-                <td>{{ number_format($grandMuzakkiZm - ($directCollection['total_zm_muzakki'] ?? 0)) }}</td>
-                <td>{{ number_format($grandTotalZm - $directTotalZm, 2) }}</td>
-                <td>{{ number_format($grandPenyaluranZm - $directPenyaluranAmountZm, 2) }}</td>
-                <td>{{ number_format($grandAmilZm - $directAmilAmountZm, 2) }}</td>
-                <td>{{ number_format($grandSetorZm - $directSetorAmountZm, 2) }}</td>
+                <td colspan="2">Jumlah Pengumpulan UPZ DESA</td>
+                <td>{{ number_format($villageMuzakkiZm) }}</td>
+                <td>{{ number_format($villageTotalZmAmount, 2) }}</td>
+                <td>{{ number_format($villagePenyaluranZm, 2) }}</td>
+                <td>{{ number_format($villageAmilZm, 2) }}</td>
+                <td>{{ number_format($villageSetorZm, 2) }}</td>
             </tr>
             <tr class="bold">
                 <td colspan="2">TOTAL</td>
@@ -410,7 +435,7 @@
         </tfoot>
     </table>
 
-    @include('filament.resources.Village-resource.partials.signature', ['record' => $record])
+    @include('filament.resources.district-resource.partials.signature', ['record' => $record])
 
 
     {{-- ============================================= --}}
@@ -430,13 +455,13 @@
         BERBASIS SISFOZIS
     </div>
 
-    <div class="unit-title">Unit Pengumpul Zakat (UPZ) Desa &nbsp;&nbsp;&nbsp;&nbsp; {{ strtoupper($record->name) }}</div>
+    <div class="unit-title">Unit Pengumpul Zakat (UPZ) Kecamatan &nbsp;&nbsp;&nbsp;&nbsp; {{ strtoupper($record->name) }}</div>
 
     <table>
         <thead>
             <tr>
                 <th rowspan="2" style="width: 25px;">No</th>
-                <th rowspan="2" style="width: 180px;">Unit Pengumpul Zakat (UPZ) DKM</th>
+                <th rowspan="2" style="width: 180px;">Desa</th>
                 <th rowspan="2">Munfiq</th>
                 <th rowspan="2">Jumlah Penerimaan<br>(Rupiah)<br>(100%)</th>
                 <th colspan="2">Dana Yang dikelola UPZ<br>{{ $allocations['ifs']['kelola'] }} %</th>
@@ -470,7 +495,7 @@
             @endphp
             <tr>
                 <td></td>
-                <td class="text-left">UPZ DESA {{ strtoupper($record->name) }}</td>
+                <td class="text-left">UPZ KECAMATAN {{ strtoupper($record->name) }}</td>
                 <td>{{ number_format($directCollection['total_ifs_munfiq'] ?? 0) }}</td>
                 <td>{{ number_format($directTotalIfs, 2) }}</td>
                 <td>{{ number_format($directPenyaluranAmountIfs, 2) }}</td>
@@ -479,15 +504,12 @@
             </tr>
             <tr class="section-row">
                 <td>B</td>
-                <td colspan="6" class="text-left">Penghimpunan Via UPZ DKM</td>
+                <td colspan="6" class="text-left">Penghimpunan Via UPZ DESA</td>
             </tr>
             @php $no = 1; @endphp
-            @foreach($dkmSummaries as $summary)
+            @foreach($villageSummaries as $summary)
             @php
-                $safeUnitName = $summary['unit_name'] ?? '';
-                $safeIfsMunfiq = $summary['total_ifs_munfiq'] ?? 0;
-                $totalIfs = $summary['total_ifs_amount'] ?? 0;
-
+                $totalIfs = $summary['total_ifs_amount'];
                 $kelolaAmountIfs = $totalIfs * $kelolaIfs;
                 $penyaluranAmountIfs = $kelolaAmountIfs * $penyaluranIfs;
                 $amilAmountIfs = $kelolaAmountIfs * $amilIfs;
@@ -495,8 +517,8 @@
             @endphp
             <tr>
                 <td>{{ $no++ }}</td>
-                <td class="text-left">{{ strtoupper($safeUnitName) }}</td>
-                <td>{{ number_format($safeIfsMunfiq) }}</td>
+                <td class="text-left">{{ strtoupper($summary['village_name']) }}</td>
+                <td>{{ number_format($summary['total_ifs_munfiq']) }}</td>
                 <td>{{ number_format($totalIfs, 2) }}</td>
                 <td>{{ number_format($penyaluranAmountIfs, 2) }}</td>
                 <td>{{ number_format($amilAmountIfs, 2) }}</td>
@@ -505,8 +527,22 @@
             @endforeach
         </tbody>
         @php
-            $grandMunfiq = $dkmSummaries->sum('total_ifs_munfiq') + ($directCollection['total_ifs_munfiq'] ?? 0);
-            $grandTotalIfs = $dkmSummaries->sum('total_ifs_amount') + ($directCollection['total_ifs_amount'] ?? 0);
+            $directMunfiq = $directCollection['total_ifs_munfiq'] ?? 0;
+            $directTotalIfsAmount = $directCollection['total_ifs_amount'] ?? 0;
+            $directKelolaIfs = $directTotalIfsAmount * $kelolaIfs;
+            $directPenyaluranIfs = $directKelolaIfs * $penyaluranIfs;
+            $directAmilIfs = $directKelolaIfs * $amilIfs;
+            $directSetorIfs = $directTotalIfsAmount * $setorIfs;
+
+            $villageMunfiq = $villageSummaries->sum('total_ifs_munfiq');
+            $villageTotalIfsAmount = $villageSummaries->sum('total_ifs_amount');
+            $villageKelolaIfs = $villageTotalIfsAmount * $kelolaIfs;
+            $villagePenyaluranIfs = $villageKelolaIfs * $penyaluranIfs;
+            $villageAmilIfs = $villageKelolaIfs * $amilIfs;
+            $villageSetorIfs = $villageTotalIfsAmount * $setorIfs;
+
+            $grandMunfiq = $villageMunfiq + $directMunfiq;
+            $grandTotalIfs = $villageTotalIfsAmount + $directTotalIfsAmount;
             $grandKelolaIfs = $grandTotalIfs * $kelolaIfs;
             $grandPenyaluranIfs = $grandKelolaIfs * $penyaluranIfs;
             $grandAmilIfs = $grandKelolaIfs * $amilIfs;
@@ -515,19 +551,19 @@
         <tfoot>
             <tr class="bold">
                 <td colspan="2">Jumlah Pengumpulan Langsung</td>
-                <td>{{ number_format($directCollection['total_ifs_munfiq'] ?? 0) }}</td>
-                <td>{{ number_format($directTotalIfs, 2) }}</td>
-                <td>{{ number_format($directPenyaluranAmountIfs, 2) }}</td>
-                <td>{{ number_format($directAmilAmountIfs, 2) }}</td>
-                <td>{{ number_format($directSetorAmountIfs, 2) }}</td>
+                <td>{{ number_format($directMunfiq) }}</td>
+                <td>{{ number_format($directTotalIfsAmount, 2) }}</td>
+                <td>{{ number_format($directPenyaluranIfs, 2) }}</td>
+                <td>{{ number_format($directAmilIfs, 2) }}</td>
+                <td>{{ number_format($directSetorIfs, 2) }}</td>
             </tr>
             <tr class="bold">
-                <td colspan="2">Jumlah Pengumpulan UPZ DKM</td>
-                <td>{{ number_format($grandMunfiq - ($directCollection['total_ifs_munfiq'] ?? 0)) }}</td>
-                <td>{{ number_format($grandTotalIfs - $directTotalIfs, 2) }}</td>
-                <td>{{ number_format($grandPenyaluranIfs - $directPenyaluranAmountIfs, 2) }}</td>
-                <td>{{ number_format($grandAmilIfs - $directAmilAmountIfs, 2) }}</td>
-                <td>{{ number_format($grandSetorIfs - $directSetorAmountIfs, 2) }}</td>
+                <td colspan="2">Jumlah Pengumpulan UPZ DESA</td>
+                <td>{{ number_format($villageMunfiq) }}</td>
+                <td>{{ number_format($villageTotalIfsAmount, 2) }}</td>
+                <td>{{ number_format($villagePenyaluranIfs, 2) }}</td>
+                <td>{{ number_format($villageAmilIfs, 2) }}</td>
+                <td>{{ number_format($villageSetorIfs, 2) }}</td>
             </tr>
             <tr class="bold">
                 <td colspan="2">TOTAL</td>
@@ -540,7 +576,7 @@
         </tfoot>
     </table>
 
-    @include('filament.resources.Village-resource.partials.signature', ['record' => $record])
+    @include('filament.resources.district-resource.partials.signature', ['record' => $record])
 
 </body>
 
