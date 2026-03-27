@@ -136,14 +136,13 @@
                 <th rowspan="3" style="width: 25px;">No</th>
                 <th rowspan="3" style="width: 150px;">Unit Pengumpul Zakat (UPZ)</th>
                 <th colspan="2">Jumlah</th>
-                <th colspan="4">Penerimaan</th>
+                <th colspan="3">Penerimaan</th>
                 <th colspan="2">Dana Yang dikelola UPZ<br>{{ $allocations['zf']['kelola'] }} %</th>
                 <th rowspan="3">Setor ke<br>BAZNAS<br>({{ $allocations['zf']['setor'] }}%)</th>
             </tr>
             <tr>
                 <th rowspan="2">Muzaki</th>
                 <th rowspan="2">Beras<br>(Kg)</th>
-                <th rowspan="2">Harga<br>Beras/Kg<br>(Rupiah)</th>
                 <th rowspan="2">ZF Uang<br>(Rupiah)</th>
                 <th rowspan="2">ZF Beras<br>diuangkan<br>(Rupiah)</th>
                 <th rowspan="2">Jumlah<br>Diuangkan<br>(100%)<br>(Rupiah)</th>
@@ -165,12 +164,11 @@
                 <td>8</td>
                 <td>9</td>
                 <td>10</td>
-                <td>11</td>
             </tr>
         </thead>
         <tbody>
             @php
-                $directTotalZfRiceValue = ($directCollection['total_zf_rice'] ?? 0) * ($directCollection['avg_rice_price'] ?? 0);
+                $directTotalZfRiceValue = $directCollection['zf_rice_sold_amount'] ?? 0;
                 $directTotalZf = ($directCollection['total_zf_amount'] ?? 0) + $directTotalZfRiceValue;
                 $directKelolaAmount = $directTotalZf * $kelolaZf;
                 $directPenyaluranAmount = $directKelolaAmount * $penyaluranZf;
@@ -179,14 +177,13 @@
             @endphp
             <tr class="section-row">
                 <td>A</td>
-                <td colspan="10" class="text-left">Penghimpunan Langsung</td>
+                <td colspan="9" class="text-left">Penghimpunan Langsung</td>
             </tr>
             <tr>
                 <td></td>
                 <td class="text-left">UPZ KECAMATAN {{ strtoupper($record->name) }}</td>
                 <td>{{ number_format($directCollection['total_zf_muzakki'] ?? 0) }}</td>
                 <td>{{ number_format($directCollection['total_zf_rice'] ?? 0, 2) }}</td>
-                <td>{{ ($directCollection['avg_rice_price'] ?? 0) > 0 ? number_format($directCollection['avg_rice_price'], 2) : '-' }}</td>
                 <td>{{ number_format($directCollection['total_zf_amount'] ?? 0, 2) }}</td>
                 <td>{{ number_format($directTotalZfRiceValue, 2) }}</td>
                 <td>{{ number_format($directTotalZf, 2) }}</td>
@@ -196,12 +193,12 @@
             </tr>
             <tr class="section-row">
                 <td>B</td>
-                <td colspan="10" class="text-left">Penghimpunan Via UPZ DESA</td>
+                <td colspan="9" class="text-left">Penghimpunan Via UPZ DESA</td>
             </tr>
             @php $no = 1; @endphp
             @foreach($villageSummaries as $summary)
             @php
-                $totalZfRiceValue = $summary['total_zf_rice'] * $summary['avg_rice_price'];
+                $totalZfRiceValue = $summary['zf_rice_sold_amount'] ?? 0;
                 $totalZf = $summary['total_zf_amount'] + $totalZfRiceValue;
                 $kelolaAmount = $totalZf * $kelolaZf;
                 $penyaluranAmount = $kelolaAmount * $penyaluranZf;
@@ -213,7 +210,6 @@
                 <td class="text-left">{{ strtoupper($summary['village_name']) }}</td>
                 <td>{{ number_format($summary['total_zf_muzakki']) }}</td>
                 <td>{{ number_format($summary['total_zf_rice'], 2) }}</td>
-                <td>{{ $summary['avg_rice_price'] > 0 ? number_format($summary['avg_rice_price'], 2) : '-' }}</td>
                 <td>{{ number_format($summary['total_zf_amount'], 2) }}</td>
                 <td>{{ number_format($totalZfRiceValue, 2) }}</td>
                 <td>{{ number_format($totalZf, 2) }}</td>
@@ -237,7 +233,7 @@
             $villageMuzakkiZf = $villageSummaries->sum('total_zf_muzakki');
             $villageRice = $villageSummaries->sum('total_zf_rice');
             $villageZfAmount = $villageSummaries->sum('total_zf_amount');
-            $villageRiceValue = $villageSummaries->sum(fn($s) => $s['total_zf_rice'] * $s['avg_rice_price']);
+            $villageRiceValue = $villageSummaries->sum('zf_rice_sold_amount');
             $villageTotalZf = $villageZfAmount + $villageRiceValue;
             $villageKelolaZf = $villageTotalZf * $kelolaZf;
             $villagePenyaluranZf = $villageKelolaZf * $penyaluranZf;
@@ -259,7 +255,6 @@
                 <td colspan="2">Jumlah Pengumpulan Langsung</td>
                 <td>{{ number_format($directMuzakkiZf) }}</td>
                 <td>{{ number_format($directRice, 2) }}</td>
-                <td></td>
                 <td>{{ number_format($directZfAmount, 2) }}</td>
                 <td>{{ number_format($directRiceValue, 2) }}</td>
                 <td>{{ number_format($directTotalZf, 2) }}</td>
@@ -271,7 +266,6 @@
                 <td colspan="2">Jumlah Pengumpulan UPZ DESA</td>
                 <td>{{ number_format($villageMuzakkiZf) }}</td>
                 <td>{{ number_format($villageRice, 2) }}</td>
-                <td></td>
                 <td>{{ number_format($villageZfAmount, 2) }}</td>
                 <td>{{ number_format($villageRiceValue, 2) }}</td>
                 <td>{{ number_format($villageTotalZf, 2) }}</td>
@@ -283,7 +277,6 @@
                 <td colspan="2">TOTAL</td>
                 <td>{{ number_format($grandMuzakkiZf) }}</td>
                 <td>{{ number_format($grandRice, 2) }}</td>
-                <td></td>
                 <td>{{ number_format($grandZfAmount, 2) }}</td>
                 <td>{{ number_format($grandRiceValue, 2) }}</td>
                 <td>{{ number_format($grandTotalZf, 2) }}</td>

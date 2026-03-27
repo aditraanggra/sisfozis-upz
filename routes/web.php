@@ -3,10 +3,10 @@
 use App\Models\AllocationConfig;
 use App\Models\District;
 use App\Models\SetorZis;
-use App\Services\AllocationConfigService;
-use Illuminate\Support\Facades\Route;
 use App\Models\Village;
+use App\Services\AllocationConfigService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -44,15 +44,19 @@ Route::get('/rekap-zis/{village}/pdf', function (Village $village) {
     $desaCategory = \App\Models\UnitCategory::where('name', 'Desa')->firstOrFail();
     $desaCategoryId = $desaCategory->id;
 
-    // Get ALL DKM units in this village (Everything in this village EXCEPT the Desa unit)
+    $kecamatanCategoryIds = \App\Models\UnitCategory::where('name', 'like', '%Kecamatan%')->pluck('id')->toArray();
+    $excludedCategoryIds = array_unique(array_merge([$desaCategoryId], $kecamatanCategoryIds));
+
+    // Get ALL DKM units in this village (Everything in this village EXCEPT Desa and Kecamatan units)
     $desaUnitIds = $village->unitzis()->where('category_id', $desaCategoryId)->pluck('id');
-    $allDkms = $village->unitzis()->whereNotIn('id', $desaUnitIds)->orderBy('unit_name')->get();
+    $excludedUnitIds = $village->unitzis()->whereIn('category_id', $excludedCategoryIds)->pluck('id');
+    $allDkms = $village->unitzis()->whereNotIn('id', $excludedUnitIds)->orderBy('unit_name')->get();
 
     // Extract direct collection data (UPZ Desa)
-    $directCollectionRekaps = $rekapZis->filter(fn($rekap) => $desaUnitIds->contains($rekap->unit_id));
+    $directCollectionRekaps = $rekapZis->filter(fn ($rekap) => $desaUnitIds->contains($rekap->unit_id));
     $directPricesWithValues = $directCollectionRekaps
-        ->map(fn($r) => $ricePrices[$r->unit_id] ?? null)
-        ->filter(fn($price) => $price !== null && $price > 0);
+        ->map(fn ($r) => $ricePrices[$r->unit_id] ?? null)
+        ->filter(fn ($price) => $price !== null && $price > 0);
     $directAvgRicePrice = $directPricesWithValues->isNotEmpty() ? $directPricesWithValues->avg() : 0;
     $directCollection = collect([
         'total_zf_rice' => $directCollectionRekaps->sum('total_zf_rice'),
@@ -65,11 +69,12 @@ Route::get('/rekap-zis/{village}/pdf', function (Village $village) {
         'avg_rice_price' => $directAvgRicePrice,
     ]);
 
-    // Aggregate rekap per DKM (Everything EXCEPT the Desa unit)
-    $dkmRekapsOnly = $rekapZis->filter(fn($rekap) => !$desaUnitIds->contains($rekap->unit_id));
-    $rekapByDkm = $dkmRekapsOnly->groupBy(fn($rekap) => $rekap->unit_id)
+    // Aggregate rekap per DKM (Everything EXCEPT Desa and Kecamatan units)
+    $dkmRekapsOnly = $rekapZis->filter(fn ($rekap) => ! $excludedUnitIds->contains($rekap->unit_id));
+    $rekapByDkm = $dkmRekapsOnly->groupBy(fn ($rekap) => $rekap->unit_id)
         ->map(function ($unitRekaps) use ($ricePrices) {
-            $avgRicePrice = $unitRekaps->avg(fn($r) => $ricePrices[$r->unit_id] ?? 0);
+            $avgRicePrice = $unitRekaps->avg(fn ($r) => $ricePrices[$r->unit_id] ?? 0);
+
             return [
                 'total_zf_rice' => $unitRekaps->sum('total_zf_rice'),
                 'total_zf_amount' => $unitRekaps->sum('total_zf_amount'),
@@ -85,6 +90,7 @@ Route::get('/rekap-zis/{village}/pdf', function (Village $village) {
     // Build summaries for DKMs (only those with transactions)
     $dkmSummaries = $allDkms->map(function ($dkm) use ($rekapByDkm) {
         $data = $rekapByDkm->get($dkm->id, []);
+
         return collect([
             'unit_name' => $dkm->unit_name,
             'total_zf_rice' => $data['total_zf_rice'] ?? 0,
@@ -96,15 +102,15 @@ Route::get('/rekap-zis/{village}/pdf', function (Village $village) {
             'total_ifs_munfiq' => $data['total_ifs_munfiq'] ?? 0,
             'avg_rice_price' => $data['avg_rice_price'] ?? 0,
         ]);
-    })->filter(function($summary) {
-        return $summary['total_zf_rice'] > 0 || 
-               $summary['total_zf_amount'] > 0 || 
-               $summary['total_zm_amount'] > 0 || 
+    })->filter(function ($summary) {
+        return $summary['total_zf_rice'] > 0 ||
+               $summary['total_zf_amount'] > 0 ||
+               $summary['total_zm_amount'] > 0 ||
                $summary['total_ifs_amount'] > 0;
     })->values();
 
     $allocationService = app(AllocationConfigService::class);
-    $periodDate = $year . '-01-01';
+    $periodDate = $year.'-01-01';
     $allocations = [
         'zf' => $allocationService->getAllocation(AllocationConfig::TYPE_ZF, $periodDate),
         'zm' => $allocationService->getAllocation(AllocationConfig::TYPE_ZM, $periodDate),
@@ -121,7 +127,7 @@ Route::get('/rekap-zis/{village}/pdf', function (Village $village) {
         ])->render()
     )->setPaper('a4', 'landscape');
 
-    return $pdf->stream('Rekap-ZIS-Per-DKM-Desa-' . str_replace(' ', '-', $village->name) . '.pdf');
+    return $pdf->stream('Rekap-ZIS-Per-DKM-Desa-'.str_replace(' ', '-', $village->name).'.pdf');
 })->name('village.pdf');
 
 Route::get('/rekap-zis/{village}/op', function (Village $village) {
@@ -146,7 +152,7 @@ Route::get('/rekap-zis/{village}/op', function (Village $village) {
         ])->render()
     )->setPaper('a4', 'portrait');
 
-    return $pdf->stream('Rekap-ZIS-' . str_replace(' ', '-', $village->name) . '.pdf');
+    return $pdf->stream('Rekap-ZIS-'.str_replace(' ', '-', $village->name).'.pdf');
 })->name('op.pdf');
 
 Route::get('/rekap-zis/{district}/rekap-desa', function (District $district) {
@@ -159,22 +165,23 @@ Route::get('/rekap-zis/{district}/rekap-desa', function (District $district) {
         ->whereYear('period_date', $year)
         ->get();
 
-    // Fetch rice prices per unit_id from SetorZis
+    // Fetch rice sold amounts per unit_id from SetorZis
     $unitIds = $rekapZis->pluck('unit_id')->unique();
-    $ricePrices = SetorZis::withoutGlobalScopes()
+    $riceSoldAmounts = SetorZis::withoutGlobalScopes()
         ->whereIn('unit_id', $unitIds)
         ->whereYear('trx_date', $year)
-        ->where('zf_rice_sold_price', '>', 0)
         ->groupBy('unit_id')
-        ->selectRaw('unit_id, MAX(zf_rice_sold_price) as rice_price')
-        ->pluck('rice_price', 'unit_id');
+        ->selectRaw('unit_id, SUM(zf_rice_sold_amount) as total_sold_amount')
+        ->pluck('total_sold_amount', 'unit_id');
 
     // Get ALL villages in this district
     $allVillages = $district->villages()->orderBy('name')->get();
 
-    // Extract direct collection data (UPZ Kecamatan, category_id = 2)
-    $directCollectionRekaps = $rekapZis->filter(fn($rekap) => $rekap->unit->category_id == 2);
-    $directAvgRicePrice = $directCollectionRekaps->avg(fn($r) => $ricePrices[$r->unit_id] ?? 0);
+    $upzCategoryId = \App\Models\UnitCategory::where('name', 'UPZ Kecamatan')->value('id');
+
+    // Extract direct collection data (UPZ Kecamatan)
+    $directCollectionRekaps = $rekapZis->filter(fn ($rekap) => $rekap->unit?->category_id == $upzCategoryId);
+    $directZfRiceSoldAmount = $directCollectionRekaps->sum(fn ($r) => $riceSoldAmounts[$r->unit_id] ?? 0);
     $directCollection = collect([
         'total_zf_rice' => $directCollectionRekaps->sum('total_zf_rice'),
         'total_zf_amount' => $directCollectionRekaps->sum('total_zf_amount'),
@@ -183,14 +190,15 @@ Route::get('/rekap-zis/{district}/rekap-desa', function (District $district) {
         'total_zf_muzakki' => $directCollectionRekaps->sum('total_zf_muzakki'),
         'total_zm_muzakki' => $directCollectionRekaps->sum('total_zm_muzakki'),
         'total_ifs_munfiq' => $directCollectionRekaps->sum('total_ifs_munfiq'),
-        'avg_rice_price' => $directAvgRicePrice,
+        'zf_rice_sold_amount' => $directZfRiceSoldAmount,
     ]);
 
-    // Aggregate rekap per village (exclude category 2)
-    $villageRekapsOnly = $rekapZis->filter(fn($rekap) => $rekap->unit->category_id != 2);
-    $rekapByVillage = $villageRekapsOnly->groupBy(fn($rekap) => $rekap->unit->village_id)
-        ->map(function ($villageRekaps) use ($ricePrices) {
-            $avgRicePrice = $villageRekaps->avg(fn($r) => $ricePrices[$r->unit_id] ?? 0);
+    // Aggregate rekap per village (exclude UPZ Kecamatan)
+    $villageRekapsOnly = $rekapZis->filter(fn ($rekap) => $rekap->unit?->category_id != $upzCategoryId);
+    $rekapByVillage = $villageRekapsOnly->groupBy(fn ($rekap) => $rekap->unit?->village_id)
+        ->map(function ($villageRekaps) use ($riceSoldAmounts) {
+            $zfRiceSoldAmount = $villageRekaps->sum(fn ($r) => $riceSoldAmounts[$r->unit_id] ?? 0);
+
             return [
                 'total_zf_rice' => $villageRekaps->sum('total_zf_rice'),
                 'total_zf_amount' => $villageRekaps->sum('total_zf_amount'),
@@ -199,13 +207,14 @@ Route::get('/rekap-zis/{district}/rekap-desa', function (District $district) {
                 'total_zf_muzakki' => $villageRekaps->sum('total_zf_muzakki'),
                 'total_zm_muzakki' => $villageRekaps->sum('total_zm_muzakki'),
                 'total_ifs_munfiq' => $villageRekaps->sum('total_ifs_munfiq'),
-                'avg_rice_price' => $avgRicePrice,
+                'zf_rice_sold_amount' => $zfRiceSoldAmount,
             ];
         });
 
     // Build summaries for ALL villages (including those without transactions)
     $villageSummaries = $allVillages->map(function ($village) use ($rekapByVillage) {
         $data = $rekapByVillage->get($village->id, []);
+
         return collect([
             'village_name' => $village->name,
             'total_zf_rice' => $data['total_zf_rice'] ?? 0,
@@ -215,12 +224,12 @@ Route::get('/rekap-zis/{district}/rekap-desa', function (District $district) {
             'total_zf_muzakki' => $data['total_zf_muzakki'] ?? 0,
             'total_zm_muzakki' => $data['total_zm_muzakki'] ?? 0,
             'total_ifs_munfiq' => $data['total_ifs_munfiq'] ?? 0,
-            'avg_rice_price' => $data['avg_rice_price'] ?? 0,
+            'zf_rice_sold_amount' => $data['zf_rice_sold_amount'] ?? 0,
         ]);
     })->values();
 
     $allocationService = app(AllocationConfigService::class);
-    $periodDate = $year . '-01-01';
+    $periodDate = $year.'-01-01';
     $allocations = [
         'zf' => $allocationService->getAllocation(AllocationConfig::TYPE_ZF, $periodDate),
         'zm' => $allocationService->getAllocation(AllocationConfig::TYPE_ZM, $periodDate),
@@ -237,7 +246,7 @@ Route::get('/rekap-zis/{district}/rekap-desa', function (District $district) {
         ])->render()
     )->setPaper('a4', 'landscape');
 
-    return $pdf->stream('Rekap-ZIS-Per-Desa-Kec-' . str_replace(' ', '-', $district->name) . '.pdf');
+    return $pdf->stream('Rekap-ZIS-Per-Desa-Kec-'.str_replace(' ', '-', $district->name).'.pdf');
 })->name('district.rekap-desa.pdf');
 
 Route::get('/rekap-zis/{district}/report', function (District $district) {
@@ -263,5 +272,5 @@ Route::get('/rekap-zis/{district}/report', function (District $district) {
         ])->render()
     )->setPaper('a4', 'landscape');
 
-    return $pdf->stream('Rekap ZIS Se-Kecamatan ' . str_replace(' ', '-', $district->name) . '.pdf');
+    return $pdf->stream('Rekap ZIS Se-Kecamatan '.str_replace(' ', '-', $district->name).'.pdf');
 })->name('report.pdf');
