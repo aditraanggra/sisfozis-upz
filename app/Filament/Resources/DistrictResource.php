@@ -266,7 +266,7 @@ class DistrictResource extends Resource
             ])
             ->defaultSort(static::TOTAL_ALIAS, 'desc')
             ->recordUrl(null)
-            ->defaultPaginationPageOption(50);
+            ->defaultPaginationPageOption(25);
     }
 
     public static function getEloquentQuery(): Builder

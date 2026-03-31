@@ -20,9 +20,10 @@ class ListIfs extends ListRecords
                         [
                             'unit_id' => 1,
                             'trx_date' => '2025-03-28',
-                            'muzakki_name' => 'muzakki',
+                            'munfiq_name' => 'Nama Munfiq',
                             'amount' => 250000,
-                            'desc' => 'Contoh Transaksi Zakat Mal'
+                            'total_munfiq' => 1,
+                            'desc' => 'Contoh Transaksi Infak Sedekah'
                         ],
                     ],
                     fileName: 'template_ifs.xlsx',
