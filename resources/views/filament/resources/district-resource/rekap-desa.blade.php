@@ -140,21 +140,21 @@
                 <th rowspan="2" style="width: 25px;">No</th>
                 <th rowspan="2" style="width: 150px;">Unit Pengumpul Zakat (UPZ)</th>
                 <th colspan="2">Jumlah</th>
-                <th colspan="2">Penerimaan</th>
+                <th colspan="3">Penerimaan</th>
                 <th colspan="2">Dana Yang dikelola UPZ<br>{{ $allocations['zf']['kelola'] }} %</th>
                 <th rowspan="2">Setor ke<br>BAZNAS<br>({{ $allocations['zf']['setor'] }}%)</th>
             </tr>
             <tr>
-                <th rowspan="2">Muzaki</th>
-                <th rowspan="2">Beras<br>(Kg)</th>
-                <th rowspan="2">ZF Uang<br>(Rupiah)</th>
-                <th rowspan="2">ZF Beras<br>diuangkan<br>(Rupiah)</th>
-                <th rowspan="2">Jumlah<br>Diuangkan<br>(100%)<br>(Rupiah)</th>
+                <th>Muzaki</th>
+                <th>Beras<br>(Kg)</th>
+                <th>ZF Uang<br>(Rupiah)</th>
+                <th>ZF Beras<br>diuangkan<br>(Rupiah)</th>
+                <th>Jumlah<br>Diuangkan<br>(100%)<br>(Rupiah)</th>
                 <th>Penyaluran<br>UPZ<br>({{ $allocations['zf']['penyaluran'] }}%)</th>
                 <th>Hak Amil<br>UPZ<br>({{ $allocations['zf']['amil'] }}%)</th>
             </tr>
             <tr class="col-number">
-                <td></td>
+                <td>1</td>
                 <td>2</td>
                 <td>3</td>
                 <td>4</td>
@@ -324,7 +324,7 @@
                 <th>Hak Amil UPZ<br>({{ $allocations['zm']['amil'] }}%)</th>
             </tr>
             <tr class="col-number">
-                <td></td>
+                <td>1</td>
                 <td>2</td>
                 <td>3</td>
                 <td>4</td>
@@ -465,7 +465,7 @@
                 <th>Hak Amil UPZ<br>({{ $allocations['ifs']['amil'] }}%)</th>
             </tr>
             <tr class="col-number">
-                <td></td>
+                <td>1</td>
                 <td>2</td>
                 <td>3</td>
                 <td>4</td>
