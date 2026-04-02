@@ -5,27 +5,31 @@
     <meta charset="UTF-8">
     <title>Rekapitulasi Penerimaan ZIS Per Desa</title>
     <style>
+        @page {
+            margin: 30px 40px;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         table {
             border-collapse: collapse;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         th,
         td {
             border: 1px solid #000;
-            padding: 3px 4px;
+            padding: 2px 3px;
             text-align: center;
         }
 
         th {
             background-color: #f0f0f0;
-            font-size: 9px;
+            font-size: 8.5px;
         }
 
         tfoot {
@@ -39,15 +43,15 @@
         .header {
             text-align: center;
             font-weight: bold;
-            font-size: 13px;
-            margin-bottom: 10px;
+            font-size: 11px;
+            margin-bottom: 5px;
         }
 
         .unit-title {
             font-weight: bold;
-            margin-top: 10px;
-            margin-bottom: 8px;
-            font-size: 11px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            font-size: 10px;
         }
 
         .section-row td {
@@ -133,12 +137,12 @@
     <table>
         <thead>
             <tr>
-                <th rowspan="3" style="width: 25px;">No</th>
-                <th rowspan="3" style="width: 150px;">Unit Pengumpul Zakat (UPZ)</th>
+                <th rowspan="2" style="width: 25px;">No</th>
+                <th rowspan="2" style="width: 150px;">Unit Pengumpul Zakat (UPZ)</th>
                 <th colspan="2">Jumlah</th>
-                <th colspan="3">Penerimaan</th>
+                <th colspan="2">Penerimaan</th>
                 <th colspan="2">Dana Yang dikelola UPZ<br>{{ $allocations['zf']['kelola'] }} %</th>
-                <th rowspan="3">Setor ke<br>BAZNAS<br>({{ $allocations['zf']['setor'] }}%)</th>
+                <th rowspan="2">Setor ke<br>BAZNAS<br>({{ $allocations['zf']['setor'] }}%)</th>
             </tr>
             <tr>
                 <th rowspan="2">Muzaki</th>
@@ -148,10 +152,6 @@
                 <th rowspan="2">Jumlah<br>Diuangkan<br>(100%)<br>(Rupiah)</th>
                 <th>Penyaluran<br>UPZ<br>({{ $allocations['zf']['penyaluran'] }}%)</th>
                 <th>Hak Amil<br>UPZ<br>({{ $allocations['zf']['amil'] }}%)</th>
-            </tr>
-            <tr>
-                <th>{{ round($kelolaZf * $penyaluranZf * 100, 1) }}%</th>
-                <th>{{ round($kelolaZf * $amilZf * 100, 1) }}%</th>
             </tr>
             <tr class="col-number">
                 <td></td>

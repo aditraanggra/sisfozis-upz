@@ -42,7 +42,7 @@
     <tr>
         <td style="width: 35%; padding-right: 15px;">
             <div class="mengetahui" style="margin-top: 0;">Mengetahui :</div>
-            <div class="mengetahui-detail" style="font-weight: bold; margin-bottom: 55px;">Camat {{ strtoupper($record->name) }}</div>
+            <div class="mengetahui-detail" style="font-weight: bold; margin-bottom: 40px;">Camat {{ strtoupper($record->name) }}</div>
             
             <div style="font-weight: bold; text-decoration: underline;">........................................</div>
             <div>NIP. ........................................</div>
