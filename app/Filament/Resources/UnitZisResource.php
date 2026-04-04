@@ -2,13 +2,11 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Imports\UnitZisExcelImport;
 use App\Filament\Resources\UnitZisResource\Pages;
 use App\Models\District;
 use App\Models\UnitZis;
 use App\Models\User;
 use App\Models\Village;
-use EightyNine\ExcelImport\ExcelImportAction;
 use Filament\Forms;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Form;
@@ -262,12 +260,7 @@ class UnitZisResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->headerActions([
-                ExcelImportAction::make()
-                    ->use(UnitZisExcelImport::class)
-                    ->label('Import Excel')
-                    ->color('success'),
-            ]);
+            ->headerActions([]);
     }
 
     public static function getRelations(): array
