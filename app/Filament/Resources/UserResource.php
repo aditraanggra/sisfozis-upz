@@ -3,9 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
-use App\Models\User;
-use App\Filament\Imports\UserImporter;
 use App\Models\District;
+use App\Models\User;
 use App\Models\Village;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,7 +12,6 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Table;
 
 class UserResource extends Resource
@@ -49,7 +47,7 @@ class UserResource extends Resource
                     ->required()
                     ->label('Role'),
                 Forms\Components\Select::make('district_id')
-                    ->options(fn() => District::all()->pluck('name', 'id'))
+                    ->options(fn () => District::all()->pluck('name', 'id'))
                     ->label('Kecamatan')
                     ->live()
                     ->preload()
@@ -60,14 +58,13 @@ class UserResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('village_id')
                     ->options(
-                        fn(Get $get) =>
-                        $get('district_id')
+                        fn (Get $get) => $get('district_id')
                             ? Village::query()
-                            ->where('district_id', $get('district_id'))
-                            ->get()
-                            ->mapWithKeys(function ($village) {
-                                return [$village->id => $village->name];
-                            })
+                                ->where('district_id', $get('district_id'))
+                                ->get()
+                                ->mapWithKeys(function ($village) {
+                                    return [$village->id => $village->name];
+                                })
                             : []
                     )
                     ->label('Desa')
@@ -80,7 +77,7 @@ class UserResource extends Resource
                         if ($village) {
                             // Gabungkan village_code dengan angka random 1-100
                             $randomNumber = rand(1, 100);
-                            $noRegister = $village->village_code . $randomNumber;
+                            $noRegister = $village->village_code.$randomNumber;
                             $set('no_register', $noRegister);
                         }
                     })
@@ -100,7 +97,7 @@ class UserResource extends Resource
                     ->label('Role')
                     ->searchable()
                     ->sortable()
-                    ->formatStateUsing(fn(string $state): string => ucwords(str_replace('_', ' ', $state))),
+                    ->formatStateUsing(fn (string $state): string => ucwords(str_replace('_', ' ', $state))),
                 Tables\Columns\TextColumn::make('district.name')
                     ->label('Kecamatan')
                     ->searchable()
@@ -121,9 +118,7 @@ class UserResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->headerActions([
-                ImportAction::make()->importer(UserImporter::class),
-            ]);
+            ->headerActions([]);
     }
 
     public static function getRelations(): array
