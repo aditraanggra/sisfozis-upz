@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Imports\UnitZisImporter;
+use App\Filament\Imports\UnitZisExcelImport;
 use App\Filament\Resources\UnitZisResource\Pages;
 use App\Models\District;
 use App\Models\UnitZis;
-use App\Models\Village;
 use App\Models\User;
+use App\Models\Village;
+use EightyNine\ExcelImport\ExcelImportAction;
 use Filament\Forms;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Form;
@@ -16,7 +17,6 @@ use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -45,6 +45,7 @@ class UnitZisResource extends Resource
                             ->label('Operator')
                             ->options(function () {
                                 $usedUserIds = UnitZis::pluck('user_id')->toArray();
+
                                 return \App\Models\User::whereNotIn('id', $usedUserIds)->pluck('name', 'id');
                             })
                             ->searchable()
@@ -63,7 +64,7 @@ class UnitZisResource extends Resource
                         Forms\Components\TextInput::make('no_register')
                             ->label('Nomor Register')
                             ->readOnly()
-                            //->default(fn(Get $get) => $get('village_code') . '-' . rand(1, 100))
+                            // ->default(fn(Get $get) => $get('village_code') . '-' . rand(1, 100))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('unit_name')
@@ -75,7 +76,7 @@ class UnitZisResource extends Resource
                             ->required()
                             ->maxLength(255),
                         Forms\Components\Select::make('district_id')
-                            ->options(fn() => District::all()->pluck('name', 'id'))
+                            ->options(fn () => District::all()->pluck('name', 'id'))
                             ->label('Kecamatan')
                             ->live()
                             ->preload()
@@ -86,14 +87,13 @@ class UnitZisResource extends Resource
                             ->required(),
                         Forms\Components\Select::make('village_id')
                             ->options(
-                                fn(Get $get) =>
-                                $get('district_id')
+                                fn (Get $get) => $get('district_id')
                                     ? Village::query()
-                                    ->where('district_id', $get('district_id'))
-                                    ->get()
-                                    ->mapWithKeys(function ($village) {
-                                        return [$village->id => $village->name];
-                                    })
+                                        ->where('district_id', $get('district_id'))
+                                        ->get()
+                                        ->mapWithKeys(function ($village) {
+                                            return [$village->id => $village->name];
+                                        })
                                     : []
                             )
                             ->label('Desa')
@@ -106,7 +106,7 @@ class UnitZisResource extends Resource
                                 if ($village) {
                                     // Gabungkan village_code dengan angka random 1-100
                                     $randomNumber = rand(1, 100);
-                                    $noRegister = $village->village_code . $randomNumber;
+                                    $noRegister = $village->village_code.$randomNumber;
                                     $set('no_register', $noRegister);
                                 }
                             })
@@ -148,7 +148,7 @@ class UnitZisResource extends Resource
                             ->maxLength(255)
                             ->minValue(0)
                             ->maxValue(100),
-                    ])
+                    ]),
             ]);
     }
 
@@ -235,7 +235,7 @@ class UnitZisResource extends Resource
                         Forms\Components\Select::make('district_id')
                             ->label('Kecamatan')
                             ->options(District::all()->pluck('name', 'id'))
-                            ->afterStateUpdated(fn(Forms\Set $set) => $set('village_id', null))
+                            ->afterStateUpdated(fn (Forms\Set $set) => $set('village_id', null))
                             ->live()
                             ->searchable(),
 
@@ -250,9 +250,9 @@ class UnitZisResource extends Resource
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
-                            ->when($data['district_id'], fn($q) => $q->where('district_id', $data['district_id']))
-                            ->when($data['village_id'], fn($q) => $q->where('village_id', $data['village_id']));
-                    })
+                            ->when($data['district_id'] ?? null, fn ($q) => $q->where('district_id', $data['district_id']))
+                            ->when($data['village_id'] ?? null, fn ($q) => $q->where('village_id', $data['village_id']));
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -263,7 +263,10 @@ class UnitZisResource extends Resource
                 ]),
             ])
             ->headerActions([
-                ImportAction::make()->importer(UnitZisImporter::class),
+                ExcelImportAction::make()
+                    ->use(UnitZisExcelImport::class)
+                    ->label('Import Excel')
+                    ->color('success'),
             ]);
     }
 
