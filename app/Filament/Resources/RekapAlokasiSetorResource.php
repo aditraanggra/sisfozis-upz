@@ -255,6 +255,36 @@ class RekapAlokasiSetorResource extends Resource
                             ->default('Belum Verifikasi')
                             ->required()
                             ->native(false),
+
+                        Forms\Components\FileUpload::make('upload')
+                            ->label('Upload Bukti Setor')
+                            ->required()
+                            ->disk('cloudinary')
+                            ->directory('sisfo/bukti_setor')
+                            ->visibility('public')
+                            ->acceptedFileTypes(['image/*', 'application/pdf'])
+                            ->maxSize(5120)
+                            ->helperText('Upload dokumen bukti transfer/setor (1 bukti untuk semua unit yang dipilih)')
+                            ->saveUploadedFileUsing(function (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file): string {
+                                $user = \Illuminate\Support\Facades\Auth::user();
+                                $unit = $user ? $user->unitZis : null;
+                                $noRegister = $unit ? $unit->no_register : 'admin';
+                                $namaUnit = $unit ? \Illuminate\Support\Str::slug($unit->unit_name) : 'admin';
+                                $tanggal = date('Ymd');
+                                $timestamp = time();
+                                $extension = $file->getClientOriginalExtension();
+                                $customName = "setor_bulk_{$tanggal}_{$noRegister}_{$namaUnit}_{$timestamp}";
+                                $folder = 'sisfo/bukti_setor';
+
+                                $cloudinary = app(\Cloudinary\Cloudinary::class);
+                                $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                                    'folder' => $folder,
+                                    'public_id' => $customName,
+                                    'resource_type' => 'auto',
+                                ]);
+
+                                return $result['public_id'].'.'.($result['format'] ?? $extension);
+                            }),
                     ])
                     ->action(function (Collection $records, array $data): void {
                         $processed = 0;
@@ -319,7 +349,7 @@ class RekapAlokasiSetorResource extends Resource
                                     'status' => $data['status'],
                                     'validation' => $data['validation'],
                                     'deposit_destination' => $data['deposit_destination'],
-                                    'upload' => '',
+                                    'upload' => $data['upload'] ?? '',
                                 ]);
 
                                 $processed++;
