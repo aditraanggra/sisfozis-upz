@@ -3,8 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\LpzResource\Pages;
+use App\Models\District;
 use App\Models\Lpz;
 use App\Models\UnitZis;
+use App\Models\Village;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -169,6 +171,16 @@ class LpzResource extends Resource
                     ->label('Nama UPZ')
                     ->sortable()
                     ->searchable(),
+                Tables\Columns\TextColumn::make('unit.district.name')
+                    ->label('Kecamatan')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('unit.village.name')
+                    ->label('Desa')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('trx_date')
                     ->label('Tanggal Laporan')
                     ->date()
@@ -218,6 +230,24 @@ class LpzResource extends Resource
                     ->label('Unit UPZ')
                     ->options(UnitZis::pluck('unit_name', 'id'))
                     ->searchable(),
+                SelectFilter::make('district_id')
+                    ->label('Kecamatan')
+                    ->options(District::orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->query(function ($query, array $data) {
+                        if (filled($data['value'])) {
+                            $query->whereHas('unit', fn ($q) => $q->where('district_id', $data['value']));
+                        }
+                    }),
+                SelectFilter::make('village_id')
+                    ->label('Desa')
+                    ->options(Village::orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->query(function ($query, array $data) {
+                        if (filled($data['value'])) {
+                            $query->whereHas('unit', fn ($q) => $q->where('village_id', $data['value']));
+                        }
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
