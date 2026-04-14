@@ -368,7 +368,7 @@ class RekapAlokasiSetorResource extends Resource
                     SELECT SUM(rs.t_setor_zf_amount)
                     FROM rekap_setor rs
                     WHERE rs.unit_id = rekap_alokasi.unit_id
-                      AND YEAR(rs.periode_date) = YEAR(rekap_alokasi.periode_date)
+                      AND EXTRACT(YEAR FROM rs.periode_date) = EXTRACT(YEAR FROM rekap_alokasi.periode_date)
                 ), 0)) AS sisa_zf_amount,
 
                 /* ── Sisa ZF Beras ─────────────────────────────────── */
@@ -376,7 +376,7 @@ class RekapAlokasiSetorResource extends Resource
                     SELECT SUM(rs.t_setor_zf_rice)
                     FROM rekap_setor rs
                     WHERE rs.unit_id = rekap_alokasi.unit_id
-                      AND YEAR(rs.periode_date) = YEAR(rekap_alokasi.periode_date)
+                      AND EXTRACT(YEAR FROM rs.periode_date) = EXTRACT(YEAR FROM rekap_alokasi.periode_date)
                 ), 0)) AS sisa_zf_rice,
 
                 /* ── Sisa ZM ────────────────────────────────────────── */
@@ -384,7 +384,7 @@ class RekapAlokasiSetorResource extends Resource
                     SELECT SUM(rs.t_setor_zm)
                     FROM rekap_setor rs
                     WHERE rs.unit_id = rekap_alokasi.unit_id
-                      AND YEAR(rs.periode_date) = YEAR(rekap_alokasi.periode_date)
+                      AND EXTRACT(YEAR FROM rs.periode_date) = EXTRACT(YEAR FROM rekap_alokasi.periode_date)
                 ), 0)) AS sisa_zm,
 
                 /* ── Sisa IFS ───────────────────────────────────────── */
@@ -392,7 +392,7 @@ class RekapAlokasiSetorResource extends Resource
                     SELECT SUM(rs.t_setor_ifs)
                     FROM rekap_setor rs
                     WHERE rs.unit_id = rekap_alokasi.unit_id
-                      AND YEAR(rs.periode_date) = YEAR(rekap_alokasi.periode_date)
+                      AND EXTRACT(YEAR FROM rs.periode_date) = EXTRACT(YEAR FROM rekap_alokasi.periode_date)
                 ), 0)) AS sisa_ifs,
 
                 /* ── Sudah Setor ZF Uang ───────────────────────────── */
@@ -400,7 +400,7 @@ class RekapAlokasiSetorResource extends Resource
                     SELECT SUM(rs.t_setor_zf_amount)
                     FROM rekap_setor rs
                     WHERE rs.unit_id = rekap_alokasi.unit_id
-                      AND YEAR(rs.periode_date) = YEAR(rekap_alokasi.periode_date)
+                      AND EXTRACT(YEAR FROM rs.periode_date) = EXTRACT(YEAR FROM rekap_alokasi.periode_date)
                 ), 0) AS sudah_setor_zf_amount,
 
                 /* ── Sudah Setor ZF Beras ─────────────────────────── */
@@ -408,7 +408,7 @@ class RekapAlokasiSetorResource extends Resource
                     SELECT SUM(rs.t_setor_zf_rice)
                     FROM rekap_setor rs
                     WHERE rs.unit_id = rekap_alokasi.unit_id
-                      AND YEAR(rs.periode_date) = YEAR(rekap_alokasi.periode_date)
+                      AND EXTRACT(YEAR FROM rs.periode_date) = EXTRACT(YEAR FROM rekap_alokasi.periode_date)
                 ), 0) AS sudah_setor_zf_rice,
 
                 /* ── Sudah Setor ZM ───────────────────────────────── */
@@ -416,7 +416,7 @@ class RekapAlokasiSetorResource extends Resource
                     SELECT SUM(rs.t_setor_zm)
                     FROM rekap_setor rs
                     WHERE rs.unit_id = rekap_alokasi.unit_id
-                      AND YEAR(rs.periode_date) = YEAR(rekap_alokasi.periode_date)
+                      AND EXTRACT(YEAR FROM rs.periode_date) = EXTRACT(YEAR FROM rekap_alokasi.periode_date)
                 ), 0) AS sudah_setor_zm,
 
                 /* ── Sudah Setor IFS ──────────────────────────────── */
@@ -424,7 +424,7 @@ class RekapAlokasiSetorResource extends Resource
                     SELECT SUM(rs.t_setor_ifs)
                     FROM rekap_setor rs
                     WHERE rs.unit_id = rekap_alokasi.unit_id
-                      AND YEAR(rs.periode_date) = YEAR(rekap_alokasi.periode_date)
+                      AND EXTRACT(YEAR FROM rs.periode_date) = EXTRACT(YEAR FROM rekap_alokasi.periode_date)
                 ), 0) AS sudah_setor_ifs
             ')
             ->with(['unit.district', 'unit.village']);
