@@ -208,6 +208,10 @@ class RekapAlokasiSetorResource extends Resource
             ])
             ->actions([])
             ->bulkActions([
+                Tables\Actions\ExportBulkAction::make()
+                    ->exporter(\App\Filament\Exports\RekapAlokasiSetorExporter::class)
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->label('Export Excel'),
                 Tables\Actions\BulkAction::make('proses_setor_zis')
                     ->label('Proses Setor ZIS')
                     ->icon('heroicon-o-banknotes')

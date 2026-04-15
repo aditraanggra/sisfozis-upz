@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\RekapAlokasiSetorResource\Pages;
 
 use App\Filament\Resources\RekapAlokasiSetorResource;
+use App\Filament\Exports\RekapAlokasiSetorExporter;
+use Filament\Actions\ExportAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListRekapAlokasiSetor extends ListRecords
@@ -11,6 +13,11 @@ class ListRekapAlokasiSetor extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            ExportAction::make()
+                ->exporter(RekapAlokasiSetorExporter::class)
+                ->icon('heroicon-o-arrow-down-tray')
+                ->label('Export Excel'),
+        ];
     }
 }
