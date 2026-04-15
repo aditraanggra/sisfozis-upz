@@ -9,31 +9,36 @@ use App\Models\UnitZis;
 use App\Models\Village;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class LpzResource extends Resource
 {
     protected static ?string $model = Lpz::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
+
     protected static ?string $navigationLabel = 'Laporan LPZ';
+
     protected static ?string $modelLabel = 'LPZ';
+
     protected static ?string $pluralModelLabel = 'Laporan LPZ';
+
     protected static ?string $navigationGroup = 'Rekap & Transaksi';
+
     protected static ?int $navigationSort = 5;
 
     /**
      * Generate a signed Cloudinary URL for raw files (PDFs).
      * Uses the Cloudinary SDK locally — no HTTP API calls.
      */
-    private static function getCloudinaryUrl(?string $path): ?string
+    public static function getCloudinaryUrl(?string $path): ?string
     {
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 
@@ -69,16 +74,17 @@ class LpzResource extends Resource
     /**
      * Generate a Cloudinary URL that forces file download (fl_attachment).
      */
-    private static function getCloudinaryDownloadUrl(?string $path): ?string
+    public static function getCloudinaryDownloadUrl(?string $path): ?string
     {
         $url = self::getCloudinaryUrl($path);
-        if (!$url) {
+        if (! $url) {
             return null;
         }
 
         // Append fl_attachment flag to force download
         $separator = str_contains($url, '?') ? '&' : '?';
-        return $url . $separator . 'fl_attachment=true';
+
+        return $url.$separator.'fl_attachment=true';
     }
 
     public static function form(Form $form): Form
@@ -224,6 +230,7 @@ class LpzResource extends Resource
                         for ($year = $currentYear; $year >= 2020; $year--) {
                             $years[$year] = (string) $year;
                         }
+
                         return $years;
                     }),
                 SelectFilter::make('unit_id')
@@ -255,6 +262,8 @@ class LpzResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\ExportBulkAction::make()
+                        ->exporter(\App\Filament\Exports\LpzExporter::class),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
