@@ -22,9 +22,9 @@ Route::get('/rekap-zis/{village}/pdf', function (Village $village) {
 
     // Get all rekap_zis for this village, tahunan period, matching year
     $rekapZis = $village->rekapZis()
-        ->with('unit.village')
         ->where('period', 'tahunan')
         ->whereYear('period_date', $year)
+        ->select('unit_id', 'total_zf_muzakki', 'total_zf_rice', 'total_zf_amount', 'total_zm_amount', 'total_zm_muzakki', 'total_ifs_amount', 'total_ifs_munfiq')
         ->get();
 
     // Fetch rice prices per unit_id from SetorZis
@@ -134,7 +134,9 @@ Route::get('/rekap-zis/{village}/op', function (Village $village) {
     $year = request()->query('year', now()->format('Y'));
 
     $rekapZis = $village->rekapZis()
-        ->with('unit')
+        ->with(['unit' => function ($query) {
+            $query->select('id', 'unit_name'); // Assuming these are needed for 'op' view
+        }])
         ->where('period', 'tahunan')
         ->where(function ($query) {
             $query->where('total_zf_amount', '>', 0)
@@ -142,6 +144,7 @@ Route::get('/rekap-zis/{village}/op', function (Village $village) {
                 ->orWhere('total_ifs_amount', '>', 0);
         })
         ->whereYear('period_date', $year)
+        ->select('id', 'unit_id', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'period_date') // Add other columns needed for 'op' view
         ->get();
 
     $pdf = Pdf::loadHtml(
@@ -155,14 +158,73 @@ Route::get('/rekap-zis/{village}/op', function (Village $village) {
     return $pdf->stream('Rekap-ZIS-'.str_replace(' ', '-', $village->name).'.pdf');
 })->name('op.pdf');
 
+Route::get('/rekap-zis/{village}/lpz', function (Village $village) {
+    $year = request()->query('year', now()->format('Y'));
+
+    $units = $village->unitzis()->orderBy('unit_name')->get();
+
+    $rekapZis = \App\Models\RekapZis::whereIn('unit_id', $units->pluck('id'))
+        ->where('period', 'tahunan')
+        ->whereYear('period_date', $year)
+        ->select('unit_id', 'total_zf_rice', 'total_zf_amount', 'total_zf_muzakki', 'total_zm_amount', 'total_zm_muzakki', 'total_ifs_amount', 'total_ifs_munfiq')
+        ->get()
+        ->keyBy('unit_id');
+
+    $rekapPendis = \App\Models\RekapPendis::whereIn('unit_id', $units->pluck('id'))
+        ->where('periode', 'tahunan')
+        ->whereYear('periode_date', $year)
+        ->select('unit_id', 't_pendis_zf_rice', 't_pendis_zf_amount', 't_pm', 't_pendis_zm', 't_pendis_ifs')
+        ->get()
+        ->keyBy('unit_id');
+
+    $rekapSetor = \App\Models\RekapSetor::whereIn('unit_id', $units->pluck('id'))
+        ->where('periode', 'tahunan')
+        ->whereYear('periode_date', $year)
+        ->select('unit_id', 't_setor_zf_rice', 't_setor_zf_amount', 't_setor_zm', 't_setor_ifs')
+        ->get()
+        ->keyBy('unit_id');
+
+    $setorZisGrouped = collect();
+    \App\Models\SetorZis::withoutGlobalScopes()
+        ->whereIn('unit_id', $units->pluck('id'))
+        ->whereYear('trx_date', $year)
+        ->select('unit_id', 'trx_date', 'zf_amount_deposit', 'zf_rice_deposit', 'zm_amount_deposit', 'ifs_amount_deposit', 'deposit_destination', 'upload')
+        ->orderBy('trx_date')
+        ->chunk(500, function ($chunk) use ($setorZisGrouped) {
+            foreach ($chunk as $item) {
+                if (! isset($setorZisGrouped[$item->unit_id])) {
+                    $setorZisGrouped[$item->unit_id] = collect();
+                }
+                $setorZisGrouped[$item->unit_id]->push($item);
+            }
+        });
+
+    $pdf = Pdf::setOption(['isRemoteEnabled' => true])->loadHtml(
+        view('filament.resources.Village-resource.lpz', [
+            'village' => $village,
+            'units' => $units,
+            'year' => $year,
+            'rekapZis' => $rekapZis,
+            'rekapPendis' => $rekapPendis,
+            'rekapSetor' => $rekapSetor,
+            'setorZisGrouped' => $setorZisGrouped,
+        ])->render()
+    )->setPaper('a4', 'portrait');
+
+    return $pdf->stream('LPZ-Desa-'.str_replace(' ', '-', $village->name).'-'.$year.'.pdf');
+})->name('village.lpz.pdf');
+
 Route::get('/rekap-zis/{district}/rekap-desa', function (District $district) {
     $year = request()->query('year', now()->format('Y'));
 
     // Get all rekap_zis for this district, tahunan period, matching year (no filter on non-zero)
     $rekapZis = $district->rekapZis()
-        ->with('unit.village')
+        ->with(['unit' => function ($query) {
+            $query->select('id', 'category_id', 'village_id');
+        }])
         ->where('period', 'tahunan')
         ->whereYear('period_date', $year)
+        ->select('id', 'unit_id', 'total_zf_rice', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'total_zf_muzakki', 'total_zm_muzakki', 'total_ifs_munfiq')
         ->get();
 
     // Fetch rice sold amounts per unit_id from SetorZis
@@ -253,7 +315,9 @@ Route::get('/rekap-zis/{district}/report', function (District $district) {
     $year = request()->query('year', now()->format('Y'));
 
     $rekapZis = $district->rekapZis()
-        ->with('unit')
+        ->with(['unit' => function ($query) {
+            $query->select('id', 'unit_name');
+        }])
         ->where('period', 'tahunan')
         ->where('category_id', 4)
         ->where(function ($query) {
@@ -262,6 +326,7 @@ Route::get('/rekap-zis/{district}/report', function (District $district) {
                 ->orWhere('total_ifs_amount', '>', 0);
         })
         ->whereYear('period_date', $year)
+        ->select('id', 'unit_id', 'total_zf_rice', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'total_zf_muzakki', 'total_zm_muzakki', 'total_ifs_munfiq')
         ->get();
 
     $pdf = Pdf::loadHtml(

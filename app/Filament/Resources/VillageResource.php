@@ -192,6 +192,15 @@ class VillageResource extends Resource
                         ->url(fn(Model $record, $livewire) => route('op.pdf', $record) . '?' . http_build_query([
                             'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
                         ]))
+                        ->openUrlInNewTab(),
+
+                    Tables\Actions\Action::make('lpzPdf')
+                        ->label('Cetak LPZ')
+                        ->color('warning')
+                        ->icon('heroicon-o-document-chart-bar')
+                        ->url(fn(Model $record, $livewire) => route('village.lpz.pdf', $record) . '?' . http_build_query([
+                            'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
+                        ]))
                         ->openUrlInNewTab()
                 ])
                     ->icon('heroicon-o-cloud-arrow-down')
