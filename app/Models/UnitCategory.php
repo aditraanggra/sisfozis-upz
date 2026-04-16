@@ -12,8 +12,8 @@ class UnitCategory extends Model
     protected $fillable = ['name', 'desc'];
 
     // Relasi ke tabel unit_zis
-    public function unitzis()
+    public function unitZis()
     {
-        return $this->hasMany(unitzis::class);
+        return $this->hasMany(UnitZis::class);
     }
 }
