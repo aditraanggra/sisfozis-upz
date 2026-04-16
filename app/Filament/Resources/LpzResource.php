@@ -33,6 +33,36 @@ class LpzResource extends Resource
     protected static ?int $navigationSort = 5;
 
     /**
+     * Generate a signed Cloudinary URL for image files.
+     * Uses the Cloudinary SDK locally.
+     */
+    public static function getCloudinaryImageUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        try {
+            $publicId = $path;
+            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                $parsed = parse_url($path, PHP_URL_PATH);
+                if (preg_match('#/image/upload/(?:v\d+/)?(.+)$#', $parsed, $matches)) {
+
+                    $publicId = $matches[1];
+                    // For images, we usually strip the extension from the public ID for Cloudinary SDK
+                    $publicId = preg_replace('/\.[^.]+$/', '', $publicId);
+                }
+            }
+
+            $cloudinary = app(\Cloudinary\Cloudinary::class);
+
+            return (string) $cloudinary->image($publicId)->signUrl()->toUrl();
+        } catch (\Exception $e) {
+            return str_starts_with($path, 'http') ? $path : null;
+        }
+    }
+
+    /**
      * Generate a signed Cloudinary URL for raw files (PDFs).
      * Uses the Cloudinary SDK locally — no HTTP API calls.
      */

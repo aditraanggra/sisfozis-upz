@@ -278,6 +278,7 @@
                     <th>TANGGAL</th>
                     <th>ZF (Uang)</th>
                     <th>ZF (Beras)</th>
+                    <th>Konversi Beras (Rp)</th>
                     <th>ZAKAT MAL</th>
                     <th>INFAK SEDEKAH</th>
                     <th>KET</th>
@@ -289,13 +290,14 @@
                     <td class="text-center">{{ $setoran->trx_date ? $setoran->trx_date->format('Y-m-d') : '-' }}</td>
                     <td class="text-right">Rp {{ number_format($setoran->zf_amount_deposit, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($setoran->zf_rice_deposit, 1, ',', '.') }} Kg</td>
+                    <td class="text-right">Rp {{ number_format($setoran->zf_rice_sold_amount, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($setoran->zm_amount_deposit, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($setoran->ifs_amount_deposit, 0, ',', '.') }}</td>
                     <td class="text-center">{{ ucfirst($setoran->deposit_destination ?? 'Tunai') }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="text-center">Belum ada setoran di tahun ini.</td>
+                    <td colspan="7" class="text-center">Belum ada setoran di tahun ini.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -307,10 +309,10 @@
             @foreach($setorZisList as $setoran)
                 @if($setoran->upload)
                     @php
-                        $cloudflareUrl = \App\Filament\Resources\LpzResource::getCloudinaryUrl($setoran->upload);
+                        $proofUrl = \App\Filament\Resources\LpzResource::getCloudinaryImageUrl($setoran->upload);
                     @endphp
-                    @if($cloudflareUrl)
-                        <img src="{{ $cloudflareUrl }}" alt="Bukti Setor" style="display: block; margin: 0 auto 20px auto; max-width: 90%;">
+                    @if($proofUrl)
+                        <img src="{{ $proofUrl }}" alt="Bukti Setor" style="display: block; margin: 0 auto 20px auto; max-width: 90%;">
                     @endif
                 @endif
             @endforeach
