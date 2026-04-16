@@ -81,7 +81,7 @@ class User extends Authenticatable implements FilamentUser
     // Relasi ke tabel unit_zis
     public function unitZis()
     {
-        return $this->belongsTo(unitZis::class, 'unit_id');
+        return $this->belongsTo(UnitZis::class, 'unit_id');
     }
 
     public function canAccessPanel(\Filament\Panel $panel): bool
