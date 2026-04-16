@@ -188,7 +188,7 @@ Route::get('/rekap-zis/{village}/lpz', function (Village $village) {
     \App\Models\SetorZis::withoutGlobalScopes()
         ->whereIn('unit_id', $units->pluck('id'))
         ->whereYear('trx_date', $year)
-        ->select('unit_id', 'trx_date', 'zf_amount_deposit', 'zf_rice_deposit', 'zm_amount_deposit', 'ifs_amount_deposit', 'deposit_destination', 'upload')
+        ->select('unit_id', 'trx_date', 'zf_amount_deposit', 'zf_rice_deposit', 'zf_rice_sold_amount', 'zm_amount_deposit', 'ifs_amount_deposit', 'deposit_destination', 'upload')
         ->orderBy('trx_date')
         ->chunk(500, function ($chunk) use ($setorZisGrouped) {
             foreach ($chunk as $item) {
