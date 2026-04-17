@@ -15,6 +15,9 @@ use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Filament\Exports\UnitZisExporter;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -257,10 +260,15 @@ class UnitZisResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->exporter(UnitZisExporter::class),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->headerActions([]);
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(UnitZisExporter::class),
+            ]);
     }
 
     public static function getRelations(): array

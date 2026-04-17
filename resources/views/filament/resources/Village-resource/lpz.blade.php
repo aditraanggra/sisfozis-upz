@@ -97,7 +97,7 @@
 </head>
 <body>
     @php
-        $logoPath = public_path('images/Logo.png');
+        $logoPath = public_path('images/logo_baznas.png');
         $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
     @endphp
     @foreach($units as $index => $unit)
