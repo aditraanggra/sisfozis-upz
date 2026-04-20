@@ -135,7 +135,7 @@ Route::get('/rekap-zis/{village}/op', function (Village $village) {
 
     $rekapZis = $village->rekapZis()
         ->with(['unit' => function ($query) {
-            $query->select('id', 'unit_name'); // Assuming these are needed for 'op' view
+            $query->select('id', 'unit_name', 'rice_price', 'no_register'); // Needed for 'op' view
         }])
         ->where('period', 'tahunan')
         ->where(function ($query) {
@@ -144,7 +144,7 @@ Route::get('/rekap-zis/{village}/op', function (Village $village) {
                 ->orWhere('total_ifs_amount', '>', 0);
         })
         ->whereYear('period_date', $year)
-        ->select('id', 'unit_id', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'period_date') // Add other columns needed for 'op' view
+        ->select('rekap_zis.id', 'unit_id', 'total_zf_rice', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'total_zf_muzakki', 'period_date') // Needed for 'op' view
         ->get();
 
     $pdf = Pdf::loadHtml(
@@ -224,7 +224,7 @@ Route::get('/rekap-zis/{district}/rekap-desa', function (District $district) {
         }])
         ->where('period', 'tahunan')
         ->whereYear('period_date', $year)
-        ->select('id', 'unit_id', 'total_zf_rice', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'total_zf_muzakki', 'total_zm_muzakki', 'total_ifs_munfiq')
+        ->select('rekap_zis.id', 'unit_id', 'total_zf_rice', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'total_zf_muzakki', 'total_zm_muzakki', 'total_ifs_munfiq')
         ->get();
 
     // Fetch rice sold amounts per unit_id from SetorZis
@@ -316,7 +316,7 @@ Route::get('/rekap-zis/{district}/report', function (District $district) {
 
     $rekapZis = $district->rekapZis()
         ->with(['unit' => function ($query) {
-            $query->select('id', 'unit_name');
+            $query->select('id', 'unit_name', 'rice_price', 'no_register', 'village_id');
         }])
         ->where('period', 'tahunan')
         ->where('category_id', 4)
@@ -326,7 +326,7 @@ Route::get('/rekap-zis/{district}/report', function (District $district) {
                 ->orWhere('total_ifs_amount', '>', 0);
         })
         ->whereYear('period_date', $year)
-        ->select('id', 'unit_id', 'total_zf_rice', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'total_zf_muzakki', 'total_zm_muzakki', 'total_ifs_munfiq')
+        ->select('rekap_zis.id', 'unit_id', 'total_zf_rice', 'total_zf_amount', 'total_zm_amount', 'total_ifs_amount', 'total_zf_muzakki', 'total_zm_muzakki', 'total_ifs_munfiq')
         ->get();
 
     $pdf = Pdf::loadHtml(
