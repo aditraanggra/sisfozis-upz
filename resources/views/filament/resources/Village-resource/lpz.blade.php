@@ -128,7 +128,16 @@
             $ifs_pendis_amount = $rekapPendisEnabled?->t_pendis_ifs ?? 0;
             $ifs_munfiq = $rekapZisEnabled?->total_ifs_munfiq ?? 0;
             $ifs_setor_amount = $rekapSetorEnabled?->t_setor_ifs ?? 0;
+
+            // Skip unit if it has zero ZIS transactions
+            $hasTransactions = ($zf_amount + $zf_rice + $zm_amount + $ifs_amount
+                + $zf_muzakki + $zm_muzakki + $ifs_munfiq) > 0
+                || $setorZisList->isNotEmpty();
         @endphp
+
+        @if(!$hasTransactions)
+            @continue
+        @endif
         
         <!-- PAGE 1: URAIAN -->
         <div class="header-container">
