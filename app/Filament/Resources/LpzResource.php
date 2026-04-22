@@ -168,13 +168,13 @@ class LpzResource extends Resource
                     ->schema([
                         Infolists\Components\View::make('filament.infolists.components.pdf-viewer')
                             ->label('Form 101')
-                            ->state(fn ($record) => self::getCloudinaryInlineUrl($record->form101)),
+                            ->state(fn ($record) => self::getCloudinaryUrl($record->form101)),
                         Infolists\Components\View::make('filament.infolists.components.pdf-viewer')
                             ->label('Form 102')
-                            ->state(fn ($record) => self::getCloudinaryInlineUrl($record->form102)),
+                            ->state(fn ($record) => self::getCloudinaryUrl($record->form102)),
                         Infolists\Components\View::make('filament.infolists.components.pdf-viewer')
                             ->label('LPZ')
-                            ->state(fn ($record) => self::getCloudinaryInlineUrl($record->lpz)),
+                            ->state(fn ($record) => self::getCloudinaryUrl($record->lpz)),
                     ])->columns(1),
             ]);
     }
