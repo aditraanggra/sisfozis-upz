@@ -79,6 +79,27 @@ class LpzResource extends Resource
         );
     }
 
+    /**
+     * Generate a Cloudinary URL that forces inline rendering by injecting
+     * the fl_inline transformation into the URL path (after /upload/).
+     * Use this for embedding PDFs in iframes so the browser displays them
+     * directly instead of triggering a download.
+     */
+    public static function getCloudinaryInlineUrl(?string $path): ?string
+    {
+        if (! $path || ! str_starts_with($path, 'http')) {
+            return null;
+        }
+
+        // Inject fl_inline as a Cloudinary transformation flag in the URL path
+        // e.g. /image/upload/v123/file.pdf  →  /image/upload/fl_inline/v123/file.pdf
+        return preg_replace(
+            '#(/(?:image|video|raw)/upload/)#',
+            '$1fl_inline/',
+            $path
+        );
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -145,19 +166,16 @@ class LpzResource extends Resource
                     ])->columns(2),
                 Infolists\Components\Section::make('Dokumen')
                     ->schema([
-                        Infolists\Components\TextEntry::make('form101')
+                        Infolists\Components\View::make('filament.infolists.components.pdf-viewer')
                             ->label('Form 101')
-                            ->formatStateUsing(fn ($state) => $state ? 'Download Dokumen' : '-')
-                            ->url(fn ($state) => self::getCloudinaryDownloadUrl($state), shouldOpenInNewTab: true),
-                        Infolists\Components\TextEntry::make('form102')
+                            ->state(fn ($record) => self::getCloudinaryInlineUrl($record->form101)),
+                        Infolists\Components\View::make('filament.infolists.components.pdf-viewer')
                             ->label('Form 102')
-                            ->formatStateUsing(fn ($state) => $state ? 'Download Dokumen' : '-')
-                            ->url(fn ($state) => self::getCloudinaryDownloadUrl($state), shouldOpenInNewTab: true),
-                        Infolists\Components\TextEntry::make('lpz')
+                            ->state(fn ($record) => self::getCloudinaryInlineUrl($record->form102)),
+                        Infolists\Components\View::make('filament.infolists.components.pdf-viewer')
                             ->label('LPZ')
-                            ->formatStateUsing(fn ($state) => $state ? 'Download Dokumen' : '-')
-                            ->url(fn ($state) => self::getCloudinaryDownloadUrl($state), shouldOpenInNewTab: true),
-                    ])->columns(3),
+                            ->state(fn ($record) => self::getCloudinaryInlineUrl($record->lpz)),
+                    ])->columns(1),
             ]);
     }
 
