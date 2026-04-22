@@ -33,8 +33,8 @@ class LpzResource extends Resource
     protected static ?int $navigationSort = 5;
 
     /**
-     * Generate a signed Cloudinary URL for image files.
-     * Uses the Cloudinary SDK locally.
+     * Return the stored Cloudinary URL for image files as-is.
+     * The URL stored in the database is already a valid Cloudinary delivery URL.
      */
     public static function getCloudinaryImageUrl(?string $path): ?string
     {
@@ -42,30 +42,12 @@ class LpzResource extends Resource
             return null;
         }
 
-        try {
-            $publicId = $path;
-            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-                $parsed = parse_url($path, PHP_URL_PATH);
-                // Match both versioned (v12345/) and signed (s--xxx--/) URL formats
-                if (preg_match('#/image/upload/(?:v\d+/)?(?:s--[^/]+--/)?(.+)$#', $parsed, $matches)) {
-
-                    $publicId = $matches[1];
-                    // For images, we usually strip the extension from the public ID for Cloudinary SDK
-                    $publicId = preg_replace('/\.[^.]+$/', '', $publicId);
-                }
-            }
-
-            $cloudinary = app(\Cloudinary\Cloudinary::class);
-
-            return (string) $cloudinary->image($publicId)->signUrl()->toUrl();
-        } catch (\Exception $e) {
-            return str_starts_with($path, 'http') ? $path : null;
-        }
+        return str_starts_with($path, 'http') ? $path : null;
     }
 
     /**
-     * Generate a signed Cloudinary URL for raw files (PDFs).
-     * Uses the Cloudinary SDK locally — no HTTP API calls.
+     * Return the stored Cloudinary URL for files (PDFs, documents) as-is.
+     * The URL stored in the database is already a valid Cloudinary delivery URL.
      */
     public static function getCloudinaryUrl(?string $path): ?string
     {
@@ -73,47 +55,28 @@ class LpzResource extends Resource
             return null;
         }
 
-        try {
-            // Extract public ID from the stored value
-            $publicId = $path;
-
-            // If stored as full URL, extract the public ID from it
-            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-                // URL format: https://res.cloudinary.com/{cloud}/raw/upload/v{version}/{publicId}
-                $parsed = parse_url($path, PHP_URL_PATH);
-                // Remove /image/, /video/, or /raw/ upload prefix (with optional version v12345/ and/or signature s--xxx--/) to get the public ID
-                if (preg_match('#/(?:image|video|raw)/upload/(?:v\d+/)?(?:s--[^/]+--/)?(.+)$#', $parsed, $matches)) {
-                    $publicId = $matches[1];
-                }
-            }
-
-            // NOTE: For raw files (PDFs), the extension IS part of the public ID.
-            // Do NOT strip it, otherwise Cloudinary returns 404.
-
-            // Use Cloudinary SDK to generate a signed URL (no HTTP calls)
-            $cloudinary = app(\Cloudinary\Cloudinary::class);
-
-            return (string) $cloudinary->raw($publicId)->signUrl()->toUrl();
-        } catch (\Exception $e) {
-            // Fallback: return the original path if it's already a URL
-            return str_starts_with($path, 'http') ? $path : null;
-        }
+        return str_starts_with($path, 'http') ? $path : null;
     }
 
     /**
-     * Generate a Cloudinary URL that forces file download (fl_attachment).
+     * Generate a Cloudinary URL that forces file download by injecting
+     * the fl_attachment transformation into the URL path (after /upload/).
+     * This is the correct Cloudinary approach — fl_attachment must be a
+     * transformation flag, not a query string parameter.
      */
     public static function getCloudinaryDownloadUrl(?string $path): ?string
     {
-        $url = self::getCloudinaryUrl($path);
-        if (! $url) {
+        if (! $path || ! str_starts_with($path, 'http')) {
             return null;
         }
 
-        // Append fl_attachment flag to force download
-        $separator = str_contains($url, '?') ? '&' : '?';
-
-        return $url.$separator.'fl_attachment=true';
+        // Inject fl_attachment as a Cloudinary transformation flag in the URL path
+        // e.g. /image/upload/v123/file.pdf  →  /image/upload/fl_attachment/v123/file.pdf
+        return preg_replace(
+            '#(/(?:image|video|raw)/upload/)#',
+            '$1fl_attachment/',
+            $path
+        );
     }
 
     public static function form(Form $form): Form
