@@ -46,7 +46,8 @@ class LpzResource extends Resource
             $publicId = $path;
             if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
                 $parsed = parse_url($path, PHP_URL_PATH);
-                if (preg_match('#/image/upload/(?:v\d+/)?(.+)$#', $parsed, $matches)) {
+                // Match both versioned (v12345/) and signed (s--xxx--/) URL formats
+                if (preg_match('#/image/upload/(?:v\d+/)?(?:s--[^/]+--/)?(.+)$#', $parsed, $matches)) {
 
                     $publicId = $matches[1];
                     // For images, we usually strip the extension from the public ID for Cloudinary SDK
@@ -80,10 +81,8 @@ class LpzResource extends Resource
             if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
                 // URL format: https://res.cloudinary.com/{cloud}/raw/upload/v{version}/{publicId}
                 $parsed = parse_url($path, PHP_URL_PATH);
-                // Remove /raw/upload/vXXX/ prefix to get the public ID
-                if (preg_match('#/raw/upload/v\d+/(.+)$#', $parsed, $matches)) {
-                    $publicId = $matches[1];
-                } elseif (preg_match('#/(?:image|video|raw)/upload/(?:v\d+/)?(.+)$#', $parsed, $matches)) {
+                // Remove /image/, /video/, or /raw/ upload prefix (with optional version v12345/ and/or signature s--xxx--/) to get the public ID
+                if (preg_match('#/(?:image|video|raw)/upload/(?:v\d+/)?(?:s--[^/]+--/)?(.+)$#', $parsed, $matches)) {
                     $publicId = $matches[1];
                 }
             }
