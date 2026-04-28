@@ -140,6 +140,7 @@ Route::get('/rekap-zis/{village}/op', function (Village $village) {
         ->where('period', 'tahunan')
         ->where(function ($query) {
             $query->where('total_zf_amount', '>', 0)
+                ->orWhere('total_zf_rice', '>', 0)
                 ->orWhere('total_zm_amount', '>', 0)
                 ->orWhere('total_ifs_amount', '>', 0);
         })
