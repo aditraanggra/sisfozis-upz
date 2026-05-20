@@ -69,22 +69,22 @@ class LaporanKurbanResource extends Resource
                     ->label('Sapi')
                     ->numeric()
                     ->sortable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Sapi')),
                 Tables\Columns\TextColumn::make('jml_kerbau')
                     ->label('Kerbau')
                     ->numeric()
                     ->sortable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Kerbau')),
                 Tables\Columns\TextColumn::make('jml_kambing')
                     ->label('Kambing')
                     ->numeric()
                     ->sortable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Kambing')),
                 Tables\Columns\TextColumn::make('jml_domba')
                     ->label('Domba')
                     ->numeric()
                     ->sortable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Domba')),
                 Tables\Columns\TextColumn::make('total_ekor')
                     ->label('Total Ekor')
                     ->numeric()
@@ -95,13 +95,13 @@ class LaporanKurbanResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->toggleable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Paket Daging')),
                 Tables\Columns\TextColumn::make('jml_paket_daging')
                     ->label('Paket Daging')
                     ->numeric()
                     ->sortable()
                     ->toggleable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Penerima')),
                 Tables\Columns\TextColumn::make('jml_penerima')
                     ->label('Penerima')
                     ->numeric()
@@ -111,7 +111,7 @@ class LaporanKurbanResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
+                    ->color(fn(?string $state): string => match ($state) {
                         'draft' => 'gray',
                         'submitted' => 'info',
                         'verified' => 'success',
@@ -153,18 +153,18 @@ class LaporanKurbanResource extends Resource
                     }),
                 SelectFilter::make('status')
                     ->label('Status')
-                    ->options(fn () => LaporanKurban::distinct()->pluck('status', 'status')->filter()),
+                    ->options(fn() => LaporanKurban::distinct()->pluck('status', 'status')->filter()),
                 SelectFilter::make('district')
                     ->label('Kecamatan')
-                    ->options(fn () => District::orderBy('name')->pluck('name', 'id'))
+                    ->options(fn() => District::orderBy('name')->pluck('name', 'id'))
                     ->searchable()
                     ->query(
-                        fn (Builder $query, array $data): Builder => $query->when(
+                        fn(Builder $query, array $data): Builder => $query->when(
                             $data['value'] ?? null,
-                            fn (Builder $q, $districtId) => $q->whereHas('unit', fn ($q) => $q->where('district_id', $districtId))
+                            fn(Builder $q, $districtId) => $q->whereHas('unit', fn($q) => $q->where('district_id', $districtId))
                         )
                     )
-                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin()),
+                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin()),
                 SelectFilter::make('village')
                     ->label('Desa')
                     ->options(function () {
@@ -177,12 +177,12 @@ class LaporanKurbanResource extends Resource
                     })
                     ->searchable()
                     ->query(
-                        fn (Builder $query, array $data): Builder => $query->when(
+                        fn(Builder $query, array $data): Builder => $query->when(
                             $data['value'] ?? null,
-                            fn (Builder $q, $villageId) => $q->whereHas('unit', fn ($q) => $q->where('village_id', $villageId))
+                            fn(Builder $q, $villageId) => $q->whereHas('unit', fn($q) => $q->where('village_id', $villageId))
                         )
                     )
-                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
+                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
                 SelectFilter::make('unit_id')
                     ->label('Unit UPZ')
                     ->options(function () {
@@ -194,7 +194,7 @@ class LaporanKurbanResource extends Resource
                         return UnitZis::pluck('unit_name', 'id');
                     })
                     ->searchable()
-                    ->visible(fn () => ! User::currentIsUpzDesa()),
+                    ->visible(fn() => ! User::currentIsUpzDesa()),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -230,7 +230,7 @@ class LaporanKurbanResource extends Resource
                                     ->boolean(),
                                 Infolists\Components\TextEntry::make('alasan_koreksi')
                                     ->label('Alasan Koreksi')
-                                    ->visible(fn ($record) => $record && $record->shohibul_dikoreksi),
+                                    ->visible(fn($record) => $record && $record->shohibul_dikoreksi),
                                 Infolists\Components\TextEntry::make('jml_paket_daging')->label('Jumlah Paket Daging'),
                                 Infolists\Components\TextEntry::make('jml_penerima')->label('Jumlah Penerima'),
                                 Infolists\Components\TextEntry::make('kelompok_penerima')
@@ -244,7 +244,7 @@ class LaporanKurbanResource extends Resource
                                 Infolists\Components\TextEntry::make('status')
                                     ->label('Status')
                                     ->badge()
-                                    ->color(fn (?string $state): string => match ($state) {
+                                    ->color(fn(?string $state): string => match ($state) {
                                         'draft' => 'gray',
                                         'submitted' => 'info',
                                         'verified' => 'success',
