@@ -111,6 +111,8 @@ class LaporanKurbanController extends Controller
             return (new LaporanKurbanResource($laporan->load(['unit', 'dokumentasi'])))
                 ->additional(['success' => true, 'message' => 'Laporan berhasil dikirim'])
                 ->response();
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            throw $e;
         } catch (\RuntimeException $e) {
             return $this->error($e->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
@@ -139,6 +141,8 @@ class LaporanKurbanController extends Controller
                 'data' => null,
                 'message' => 'Laporan berhasil dihapus',
             ]);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            throw $e;
         } catch (\RuntimeException $e) {
             return $this->error($e->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }

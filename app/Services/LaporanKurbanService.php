@@ -15,7 +15,7 @@ class LaporanKurbanService
             ->where('tahun_hijriah', $data['tahun_hijriah'])
             ->first();
 
-        if ($existing && $existing->status === 'diverifikasi') {
+        if ($existing && $existing->status === 'verified') {
             throw new \RuntimeException('Laporan untuk tahun ini sudah diverifikasi');
         }
 
@@ -55,7 +55,7 @@ class LaporanKurbanService
         }
 
         $laporan->update([
-            'status' => 'terkirim',
+            'status' => 'submitted',
             'submitted_at' => now(),
             'no_referensi' => $this->generateNoReferensi($laporan),
         ]);
@@ -105,7 +105,6 @@ class LaporanKurbanService
             if (is_numeric($lastPart)) {
                 $seq = (int) $lastPart + 1;
             }
-        }
         }
 
         return sprintf('KRB-%s-%s-%s', $laporan->tahun_hijriah, $noRegister, str_pad((string) $seq, 4, '0', STR_PAD_LEFT));

@@ -29,6 +29,11 @@ class LaporanKurban extends Model
         'jml_penerima',
         'kelompok_penerima',
         'catatan',
+        'status',
+        'no_referensi',
+        'submitted_at',
+        'verified_at',
+        'verified_by',
     ];
 
     protected $casts = [
