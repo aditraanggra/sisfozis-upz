@@ -89,25 +89,25 @@ class LaporanKurbanResource extends Resource
                     ->label('Total Ekor')
                     ->numeric()
                     ->sortable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Hewan')),
                 Tables\Columns\TextColumn::make('total_shohibul')
                     ->label('Shohibul')
                     ->numeric()
                     ->sortable()
                     ->toggleable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Paket Daging')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Mudhohi')),
                 Tables\Columns\TextColumn::make('jml_paket_daging')
                     ->label('Paket Daging')
                     ->numeric()
                     ->sortable()
                     ->toggleable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Penerima')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Paket Daging')),
                 Tables\Columns\TextColumn::make('jml_penerima')
                     ->label('Penerima')
                     ->numeric()
                     ->sortable()
                     ->toggleable()
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Penerima')),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
