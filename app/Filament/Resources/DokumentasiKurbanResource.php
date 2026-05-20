@@ -81,7 +81,7 @@ class DokumentasiKurbanResource extends Resource
                     ->options(fn () => DokumentasiKurban::distinct()->pluck('jenis', 'jenis')->filter()),
                 SelectFilter::make('laporan_kurban_id')
                     ->label('Laporan Kurban')
-                    ->options(fn () => LaporanKurban::join('units', 'units.id', 'laporan_kurbans.unit_id')->pluck('units.unit_name', 'laporan_kurbans.id'))
+                    ->options(fn () => LaporanKurban::join('unit_zis', 'unit_zis.id', 'laporan_kurbans.unit_id')->pluck('unit_zis.unit_name', 'laporan_kurbans.id'))
                     ->searchable(),
             ])
             ->actions([
