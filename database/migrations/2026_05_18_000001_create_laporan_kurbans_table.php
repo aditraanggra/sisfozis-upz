@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('laporan_kurbans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('unit_id')->constrained('unit_zis')->cascadeOnDelete();
-            +$table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('tahun_hijriah', 4);
             $table->year('tahun_masehi');
             $table->unsignedSmallInteger('jml_sapi')->default(0);
