@@ -9,7 +9,7 @@ class FidyahRequest extends BaseTransactionRequest
         return array_merge(parent::baseRules(), [
             'name' => 'required|string|max:255',
             'total_day' => 'required|integer|min:1',
-            'amount' => 'required|integer|min:0'
+            'amount' => 'required|integer|min:0',
         ]);
     }
 }

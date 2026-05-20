@@ -85,6 +85,7 @@ class UpdateRekapSetor implements ShouldQueue
                 default:
                     Log::error("Unsupported period '{$this->period}' for UpdateRekapSetor job");
                     $this->fail(new \InvalidArgumentException("Unsupported period '{$this->period}'"));
+
                     return;
             }
 

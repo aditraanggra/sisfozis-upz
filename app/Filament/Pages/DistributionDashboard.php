@@ -3,8 +3,8 @@
 namespace App\Filament\Pages;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
@@ -44,11 +44,11 @@ class DistributionDashboard extends \Filament\Pages\Dashboard
                             ->live(),
                         DatePicker::make('startDate')
                             ->label('Tanggal Mulai')
-                            ->maxDate(fn(Get $get) => $get('endDate') ?: now())
+                            ->maxDate(fn (Get $get) => $get('endDate') ?: now())
                             ->live(),
                         DatePicker::make('endDate')
                             ->label('Tanggal Akhir')
-                            ->minDate(fn(Get $get) => $get('startDate'))
+                            ->minDate(fn (Get $get) => $get('startDate'))
                             ->maxDate(now())
                             ->live(),
                     ])

@@ -15,22 +15,22 @@ class ListInfakTerikats extends ListRecords
     {
         return [
             \EightyNine\ExcelImport\ExcelImportAction::make()
-                ->visible(fn() => User::currentIsSuperAdmin())
+                ->visible(fn () => User::currentIsSuperAdmin())
                 ->sampleExcel(
                     sampleData: [
                         [
-                            'unit_id' => 1, 
-                            'program_id' => 1, 
-                            'trx_date' => '2025-03-28', 
-                            'munfiq_name' => 'Nama Munfiq', 
-                            'amount' => 500000, 
-                            'desc' => 'Contoh Infak Terikat'
+                            'unit_id' => 1,
+                            'program_id' => 1,
+                            'trx_date' => '2025-03-28',
+                            'munfiq_name' => 'Nama Munfiq',
+                            'amount' => 500000,
+                            'desc' => 'Contoh Infak Terikat',
                         ],
                     ],
                     fileName: 'template_infak_terikat.xlsx',
                     sampleButtonLabel: 'Download Sample',
                 ),
-            //Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
         ];
     }
 }

@@ -17,7 +17,7 @@ class ZfPaymentTypeController extends Controller
         $query = ZfPaymentType::query();
 
         // Default: hanya tampilkan yang aktif, kecuali ada param all=true
-        if (!$request->boolean('all')) {
+        if (! $request->boolean('all')) {
             $query->active();
         }
 
@@ -34,9 +34,9 @@ class ZfPaymentTypeController extends Controller
     public function store(ZfPaymentTypeRequest $request)
     {
         // Check admin access
-        if (!User::currentIsAdmin()) {
+        if (! User::currentIsAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -55,9 +55,9 @@ class ZfPaymentTypeController extends Controller
 
     public function update(ZfPaymentTypeRequest $request, ZfPaymentType $zfPaymentType)
     {
-        if (!User::currentIsAdmin()) {
+        if (! User::currentIsAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -69,9 +69,9 @@ class ZfPaymentTypeController extends Controller
 
     public function destroy(ZfPaymentType $zfPaymentType)
     {
-        if (!User::currentIsAdmin()) {
+        if (! User::currentIsAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], Response::HTTP_FORBIDDEN);
         }
 

@@ -4,24 +4,18 @@ namespace App\Filament\Resources;
 
 use App\Filament\Exports\VillageExporter;
 use App\Filament\Resources\VillageResource\Pages;
-use App\Filament\Resources\VillageResource\RelationManagers;
+use App\Models\User;
 use App\Models\Village;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Model;
-
-use Barryvdh\DomPDF\Facade\Pdf;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Enums\ActionsPosition;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class VillageResource extends Resource
 {
@@ -66,10 +60,11 @@ class VillageResource extends Resource
                     ->label('Total ZIS')
                     ->getStateUsing(function ($record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
                         $rekap = $record->rekapZis
                             ->where('period', 'tahunan')
                             ->where('period_date', $periodDate);
+
                         return $rekap->sum('total_zf_amount') +
                             $rekap->sum('total_zm_amount') +
                             $rekap->sum('total_ifs_amount');
@@ -80,7 +75,8 @@ class VillageResource extends Resource
                     ->label('Zakat Fitrah (Beras)')
                     ->getStateUsing(function ($record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return $record->rekapZis
                             ->where('period', 'tahunan')
                             ->where('period_date', $periodDate)
@@ -92,7 +88,8 @@ class VillageResource extends Resource
                     ->label('Zakat Fitrah (Uang)')
                     ->getStateUsing(function ($record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return $record->rekapZis
                             ->where('period', 'tahunan')
                             ->where('period_date', $periodDate)
@@ -104,7 +101,8 @@ class VillageResource extends Resource
                     ->label('Zakat Mal')
                     ->getStateUsing(function ($record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return $record->rekapZis
                             ->where('period', 'tahunan')
                             ->where('period_date', $periodDate)
@@ -116,7 +114,8 @@ class VillageResource extends Resource
                     ->label('Infak Sedekah')
                     ->getStateUsing(function ($record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return $record->rekapZis
                             ->where('period', 'tahunan')
                             ->where('period_date', $periodDate)
@@ -128,7 +127,8 @@ class VillageResource extends Resource
                     ->label('Muzakki ZF')
                     ->getStateUsing(function ($record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return $record->rekapZis
                             ->where('period', 'tahunan')
                             ->where('period_date', $periodDate)
@@ -140,7 +140,8 @@ class VillageResource extends Resource
                     ->label('Muzakki ZM')
                     ->getStateUsing(function ($record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return $record->rekapZis
                             ->where('period', 'tahunan')
                             ->where('period_date', $periodDate)
@@ -152,7 +153,8 @@ class VillageResource extends Resource
                     ->label('Munfiq')
                     ->getStateUsing(function ($record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return $record->rekapZis
                             ->where('period', 'tahunan')
                             ->where('period_date', $periodDate)
@@ -165,8 +167,8 @@ class VillageResource extends Resource
                     ->label('Tahun')
                     ->options(
                         collect(range(0, 4))
-                            ->mapWithKeys(fn($i) => [
-                                now()->subYears($i)->format('Y') => now()->subYears($i)->format('Y')
+                            ->mapWithKeys(fn ($i) => [
+                                now()->subYears($i)->format('Y') => now()->subYears($i)->format('Y'),
                             ])
                             ->toArray()
                     )
@@ -180,7 +182,7 @@ class VillageResource extends Resource
                         ->label('Rekap DKM')
                         ->color('success')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->url(fn(Model $record, $livewire) => route('village.pdf', $record) . '?' . http_build_query([
+                        ->url(fn (Model $record, $livewire) => route('village.pdf', $record).'?'.http_build_query([
                             'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
                         ]))
                         ->openUrlInNewTab(),
@@ -189,7 +191,7 @@ class VillageResource extends Resource
                         ->label('Rekap Hak OP')
                         ->color('info')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->url(fn(Model $record, $livewire) => route('op.pdf', $record) . '?' . http_build_query([
+                        ->url(fn (Model $record, $livewire) => route('op.pdf', $record).'?'.http_build_query([
                             'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
                         ]))
                         ->openUrlInNewTab(),
@@ -198,13 +200,13 @@ class VillageResource extends Resource
                         ->label('Cetak LPZ')
                         ->color('warning')
                         ->icon('heroicon-o-document-chart-bar')
-                        ->url(fn(Model $record, $livewire) => route('village.lpz.pdf', $record) . '?' . http_build_query([
+                        ->url(fn (Model $record, $livewire) => route('village.lpz.pdf', $record).'?'.http_build_query([
                             'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
                         ]))
-                        ->openUrlInNewTab()
+                        ->openUrlInNewTab(),
                 ])
                     ->icon('heroicon-o-cloud-arrow-down')
-                    ->size('lg')
+                    ->size('lg'),
 
             ], position: ActionsPosition::BeforeColumns)
             ->groups([
@@ -219,8 +221,8 @@ class VillageResource extends Resource
                 Tables\Actions\ExportAction::make()
                     ->exporter(VillageExporter::class)
                     ->options(fn ($livewire) => [
-                        'tahun' => $livewire->tableFilters['tahun']['value'] ?? date('Y')
-                    ])
+                        'tahun' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
+                    ]),
             ])
             ->recordUrl(null)
             ->defaultPaginationPageOption(25);
@@ -251,7 +253,7 @@ class VillageResource extends Resource
     {
         return view('filament.resources.Village-resource.pages.view-Village', [
             'record' => $record,
-            'rekapZis' => $record->rekapZis
+            'rekapZis' => $record->rekapZis,
         ]);
     }
 

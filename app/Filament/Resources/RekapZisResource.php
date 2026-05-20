@@ -3,18 +3,15 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RekapZisResource\Pages;
-use App\Filament\Resources\RekapZisResource\RelationManagers;
 use App\Models\RekapZis;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use OpenSpout\Writer\AutoFilter;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class RekapZisResource extends Resource
 {
@@ -131,11 +128,11 @@ class RekapZisResource extends Resource
                     ->default(now()->format('Y-01-01'))
                     ->options(
                         collect(range(0, 2))
-                            ->mapWithKeys(fn($year) => [
-                                now()->subYears($year)->format('Y-01-01') => now()->subYears($year)->format('Y')
+                            ->mapWithKeys(fn ($year) => [
+                                now()->subYears($year)->format('Y-01-01') => now()->subYears($year)->format('Y'),
                             ])
                             ->toArray()
-                    )
+                    ),
             ])
             ->defaultSort('district.name', 'asc')
             /* ->groups([

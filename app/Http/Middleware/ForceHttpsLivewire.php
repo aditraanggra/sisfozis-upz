@@ -16,7 +16,7 @@ class ForceHttpsLivewire
         }
 
         // Cek apakah request bukan HTTPS atau tidak melalui proxy HTTPS
-        if (!$request->secure() && $request->header('X-Forwarded-Proto') !== 'https') {
+        if (! $request->secure() && $request->header('X-Forwarded-Proto') !== 'https') {
             return redirect()->secure($request->getRequestUri());
         }
 

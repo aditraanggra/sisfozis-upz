@@ -6,10 +6,10 @@ use App\Services\RekapUnitService;
 
 /**
  * Command to rebuild Unit recapitulation data.
- * 
+ *
  * Extends BaseRebuildCommand to leverage standardized interface and
  * common functionality for all rebuild operations.
- * 
+ *
  * @see Requirements 5.1
  */
 class RebuildRekapUnit extends BaseRebuildCommand
@@ -36,15 +36,11 @@ class RebuildRekapUnit extends BaseRebuildCommand
 
     /**
      * The fully qualified class name of the rekap service to use.
-     *
-     * @var string
      */
     protected string $serviceClass = RekapUnitService::class;
 
     /**
      * Human-readable name of the rekap type for display purposes.
-     *
-     * @var string
      */
     protected string $rekapType = 'Rekapitulasi Unit';
 }

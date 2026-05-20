@@ -7,23 +7,25 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UnitZisResource extends JsonResource
 {
-    //define properti
+    // define properti
     public $status;
+
     public $message;
+
     public $resource;
 
     /**
      * __construct
      *
-     * @param  mixed $status
-     * @param  mixed $message
-     * @param  mixed $resource
+     * @param  mixed  $status
+     * @param  mixed  $message
+     * @param  mixed  $resource
      * @return void
      */
     public function __construct($status, $message, $resource)
     {
         parent::__construct($resource);
-        $this->status  = $status;
+        $this->status = $status;
         $this->message = $message;
     }
 
@@ -37,26 +39,26 @@ class UnitZisResource extends JsonResource
         // Jika resource adalah collection (untuk index)
         if ($this->resource instanceof \Illuminate\Database\Eloquent\Collection) {
             return [
-                'success'   => $this->status,
-                'message'   => $this->message,
-                'data'      => $this->resource->map(function ($item) {
+                'success' => $this->status,
+                'message' => $this->message,
+                'data' => $this->resource->map(function ($item) {
                     return $this->formatUnitZisData($item);
-                })
+                }),
             ];
         }
 
         // Jika resource adalah single model (untuk show, store)
         return [
-            'success'   => $this->status,
-            'message'   => $this->message,
-            'data'      => $this->formatUnitZisData($this->resource)
+            'success' => $this->status,
+            'message' => $this->message,
+            'data' => $this->formatUnitZisData($this->resource),
         ];
     }
 
     /**
      * Format Unit ZIS data to include village and district names
-     * 
-     * @param  mixed $unitZis
+     *
+     * @param  mixed  $unitZis
      * @return array
      */
     protected function formatUnitZisData($unitZis)

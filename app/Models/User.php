@@ -3,19 +3,18 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
-use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -93,7 +92,7 @@ class User extends Authenticatable implements FilamentUser
             'tim_sisfo',
             'monitoring',
             'upz_kecamatan',
-            'upz_desa'
+            'upz_desa',
         ]);
     }
 
@@ -103,6 +102,7 @@ class User extends Authenticatable implements FilamentUser
     public static function current(): ?self
     {
         $user = Auth::user();
+
         return $user instanceof self ? $user : null;
     }
 
@@ -112,6 +112,7 @@ class User extends Authenticatable implements FilamentUser
     public static function currentIsSuperAdmin(): bool
     {
         $user = self::current();
+
         return $user ? $user->isSuperAdmin() : false;
     }
 
@@ -121,6 +122,7 @@ class User extends Authenticatable implements FilamentUser
     public static function currentIsTimSisfo(): bool
     {
         $user = self::current();
+
         return $user ? $user->isTimSisfo() : false;
     }
 
@@ -130,6 +132,7 @@ class User extends Authenticatable implements FilamentUser
     public static function currentIsAdmin(): bool
     {
         $user = self::current();
+
         return $user ? $user->isAdmin() : false;
     }
 
@@ -139,6 +142,7 @@ class User extends Authenticatable implements FilamentUser
     public static function currentIsUpzKecamatan(): bool
     {
         $user = self::current();
+
         return $user ? $user->isUpzKecamatan() : false;
     }
 
@@ -148,6 +152,7 @@ class User extends Authenticatable implements FilamentUser
     public static function currentIsUpzDesa(): bool
     {
         $user = self::current();
+
         return $user ? $user->isUpzDesa() : false;
     }
 
@@ -159,5 +164,10 @@ class User extends Authenticatable implements FilamentUser
     public function district()
     {
         return $this->belongsTo(District::class, 'district_id');
+    }
+
+    public function laporanKurbans()
+    {
+        return $this->hasMany(LaporanKurban::class, 'user_id');
     }
 }

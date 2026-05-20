@@ -8,7 +8,7 @@ use App\Services\AllocationConfigService;
  */
 describe('calculateHakAmil', function () {
     it('calculates hak_amil correctly', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // 70000 kelola * 12.5% amil = 8750
         $hakAmil = $service->calculateHakAmil('70000', '12.5');
@@ -16,7 +16,7 @@ describe('calculateHakAmil', function () {
     });
 
     it('calculates hak_amil with different amil percentages', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // 70000 kelola * 20% amil = 14000
         $hakAmil = $service->calculateHakAmil('70000', '20');
@@ -24,14 +24,14 @@ describe('calculateHakAmil', function () {
     });
 
     it('returns zero when kelola is zero', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         $hakAmil = $service->calculateHakAmil('0', '12.5');
         expect($hakAmil)->toBe('0');
     });
 
     it('handles decimal kelola amounts', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // 70000.50 kelola * 12.5% amil = 8750.0625 -> 8750.06
         $hakAmil = $service->calculateHakAmil('70000.50', '12.5');
@@ -39,7 +39,7 @@ describe('calculateHakAmil', function () {
     });
 
     it('respects custom scale parameter', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // With scale 4
         $hakAmil = $service->calculateHakAmil('70000.50', '12.5', 4);
@@ -47,7 +47,7 @@ describe('calculateHakAmil', function () {
     });
 
     it('handles large amounts correctly', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // 1000000000 kelola * 12.5% amil = 125000000
         $hakAmil = $service->calculateHakAmil('1000000000', '12.5');
@@ -57,7 +57,7 @@ describe('calculateHakAmil', function () {
 
 describe('calculatePenyaluran', function () {
     it('calculates penyaluran correctly', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // 70000 kelola - 8750 hak_amil = 61250
         $penyaluran = $service->calculatePenyaluran('70000', '8750');
@@ -65,28 +65,28 @@ describe('calculatePenyaluran', function () {
     });
 
     it('returns zero when kelola is zero', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         $penyaluran = $service->calculatePenyaluran('0', '0');
         expect($penyaluran)->toBe('0');
     });
 
     it('handles decimal amounts', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         $penyaluran = $service->calculatePenyaluran('70000.50', '8750.06');
         expect($penyaluran)->toBe('61250.44');
     });
 
     it('respects custom scale parameter', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         $penyaluran = $service->calculatePenyaluran('70000.5000', '8750.0625', 4);
         expect($penyaluran)->toBe('61250.4375');
     });
 
     it('handles large amounts correctly', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         $penyaluran = $service->calculatePenyaluran('1000000000', '125000000');
         expect($penyaluran)->toBe('875000000.00');
@@ -95,7 +95,7 @@ describe('calculatePenyaluran', function () {
 
 describe('zero kelola case (100% setor) - pure calculations', function () {
     it('returns zero for hak_amil when kelola is zero', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // Even with non-zero amil percentage, zero kelola means zero hak_amil
         $hakAmil = $service->calculateHakAmil('0', '12.5');
@@ -103,14 +103,14 @@ describe('zero kelola case (100% setor) - pure calculations', function () {
     });
 
     it('returns zero for penyaluran when kelola is zero', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         $penyaluran = $service->calculatePenyaluran('0', '0');
         expect($penyaluran)->toBe('0');
     });
 
     it('handles complete zero kelola workflow', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // Simulate 100% setor scenario
         $totalAmount = '100000';

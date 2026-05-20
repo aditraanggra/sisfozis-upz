@@ -2,34 +2,36 @@
 
 namespace App\Services;
 
-use App\Models\Zf;
-use App\Models\Zm;
 use App\Models\Ifs;
 use App\Models\RekapZis;
 use App\Models\UnitZis;
+use App\Models\Zf;
+use App\Models\Zm;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Service for rebuilding ZIS (Zakat, Infak, Sedekah) recapitulation data.
- * 
+ *
  * Extends BaseRekapService to leverage chunked processing and bulk upsert
  * for optimized performance when processing large datasets.
  */
 class RekapZisService extends BaseRekapService
 {
     protected string $rekapTable = 'rekap_zis';
+
     protected string $periodColumn = 'period';
+
     protected string $periodDateColumn = 'period_date';
 
     /**
      * Rebuild rekap for given parameters using batch processing
      *
-     * @param string $unitId Unit ID or 'all' for all units
-     * @param string $periode Period type: harian, bulanan, tahunan, or all
-     * @param Carbon|null $startDate Start date for rebuild
-     * @param Carbon|null $endDate End date for rebuild
+     * @param  string  $unitId  Unit ID or 'all' for all units
+     * @param  string  $periode  Period type: harian, bulanan, tahunan, or all
+     * @param  Carbon|null  $startDate  Start date for rebuild
+     * @param  Carbon|null  $endDate  End date for rebuild
      * @return array Results with 'processed' count and 'errors' array
      */
     public function rebuild(
@@ -52,11 +54,6 @@ class RekapZisService extends BaseRekapService
 
     /**
      * Rebuild rekap for a specific unit
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      */
     protected function rebuildForUnit(
         int $unitId,
@@ -78,18 +75,13 @@ class RekapZisService extends BaseRekapService
             $records = array_merge($records, $this->buildYearlyRecords($unitId, $startDate, $endDate));
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             $this->bulkUpsert($records);
         }
     }
 
     /**
      * Build daily records using aggregated GROUP BY query
-     *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function buildDailyRecords(int $unitId, Carbon $startDate, Carbon $endDate): array
     {
@@ -115,11 +107,6 @@ class RekapZisService extends BaseRekapService
 
     /**
      * Build monthly records using aggregated GROUP BY query
-     *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function buildMonthlyRecords(int $unitId, Carbon $startDate, Carbon $endDate): array
     {
@@ -145,11 +132,6 @@ class RekapZisService extends BaseRekapService
 
     /**
      * Build yearly records using aggregated GROUP BY query
-     *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function buildYearlyRecords(int $unitId, Carbon $startDate, Carbon $endDate): array
     {
@@ -175,14 +157,10 @@ class RekapZisService extends BaseRekapService
 
     /**
      * Get aggregated data for a unit using GROUP BY queries
-     * 
+     *
      * Uses database-level aggregation instead of PHP loops for better performance.
      *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @param string $groupBy Grouping type: daily, monthly, yearly
-     * @return array
+     * @param  string  $groupBy  Grouping type: daily, monthly, yearly
      */
     protected function getAggregatedData(
         int $unitId,
@@ -251,16 +229,12 @@ class RekapZisService extends BaseRekapService
 
     /**
      * Get the date format expression for GROUP BY based on database driver
-     *
-     * @param string $groupBy
-     * @param string $driver
-     * @return string
      */
     protected function getDateFormatExpression(string $groupBy, string $driver): string
     {
         if ($driver === 'pgsql') {
             return match ($groupBy) {
-                'daily' => "DATE(trx_date)",
+                'daily' => 'DATE(trx_date)',
                 'monthly' => "DATE_TRUNC('month', trx_date)",
                 'yearly' => "DATE_TRUNC('year', trx_date)",
             };
@@ -268,7 +242,7 @@ class RekapZisService extends BaseRekapService
 
         // MySQL/MariaDB
         return match ($groupBy) {
-            'daily' => "DATE(trx_date)",
+            'daily' => 'DATE(trx_date)',
             'monthly' => "DATE_FORMAT(trx_date, '%Y-%m-01')",
             'yearly' => "DATE_FORMAT(trx_date, '%Y-01-01')",
         };
@@ -276,10 +250,6 @@ class RekapZisService extends BaseRekapService
 
     /**
      * Get the period date expression for SELECT based on database driver
-     *
-     * @param string $groupBy
-     * @param string $driver
-     * @return string
      */
     protected function getPeriodDateExpression(string $groupBy, string $driver): string
     {
@@ -306,12 +276,12 @@ class RekapZisService extends BaseRekapService
 
     /**
      * Update rekapitulasi harian untuk tanggal dan unit tertentu
-     * 
+     *
      * This method is kept for backward compatibility with observers.
      * It does NOT trigger periodic recalculation to avoid redundant processing.
-     * 
-     * @param string|Carbon $date
-     * @param int $unitId
+     *
+     * @param  string|Carbon  $date
+     * @param  int  $unitId
      * @return RekapZis
      */
     public function updateDailyRekapitulasi($date, $unitId)
@@ -358,7 +328,7 @@ class RekapZisService extends BaseRekapService
                     ->where('period_date', $startDate->format('Y-m-d'))
                     ->delete();
 
-                return new RekapZis();
+                return new RekapZis;
             }
 
             // Simpan atau update rekapitulasi
@@ -385,17 +355,17 @@ class RekapZisService extends BaseRekapService
 
             return $rekapitulasi;
         } catch (\Exception $e) {
-            Log::error('Error updating rekapitulasi: ' . $e->getMessage());
+            Log::error('Error updating rekapitulasi: '.$e->getMessage());
             throw $e;
         }
     }
 
     /**
      * Update rekapitulasi bulanan
-     * 
-     * @param int $month
-     * @param int $year
-     * @param int $unitId
+     *
+     * @param  int  $month
+     * @param  int  $year
+     * @param  int  $unitId
      * @return RekapZis
      */
     public function updateMonthlyRekapitulasi($month, $year, $unitId)
@@ -441,7 +411,7 @@ class RekapZisService extends BaseRekapService
                     ->where('period_date', $startDate->format('Y-m-01'))
                     ->delete();
 
-                return new RekapZis();
+                return new RekapZis;
             }
 
             // Simpan atau update rekapitulasi bulanan
@@ -464,16 +434,16 @@ class RekapZisService extends BaseRekapService
 
             return $rekapitulasi;
         } catch (\Exception $e) {
-            Log::error('Error updating monthly rekapitulasi: ' . $e->getMessage());
+            Log::error('Error updating monthly rekapitulasi: '.$e->getMessage());
             throw $e;
         }
     }
 
     /**
      * Update rekapitulasi tahunan
-     * 
-     * @param int $year
-     * @param int $unitId
+     *
+     * @param  int  $year
+     * @param  int  $unitId
      * @return RekapZis
      */
     public function updateYearlyRekapitulasi($year, $unitId)
@@ -519,7 +489,7 @@ class RekapZisService extends BaseRekapService
                     ->where('period_date', $startDate->format('Y-01-01'))
                     ->delete();
 
-                return new RekapZis();
+                return new RekapZis;
             }
 
             // Simpan atau update rekapitulasi tahunan
@@ -542,7 +512,7 @@ class RekapZisService extends BaseRekapService
 
             return $rekapitulasi;
         } catch (\Exception $e) {
-            Log::error('Error updating yearly rekapitulasi: ' . $e->getMessage());
+            Log::error('Error updating yearly rekapitulasi: '.$e->getMessage());
             throw $e;
         }
     }

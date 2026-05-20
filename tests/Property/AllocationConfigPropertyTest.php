@@ -353,7 +353,7 @@ describe('Property 3: Year-Based Rule Resolution', function () {
         $allocation = $service->getAllocation($zisType, "{$transactionYear}-06-15");
 
         // Find the expected rule: highest effective_year <= transactionYear
-        $applicableRules = array_filter($rules, fn($r) => $r['effective_year'] <= $transactionYear);
+        $applicableRules = array_filter($rules, fn ($r) => $r['effective_year'] <= $transactionYear);
 
         if (empty($applicableRules)) {
             // Should fall back to defaults
@@ -361,7 +361,7 @@ describe('Property 3: Year-Based Rule Resolution', function () {
             $expectedKelola = (string) AllocationConfig::DEFAULT_KELOLA;
         } else {
             // Find the rule with the highest effective_year
-            usort($applicableRules, fn($a, $b) => $b['effective_year'] <=> $a['effective_year']);
+            usort($applicableRules, fn ($a, $b) => $b['effective_year'] <=> $a['effective_year']);
             $expectedRule = $applicableRules[0];
             $expectedSetor = $expectedRule['setor_percentage'];
             $expectedKelola = $expectedRule['kelola_percentage'];
@@ -418,7 +418,7 @@ describe('Property 4: Penyaluran Calculation', function () {
  */
 describe('Property 5: Allocation Calculation from Kelola', function () {
     it('calculates hak_amil and alokasi_pendis correctly from kelola', function (string $kelolaAmount, string $amilPercentage) {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         $hakAmil = $service->calculateHakAmil($kelolaAmount, $amilPercentage);
         $alokasiPendis = $service->calculatePenyaluran($kelolaAmount, $hakAmil);
@@ -444,7 +444,7 @@ describe('Property 5: Allocation Calculation from Kelola', function () {
     })->with(generateKelolaAndAmilPairs(100));
 
     it('returns zero for both when kelola is exactly zero', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // Test with various amil percentages when kelola is zero
         $amilPercentages = ['0', '12.5', '20', '50', '100'];

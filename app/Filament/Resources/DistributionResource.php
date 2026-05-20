@@ -3,8 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DistributionResource\Pages;
-use App\Models\District;
 use App\Models\Distribution;
+use App\Models\District;
 use App\Models\UnitZis;
 use App\Models\User;
 use App\Models\Village;
@@ -126,34 +126,32 @@ class DistributionResource extends Resource
                         for ($year = $currentYear; $year >= 2020; $year--) {
                             $years[$year] = (string) $year;
                         }
+
                         return $years;
                     })
                     ->default(now()->year)
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when($data['value'] ?? null, fn(Builder $q, $year) => $q->whereYear('trx_date', $year))
+                        fn (Builder $query, array $data): Builder => $query->when($data['value'] ?? null, fn (Builder $q, $year) => $q->whereYear('trx_date', $year))
                     ),
                 SelectFilter::make('fund_type')
                     ->label('Jenis Dana')
-                    ->options(fn() => Distribution::distinct()->pluck('fund_type', 'fund_type')->filter()),
+                    ->options(fn () => Distribution::distinct()->pluck('fund_type', 'fund_type')->filter()),
                 SelectFilter::make('asnaf')
                     ->label('Asnaf')
-                    ->options(fn() => Distribution::distinct()->pluck('asnaf', 'asnaf')->filter()),
+                    ->options(fn () => Distribution::distinct()->pluck('asnaf', 'asnaf')->filter()),
                 SelectFilter::make('program')
                     ->label('Program')
-                    ->options(fn() => Distribution::distinct()->pluck('program', 'program')->filter()),
+                    ->options(fn () => Distribution::distinct()->pluck('program', 'program')->filter()),
                 SelectFilter::make('district')
                     ->label('Kecamatan')
-                    ->options(fn() => District::pluck('name', 'id'))
+                    ->options(fn () => District::pluck('name', 'id'))
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when(
+                        fn (Builder $query, array $data): Builder => $query->when(
                             $data['value'] ?? null,
-                            fn(Builder $q, $districtId) =>
-                            $q->whereHas('unit', fn($q) => $q->where('district_id', $districtId))
+                            fn (Builder $q, $districtId) => $q->whereHas('unit', fn ($q) => $q->where('district_id', $districtId))
                         )
                     )
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin()),
                 SelectFilter::make('village')
                     ->label('Desa')
                     ->options(function () {
@@ -161,18 +159,17 @@ class DistributionResource extends Resource
                         if ($user && $user->isUpzKecamatan() && $user->district_id) {
                             return Village::where('district_id', $user->district_id)->pluck('name', 'id');
                         }
+
                         return Village::pluck('name', 'id');
                     })
                     ->searchable()
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when(
+                        fn (Builder $query, array $data): Builder => $query->when(
                             $data['value'] ?? null,
-                            fn(Builder $q, $villageId) =>
-                            $q->whereHas('unit', fn($q) => $q->where('village_id', $villageId))
+                            fn (Builder $q, $villageId) => $q->whereHas('unit', fn ($q) => $q->where('village_id', $villageId))
                         )
                     )
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
                 SelectFilter::make('unit_id')
                     ->label('Unit UPZ')
                     ->options(function () {
@@ -183,10 +180,11 @@ class DistributionResource extends Resource
                         if ($user && $user->isUpzDesa() && $user->village_id) {
                             return UnitZis::where('village_id', $user->village_id)->pluck('unit_name', 'id');
                         }
+
                         return UnitZis::pluck('unit_name', 'id');
                     })
                     ->searchable()
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan() || User::currentIsUpzDesa()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan() || User::currentIsUpzDesa()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

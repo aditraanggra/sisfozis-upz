@@ -9,7 +9,7 @@ class FidyahResource extends BaseTransactionResource
         return array_merge(parent::getBaseArray(), [
             'name' => $this->name,
             'total_day' => $this->total_day,
-            'amount' => $this->amount
+            'amount' => $this->amount,
         ]);
     }
 }

@@ -50,11 +50,11 @@ class ZfPaymentTypeResource extends Resource
                     ->label('Jumlah Beras (Kg)')
                     ->numeric()
                     ->step(0.01)
-                    ->visible(fn($get) => $get('type') === 'beras'),
+                    ->visible(fn ($get) => $get('type') === 'beras'),
                 Forms\Components\TextInput::make('money_amount')
                     ->label('Jumlah Uang (Rp)')
                     ->numeric()
-                    ->visible(fn($get) => $get('type') === 'uang'),
+                    ->visible(fn ($get) => $get('type') === 'uang'),
                 Forms\Components\TextInput::make('sk_reference')
                     ->label('Referensi SK')
                     ->maxLength(255),
@@ -75,7 +75,7 @@ class ZfPaymentTypeResource extends Resource
                 Tables\Columns\TextColumn::make('type')
                     ->label('Tipe')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'beras' => 'success',
                         'uang' => 'info',
                         default => 'gray',

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -25,9 +25,9 @@ return new class extends Migration
 
         // Add PostgreSQL check constraints
         DB::statement("ALTER TABLE allocation_configs ADD CONSTRAINT chk_zis_type CHECK (zis_type IN ('zf', 'zm', 'ifs'))");
-        DB::statement("ALTER TABLE allocation_configs ADD CONSTRAINT chk_effective_year CHECK (effective_year >= 2020)");
-        DB::statement("ALTER TABLE allocation_configs ADD CONSTRAINT chk_setor_kelola_sum CHECK (setor_percentage + kelola_percentage = 100)");
-        DB::statement("ALTER TABLE allocation_configs ADD CONSTRAINT chk_percentages_range CHECK (setor_percentage >= 0 AND setor_percentage <= 100 AND kelola_percentage >= 0 AND kelola_percentage <= 100 AND amil_percentage >= 0 AND amil_percentage <= 100)");
+        DB::statement('ALTER TABLE allocation_configs ADD CONSTRAINT chk_effective_year CHECK (effective_year >= 2020)');
+        DB::statement('ALTER TABLE allocation_configs ADD CONSTRAINT chk_setor_kelola_sum CHECK (setor_percentage + kelola_percentage = 100)');
+        DB::statement('ALTER TABLE allocation_configs ADD CONSTRAINT chk_percentages_range CHECK (setor_percentage >= 0 AND setor_percentage <= 100 AND kelola_percentage >= 0 AND kelola_percentage <= 100 AND amil_percentage >= 0 AND amil_percentage <= 100)');
     }
 
     public function down(): void

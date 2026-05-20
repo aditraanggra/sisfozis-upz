@@ -4,17 +4,15 @@ namespace App\Providers;
 
 use App\Models\AllocationConfig;
 use App\Models\Distribution;
-use App\Models\Zf;
-use App\Models\Zm;
 use App\Models\Ifs;
 use App\Models\RekapPendis;
 use App\Models\RekapSetor;
 use App\Models\RekapZis;
 use App\Models\SetorZis;
+use App\Models\Zf;
+use App\Models\Zm;
 use App\Observers\AllocationConfigObserver;
 use App\Observers\HakAmilObserver;
-use App\Observers\ZfObserver;
-use App\Observers\ZmObserver;
 use App\Observers\IfsObserver;
 use App\Observers\PendisObserver;
 use App\Observers\RekapPendisToUnitObserver;
@@ -22,10 +20,12 @@ use App\Observers\RekapSetorToUnitObserver;
 use App\Observers\RekapZisObserver;
 use App\Observers\RekapZisToUnitObserver;
 use App\Observers\SetorObserver;
+use App\Observers\ZfObserver;
+use App\Observers\ZmObserver;
 use App\View\Composers\AllocationComposer;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {

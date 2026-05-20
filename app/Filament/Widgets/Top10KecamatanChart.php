@@ -35,7 +35,7 @@ class Top10KecamatanChart extends ChartWidget
         if ($topKecamatan->isEmpty()) {
             return [
                 'datasets' => [],
-                'labels'   => [],
+                'labels' => [],
             ];
         }
 
@@ -44,20 +44,20 @@ class Top10KecamatanChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label'           => 'Total Uang (Rp)',
-                    'data'            => $topKecamatan->pluck('total_zis')->toArray(),
+                    'label' => 'Total Uang (Rp)',
+                    'data' => $topKecamatan->pluck('total_zis')->toArray(),
                     'backgroundColor' => 'rgba(59, 130, 246, 0.8)',
-                    'borderColor'     => '#2563eb',
-                    'borderWidth'     => 1,
-                    'yAxisID'         => 'y',
+                    'borderColor' => '#2563eb',
+                    'borderWidth' => 1,
+                    'yAxisID' => 'y',
                 ],
                 [
-                    'label'           => 'Total Beras (kg)',
-                    'data'            => $topKecamatan->pluck('total_beras')->toArray(),
+                    'label' => 'Total Beras (kg)',
+                    'data' => $topKecamatan->pluck('total_beras')->toArray(),
                     'backgroundColor' => 'rgba(16, 185, 129, 0.8)',
-                    'borderColor'     => '#059669',
-                    'borderWidth'     => 1,
-                    'yAxisID'         => 'y1',
+                    'borderColor' => '#059669',
+                    'borderWidth' => 1,
+                    'yAxisID' => 'y1',
                 ],
             ],
             'labels' => $labels,

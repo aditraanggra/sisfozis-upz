@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\RekapZis;
 use App\Jobs\UpdateRekapUnit;
+use App\Models\RekapZis;
 use Illuminate\Support\Facades\Log;
 
 class RekapZisToUnitObserver
@@ -57,11 +57,12 @@ class RekapZisToUnitObserver
     private function dispatchUpdateJob(RekapZis $rekapZis)
     {
         // Validasi input sebelum dispatch
-        if (!$rekapZis->unit_id || !$rekapZis->period) {
+        if (! $rekapZis->unit_id || ! $rekapZis->period) {
             Log::warning('Cannot dispatch UpdateRekapUnit job', [
                 'unit_id' => $rekapZis->unit_id,
-                'period' => $rekapZis->period
+                'period' => $rekapZis->period,
             ]);
+
             return;
         }
 
@@ -74,16 +75,13 @@ class RekapZisToUnitObserver
             Log::error('Failed to dispatch UpdateRekapUnit job', [
                 'unit_id' => $rekapZis->unit_id,
                 'period' => $rekapZis->period,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
     /**
      * Tentukan apakah rekap perlu diupdate
-     * 
-     * @param RekapZis $rekapZis
-     * @return bool
      */
     private function shouldUpdateRekap(RekapZis $rekapZis): bool
     {
@@ -95,7 +93,7 @@ class RekapZisToUnitObserver
             'total_zf_rice',
             'total_zf_muzakki',
             'total_zm_muzakki',
-            'total_ifs_munfiq'
+            'total_ifs_munfiq',
         ];
 
         // Gunakan method isDirty untuk memeriksa perubahan

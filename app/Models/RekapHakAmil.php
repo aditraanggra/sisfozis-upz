@@ -19,7 +19,7 @@ class RekapHakAmil extends Model
         't_pendis_ha_zf_rice',
         't_pendis_ha_zm',
         't_pendis_ha_ifs',
-        't_pm'
+        't_pm',
     ];
 
     protected $casts = [
@@ -28,7 +28,7 @@ class RekapHakAmil extends Model
         't_pendis_ha_zf_rice' => 'float',
         't_pendis_ha_zm' => 'integer',
         't_pendis_ha_ifs' => 'integer',
-        't_pm' => 'integer'
+        't_pm' => 'integer',
     ];
 
     public function unit()

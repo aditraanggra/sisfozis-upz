@@ -9,7 +9,6 @@ use Mockery;
  * These tests verify the service uses AllocationConfigService correctly
  * without requiring database access
  */
-
 afterEach(function () {
     Mockery::close();
 });

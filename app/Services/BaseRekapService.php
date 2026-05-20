@@ -25,10 +25,11 @@ abstract class BaseRekapService
 
     public function __construct()
     {
-        if (!isset($this->rekapTable)) {
-            throw new \LogicException(static::class . ' must set the $rekapTable property');
+        if (! isset($this->rekapTable)) {
+            throw new \LogicException(static::class.' must set the $rekapTable property');
         }
     }
+
     /**
      * The period column name in the rekap table
      */
@@ -42,19 +43,17 @@ abstract class BaseRekapService
     /**
      * Set chunk size for processing
      *
-     * @param int $size Number of units per chunk
-     * @return self
+     * @param  int  $size  Number of units per chunk
      */
     public function setChunkSize(int $size): self
     {
         $this->chunkSize = max(1, $size);
+
         return $this;
     }
 
     /**
      * Get current chunk size
-     *
-     * @return int
      */
     public function getChunkSize(): int
     {
@@ -64,10 +63,10 @@ abstract class BaseRekapService
     /**
      * Rebuild rekap for given parameters
      *
-     * @param string $unitId Unit ID or 'all' for all units
-     * @param string $periode Period type: harian, bulanan, tahunan, or all
-     * @param Carbon|null $startDate Start date for rebuild
-     * @param Carbon|null $endDate End date for rebuild
+     * @param  string  $unitId  Unit ID or 'all' for all units
+     * @param  string  $periode  Period type: harian, bulanan, tahunan, or all
+     * @param  Carbon|null  $startDate  Start date for rebuild
+     * @param  Carbon|null  $endDate  End date for rebuild
      * @return array Results with 'processed' count and 'errors' array
      */
     abstract public function rebuild(
@@ -80,8 +79,8 @@ abstract class BaseRekapService
     /**
      * Get aggregated data for a unit and date range
      *
-     * @param int $unitId The unit ID
-     * @param Carbon $startDate Start date
+     * @param  int  $unitId  The unit ID
+     * @param  Carbon  $startDate  Start date
      * @param Carbon $endDate End date
 
      * @param string $groupBy Grouping type: daily, monthly, yearly
@@ -98,7 +97,7 @@ abstract class BaseRekapService
     /**
      * Bulk upsert rekap records using database-level upsert
      *
-     * @param array $records Array of records to upsert
+     * @param  array  $records  Array of records to upsert
      * @return int Number of affected rows
      */
     protected function bulkUpsert(array $records): int
@@ -126,8 +125,8 @@ abstract class BaseRekapService
      * Each unit is processed independently - if one fails, others continue.
      * Memory is released after each chunk via garbage collection.
      *
-     * @param Builder $unitQuery Query builder for units to process
-     * @param callable $processor Callback function to process each unit
+     * @param  Builder  $unitQuery  Query builder for units to process
+     * @param  callable  $processor  Callback function to process each unit
      * @return array Results with 'processed' count and 'errors' array
      */
     protected function processInChunks(
@@ -136,7 +135,7 @@ abstract class BaseRekapService
     ): array {
         $results = [
             'processed' => 0,
-            'errors' => []
+            'errors' => [],
         ];
 
         $unitQuery->chunk($this->chunkSize, function ($units) use ($processor, &$results) {
@@ -147,9 +146,9 @@ abstract class BaseRekapService
                 } catch (\Throwable $e) {
                     $results['errors'][] = [
                         'unit_id' => $unit->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ];
-                    Log::error("Rebuild error for unit {$unit->id}: " . $e->getMessage(), [
+                    Log::error("Rebuild error for unit {$unit->id}: ".$e->getMessage(), [
                         'exception' => $e,
                         'unit_id' => $unit->id,
                     ]);
@@ -165,8 +164,6 @@ abstract class BaseRekapService
 
     /**
      * Get default start date (30 days ago)
-     *
-     * @return Carbon
      */
     protected function getDefaultStartDate(): Carbon
     {
@@ -175,8 +172,6 @@ abstract class BaseRekapService
 
     /**
      * Get default end date (today)
-     *
-     * @return Carbon
      */
     protected function getDefaultEndDate(): Carbon
     {
@@ -186,8 +181,6 @@ abstract class BaseRekapService
     /**
      * Build date ranges for monthly aggregation
      *
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      * @return array Array of [start, end] Carbon pairs for each month
      */
     protected function getMonthlyDateRanges(Carbon $startDate, Carbon $endDate): array
@@ -222,8 +215,6 @@ abstract class BaseRekapService
     /**
      * Build date ranges for yearly aggregation
      *
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      * @return array Array of [start, end] Carbon pairs for each year
      */
     protected function getYearlyDateRanges(Carbon $startDate, Carbon $endDate): array
@@ -258,12 +249,10 @@ abstract class BaseRekapService
 
         return $ranges;
     }
+
     /**
      * Wrap a unit rebuild operation in a database transaction
      *
-     * @param int $unitId
-     * @param callable $operation
-     * @return mixed
      * @throws \Exception
      */
     protected function wrapInTransaction(int $unitId, callable $operation): mixed
@@ -272,10 +261,11 @@ abstract class BaseRekapService
             DB::beginTransaction();
             $result = $operation();
             DB::commit();
+
             return $result;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Transaction failed for unit {$unitId}: " . $e->getMessage());
+            Log::error("Transaction failed for unit {$unitId}: ".$e->getMessage());
             throw $e;
         }
     }

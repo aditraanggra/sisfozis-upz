@@ -59,15 +59,15 @@ class UnitZisImporter extends Importer
         //     'email' => $this->data['email'],
         // ]);
 
-        return new UnitZis();
+        return new UnitZis;
     }
 
     public static function getCompletedNotificationBody(Import $import): string
     {
-        $body = 'Import data user berhasil dan ' . number_format($import->successful_rows) . ' ' . str('row')->plural($import->successful_rows) . ' imported.';
+        $body = 'Import data user berhasil dan '.number_format($import->successful_rows).' '.str('row')->plural($import->successful_rows).' imported.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' Proses import gaga.';
+            $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' Proses import gaga.';
         }
 
         return $body;

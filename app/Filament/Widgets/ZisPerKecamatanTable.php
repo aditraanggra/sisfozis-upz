@@ -22,7 +22,9 @@ class ZisPerKecamatanTable extends BaseWidget
     protected int|string|array $columnSpan = 'full';
 
     protected ?string $startDate = null;
+
     protected ?string $endDate = null;
+
     protected ?string $year = null;
 
     public static function canView(): bool
@@ -49,7 +51,7 @@ class ZisPerKecamatanTable extends BaseWidget
                     ->selectSub($this->getZmMuzakkiSubquery(), 'total_zm_muzakki')
                     ->selectSub($this->getIfsAmountSubquery(), 'total_ifs_amount')
                     ->selectSub($this->getIfsMunfiqSubquery(), 'total_ifs_munfiq')
-                    ->selectRaw($this->getTotalZisSubquery() . ' as total_zis')
+                    ->selectRaw($this->getTotalZisSubquery().' as total_zis')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('index')
@@ -102,7 +104,7 @@ class ZisPerKecamatanTable extends BaseWidget
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_muzakki_munfiq')
                     ->label('Total Muzakki/Munfiq')
-                    ->getStateUsing(fn($record) => ($record->total_zf_muzakki_uang ?? 0) + ($record->total_zf_muzakki_beras ?? 0) + ($record->total_zm_muzakki ?? 0) + ($record->total_ifs_munfiq ?? 0))
+                    ->getStateUsing(fn ($record) => ($record->total_zf_muzakki_uang ?? 0) + ($record->total_zf_muzakki_beras ?? 0) + ($record->total_zm_muzakki ?? 0) + ($record->total_ifs_munfiq ?? 0))
                     ->numeric(),
             ])
             ->defaultSort('total_zis', 'desc')
@@ -114,9 +116,9 @@ class ZisPerKecamatanTable extends BaseWidget
         return Zf::query()
             ->join('unit_zis', 'zfs.unit_id', '=', 'unit_zis.id')
             ->whereColumn('unit_zis.district_id', 'districts.id')
-            ->when($this->startDate, fn($q) => $q->whereDate('trx_date', '>=', $this->startDate))
-            ->when($this->endDate, fn($q) => $q->whereDate('trx_date', '<=', $this->endDate))
-            ->when($this->year, fn($q) => $q->whereYear('trx_date', $this->year));
+            ->when($this->startDate, fn ($q) => $q->whereDate('trx_date', '>=', $this->startDate))
+            ->when($this->endDate, fn ($q) => $q->whereDate('trx_date', '<=', $this->endDate))
+            ->when($this->year, fn ($q) => $q->whereYear('trx_date', $this->year));
     }
 
     protected function baseZmQuery(): Builder
@@ -124,9 +126,9 @@ class ZisPerKecamatanTable extends BaseWidget
         return Zm::query()
             ->join('unit_zis', 'zms.unit_id', '=', 'unit_zis.id')
             ->whereColumn('unit_zis.district_id', 'districts.id')
-            ->when($this->startDate, fn($q) => $q->whereDate('trx_date', '>=', $this->startDate))
-            ->when($this->endDate, fn($q) => $q->whereDate('trx_date', '<=', $this->endDate))
-            ->when($this->year, fn($q) => $q->whereYear('trx_date', $this->year));
+            ->when($this->startDate, fn ($q) => $q->whereDate('trx_date', '>=', $this->startDate))
+            ->when($this->endDate, fn ($q) => $q->whereDate('trx_date', '<=', $this->endDate))
+            ->when($this->year, fn ($q) => $q->whereYear('trx_date', $this->year));
     }
 
     protected function baseIfsQuery(): Builder
@@ -134,9 +136,9 @@ class ZisPerKecamatanTable extends BaseWidget
         return Ifs::query()
             ->join('unit_zis', 'ifs.unit_id', '=', 'unit_zis.id')
             ->whereColumn('unit_zis.district_id', 'districts.id')
-            ->when($this->startDate, fn($q) => $q->whereDate('trx_date', '>=', $this->startDate))
-            ->when($this->endDate, fn($q) => $q->whereDate('trx_date', '<=', $this->endDate))
-            ->when($this->year, fn($q) => $q->whereYear('trx_date', $this->year));
+            ->when($this->startDate, fn ($q) => $q->whereDate('trx_date', '>=', $this->startDate))
+            ->when($this->endDate, fn ($q) => $q->whereDate('trx_date', '<=', $this->endDate))
+            ->when($this->year, fn ($q) => $q->whereYear('trx_date', $this->year));
     }
 
     protected function getZfAmountSubquery(): Builder

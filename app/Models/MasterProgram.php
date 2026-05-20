@@ -9,7 +9,7 @@ class MasterProgram extends Model
     //
     protected $fillable = [
         'name',
-        'desc'
+        'desc',
     ];
 
     public function infakTerikats()

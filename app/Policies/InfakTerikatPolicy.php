@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\InfakTerikat;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class InfakTerikatPolicy

@@ -22,16 +22,12 @@ abstract class BaseRebuildCommand extends Command
     /**
      * The fully qualified class name of the rekap service to use.
      * Must be set by child classes.
-     *
-     * @var string
      */
     protected string $serviceClass;
 
     /**
      * Human-readable name of the rekap type for display purposes.
      * Must be set by child classes.
-     *
-     * @var string
      */
     protected string $rekapType;
 
@@ -44,30 +40,22 @@ abstract class BaseRebuildCommand extends Command
 
     /**
      * Default chunk size for processing units.
-     *
-     * @var int
      */
     protected int $defaultChunkSize = 50;
 
     /**
      * Default number of days to look back when no date range specified.
-     *
-     * @var int
      */
     protected int $defaultDaysBack = 30;
 
     /**
      * Track start time for duration calculation.
-     *
-     * @var float
      */
     protected float $startTime;
 
     /**
      * Get the standardized signature options string.
      * Child classes should append this to their signature.
-     *
-     * @return string
      */
     protected function getSignatureOptions(): string
     {
@@ -96,7 +84,7 @@ abstract class BaseRebuildCommand extends Command
         $useQueue = $this->option('queue');
 
         // Validate inputs - Requirements 5.2, 5.3
-        if (!$this->validateInputs($startDate, $endDate, $periode)) {
+        if (! $this->validateInputs($startDate, $endDate, $periode)) {
             return 1;
         }
 
@@ -121,22 +109,24 @@ abstract class BaseRebuildCommand extends Command
     /**
      * Validate command inputs.
      *
-     * @param string|null $startDate Start date string
-     * @param string|null $endDate End date string
-     * @param string $periode Period type
+     * @param  string|null  $startDate  Start date string
+     * @param  string|null  $endDate  End date string
+     * @param  string  $periode  Period type
      * @return bool True if valid, false otherwise
      */
     protected function validateInputs(?string $startDate, ?string $endDate, string $periode): bool
     {
         // Validate start date format - Requirements 5.2
-        if ($startDate && !$this->isValidDate($startDate)) {
+        if ($startDate && ! $this->isValidDate($startDate)) {
             $this->error('Format tanggal mulai tidak valid. Gunakan format Y-m-d');
+
             return false;
         }
 
         // Validate end date format - Requirements 5.2
-        if ($endDate && !$this->isValidDate($endDate)) {
+        if ($endDate && ! $this->isValidDate($endDate)) {
             $this->error('Format tanggal akhir tidak valid. Gunakan format Y-m-d');
+
             return false;
         }
 
@@ -146,13 +136,15 @@ abstract class BaseRebuildCommand extends Command
             $end = Carbon::parse($endDate);
             if ($start > $end) {
                 $this->error('Tanggal mulai tidak boleh lebih besar dari tanggal akhir');
+
                 return false;
             }
         }
 
         // Validate periode value - Requirements 5.3
-        if (!in_array($periode, $this->allowedPeriodes)) {
-            $this->error('Periode tidak valid. Pilih: ' . implode(', ', $this->allowedPeriodes));
+        if (! in_array($periode, $this->allowedPeriodes)) {
+            $this->error('Periode tidak valid. Pilih: '.implode(', ', $this->allowedPeriodes));
+
             return false;
         }
 
@@ -162,23 +154,24 @@ abstract class BaseRebuildCommand extends Command
     /**
      * Check if a date string is valid Y-m-d format.
      *
-     * @param string $date Date string to validate
+     * @param  string  $date  Date string to validate
      * @return bool True if valid format
      */
     protected function isValidDate(string $date): bool
     {
         $parsed = \DateTime::createFromFormat('Y-m-d', $date);
+
         return $parsed !== false && $parsed->format('Y-m-d') === $date;
     }
 
     /**
      * Dispatch rebuild jobs to queue for background processing.
      *
-     * @param string $unitOption Unit ID or 'all'
-     * @param string $periode Period type
-     * @param string|null $startDate Start date string
-     * @param string|null $endDate End date string
-     * @param int $chunkSize Units per job
+     * @param  string  $unitOption  Unit ID or 'all'
+     * @param  string  $periode  Period type
+     * @param  string|null  $startDate  Start date string
+     * @param  string|null  $endDate  End date string
+     * @param  int  $chunkSize  Units per job
      * @return int Exit code
      */
     protected function dispatchToQueue(
@@ -192,6 +185,7 @@ abstract class BaseRebuildCommand extends Command
 
         if (empty($unitIds)) {
             $this->error('Unit tidak ditemukan!');
+
             return 1;
         }
 
@@ -229,11 +223,11 @@ abstract class BaseRebuildCommand extends Command
     /**
      * Run rebuild synchronously with progress display.
      *
-     * @param string $unitOption Unit ID or 'all'
-     * @param string $periode Period type
-     * @param Carbon $startDate Parsed start date
-     * @param Carbon $endDate Parsed end date
-     * @param int $chunkSize Units per chunk
+     * @param  string  $unitOption  Unit ID or 'all'
+     * @param  string  $periode  Period type
+     * @param  Carbon  $startDate  Parsed start date
+     * @param  Carbon  $endDate  Parsed end date
+     * @param  int  $chunkSize  Units per chunk
      * @return int Exit code
      */
     protected function runSync(
@@ -252,6 +246,7 @@ abstract class BaseRebuildCommand extends Command
 
         if ($totalUnits === 0) {
             $this->error('Unit tidak ditemukan!');
+
             return 1;
         }
 
@@ -271,7 +266,7 @@ abstract class BaseRebuildCommand extends Command
     /**
      * Get array of unit IDs based on option value.
      *
-     * @param string $unitOption Unit ID or 'all'
+     * @param  string  $unitOption  Unit ID or 'all'
      * @return array<int> Array of unit IDs
      */
     protected function getUnitIds(string $unitOption): array
@@ -282,7 +277,7 @@ abstract class BaseRebuildCommand extends Command
 
         // Check if unit exists
         $unit = UnitZis::find((int) $unitOption);
-        if (!$unit) {
+        if (! $unit) {
             return [];
         }
 
@@ -292,7 +287,7 @@ abstract class BaseRebuildCommand extends Command
     /**
      * Get total number of units to process.
      *
-     * @param string $unitOption Unit ID or 'all'
+     * @param  string  $unitOption  Unit ID or 'all'
      * @return int Total unit count
      */
     protected function getTotalUnits(string $unitOption): int
@@ -306,12 +301,6 @@ abstract class BaseRebuildCommand extends Command
 
     /**
      * Display start information.
-     *
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @param string $unitOption
-     * @param string $periode
-     * @return void
      */
     protected function displayStartInfo(
         Carbon $startDate,
@@ -321,7 +310,7 @@ abstract class BaseRebuildCommand extends Command
     ): void {
         $this->info("=== Rebuild {$this->rekapType} ===");
         $this->info("Periode: {$startDate->format('Y-m-d')} sampai {$endDate->format('Y-m-d')}");
-        $this->info("Unit: " . ($unitOption === 'all' ? 'Semua unit' : "Unit ID {$unitOption}"));
+        $this->info('Unit: '.($unitOption === 'all' ? 'Semua unit' : "Unit ID {$unitOption}"));
         $this->info("Tipe periode: {$periode}");
         $this->newLine();
     }
@@ -329,51 +318,49 @@ abstract class BaseRebuildCommand extends Command
     /**
      * Display summary for queue dispatch.
      *
-     * @param int $totalJobs Number of jobs dispatched
-     * @param int $totalUnits Total units to process
-     * @param int $chunkSize Units per job
-     * @return void
+     * @param  int  $totalJobs  Number of jobs dispatched
+     * @param  int  $totalUnits  Total units to process
+     * @param  int  $chunkSize  Units per job
      */
     protected function displayQueueSummary(int $totalJobs, int $totalUnits, int $chunkSize): void
     {
         $duration = round(microtime(true) - $this->startTime, 2);
 
-        $this->info("=== Ringkasan ===");
+        $this->info('=== Ringkasan ===');
         $this->info("Total job dispatched: {$totalJobs}");
         $this->info("Total unit: {$totalUnits}");
         $this->info("Unit per job: {$chunkSize}");
         $this->info("Waktu dispatch: {$duration} detik");
         $this->newLine();
-        $this->info("Job akan diproses di background. Monitor dengan: php artisan queue:work --queue=rebuild");
+        $this->info('Job akan diproses di background. Monitor dengan: php artisan queue:work --queue=rebuild');
     }
 
     /**
      * Display summary for synchronous execution.
      *
-     * @param array $result Result array with 'processed' and 'errors' keys
-     * @return void
+     * @param  array  $result  Result array with 'processed' and 'errors' keys
      */
     protected function displaySyncSummary(array $result): void
     {
         $duration = round(microtime(true) - $this->startTime, 2);
 
         $this->newLine();
-        $this->info("=== Ringkasan ===");
+        $this->info('=== Ringkasan ===');
         $this->info("Waktu eksekusi: {$duration} detik");
         $this->info("Unit berhasil diproses: {$result['processed']}");
 
-        if (!empty($result['errors'])) {
+        if (! empty($result['errors'])) {
             $errorCount = count($result['errors']);
             $this->warn("Unit gagal diproses: {$errorCount}");
             $this->newLine();
 
             // Display error details - Requirements 4.4
-            $this->error("Detail error:");
+            $this->error('Detail error:');
             foreach ($result['errors'] as $error) {
                 $this->error("  - Unit {$error['unit_id']}: {$error['error']}");
             }
         } else {
-            $this->info("Tidak ada error.");
+            $this->info('Tidak ada error.');
         }
 
         $this->newLine();
@@ -384,8 +371,8 @@ abstract class BaseRebuildCommand extends Command
      * Calculate estimated completion time based on historical data.
      * Can be overridden by child classes for more accurate estimates.
      *
-     * @param int $totalUnits Total units to process
-     * @param int $totalDays Total days in date range
+     * @param  int  $totalUnits  Total units to process
+     * @param  int  $totalDays  Total days in date range
      * @return string Human-readable estimate
      */
     protected function estimateCompletionTime(int $totalUnits, int $totalDays): string
@@ -394,12 +381,14 @@ abstract class BaseRebuildCommand extends Command
         $estimatedSeconds = $totalUnits * $totalDays * 0.5;
 
         if ($estimatedSeconds < 60) {
-            return "< 1 menit";
+            return '< 1 menit';
         } elseif ($estimatedSeconds < 3600) {
             $minutes = ceil($estimatedSeconds / 60);
+
             return "~{$minutes} menit";
         } else {
             $hours = round($estimatedSeconds / 3600, 1);
+
             return "~{$hours} jam";
         }
     }

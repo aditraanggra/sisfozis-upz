@@ -2,25 +2,25 @@
 
 namespace App\Models\Scopes;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class ZisScope implements Scope
 {
     public function apply(Builder $builder, Model $model)
     {
         // Pastikan kita dalam konteks web dan ada user yang login
-        if (!Auth::check() || !Auth::hasUser()) {
+        if (! Auth::check() || ! Auth::hasUser()) {
             return;
         }
 
         $user = Auth::user();
 
         // Jika user tidak login atau tidak memiliki role yang memerlukan filter
-        if (!$user || !User::currentIsUpzKecamatan() || !User::currentIsUpzDesa()) {
+        if (! $user || ! User::currentIsUpzKecamatan() || ! User::currentIsUpzDesa()) {
             return;
         }
 

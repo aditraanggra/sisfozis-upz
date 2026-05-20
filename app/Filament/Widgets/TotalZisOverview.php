@@ -59,7 +59,7 @@ class TotalZisOverview extends BaseWidget
         return [
             Stat::make(
                 'Total Penerimaan ZIS (Uang)',
-                'Rp ' . number_format($currentMoneyTotal, 0, ',', '.')
+                'Rp '.number_format($currentMoneyTotal, 0, ',', '.')
             )
                 ->chart($this->getMonthlyMoneyTotals($startDate, $endDate, $year))
                 ->description($moneyDescription)
@@ -69,7 +69,7 @@ class TotalZisOverview extends BaseWidget
 
             Stat::make(
                 'Penerimaan Beras',
-                number_format($currentRiceTotal, 2, ',', '.') . ' Kg'
+                number_format($currentRiceTotal, 2, ',', '.').' Kg'
             )
                 ->chart($this->getMonthlyRiceTotals($startDate, $endDate, $year))
                 ->description($riceDescription)
@@ -82,21 +82,21 @@ class TotalZisOverview extends BaseWidget
     protected function calculateMoneyTotal(?string $startDate, ?string $endDate, ?string $year): float
     {
         $totalZakatFitrahMoney = Zf::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('zf_amount');
 
         $totalZakatMal = Zm::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('amount');
 
         $totalInfaqShodaqoh = Ifs::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('amount');
 
         return (float) ($totalZakatFitrahMoney + $totalZakatMal + $totalInfaqShodaqoh);
@@ -105,9 +105,9 @@ class TotalZisOverview extends BaseWidget
     protected function calculateRiceTotal(?string $startDate, ?string $endDate, ?string $year): float
     {
         $totalZakatFitrahRice = Zf::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->selectRaw('COALESCE(SUM(zf_rice), 0) as total_rice')
             ->value('total_rice');
 
@@ -182,7 +182,7 @@ class TotalZisOverview extends BaseWidget
             $percentage = ($difference / $previousTotal) * 100;
 
             return [
-                'Naik ' . number_format($percentage, 2, ',', '.') . '% dibanding tahun lalu',
+                'Naik '.number_format($percentage, 2, ',', '.').'% dibanding tahun lalu',
                 'heroicon-m-arrow-trending-up',
                 'success',
             ];
@@ -192,7 +192,7 @@ class TotalZisOverview extends BaseWidget
             $percentage = abs($difference) / $previousTotal * 100;
 
             return [
-                'Turun ' . number_format($percentage, 2, ',', '.') . '% dibanding tahun lalu',
+                'Turun '.number_format($percentage, 2, ',', '.').'% dibanding tahun lalu',
                 'heroicon-m-arrow-trending-down',
                 'danger',
             ];
@@ -211,9 +211,9 @@ class TotalZisOverview extends BaseWidget
 
         $zakatFitrahData = Zf::query()
             ->selectRaw('EXTRACT(MONTH FROM trx_date) as month, SUM(zf_amount) as total')
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -230,9 +230,9 @@ class TotalZisOverview extends BaseWidget
 
         $zakatMalData = Zm::query()
             ->selectRaw('EXTRACT(MONTH FROM trx_date) as month, SUM(amount) as total')
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -249,9 +249,9 @@ class TotalZisOverview extends BaseWidget
 
         $infaqData = Ifs::query()
             ->selectRaw('EXTRACT(MONTH FROM trx_date) as month, SUM(amount) as total')
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -266,7 +266,7 @@ class TotalZisOverview extends BaseWidget
             $monthlyTotals[$monthIndex] += (float) $item->total;
         }
 
-        return array_map(static fn(float $value) => round($value, 2), $monthlyTotals);
+        return array_map(static fn (float $value) => round($value, 2), $monthlyTotals);
     }
 
     protected function getMonthlyRiceTotals(?string $startDate, ?string $endDate, ?string $year): array
@@ -275,9 +275,9 @@ class TotalZisOverview extends BaseWidget
 
         $zakatFitrahData = Zf::query()
             ->selectRaw('EXTRACT(MONTH FROM trx_date) as month, SUM(zf_rice) as total')
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -292,6 +292,6 @@ class TotalZisOverview extends BaseWidget
             $monthlyTotals[$monthIndex] += (float) $item->total;
         }
 
-        return array_map(static fn(float $value) => round($value, 2), $monthlyTotals);
+        return array_map(static fn (float $value) => round($value, 2), $monthlyTotals);
     }
 }

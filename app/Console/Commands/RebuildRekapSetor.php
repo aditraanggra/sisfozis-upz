@@ -6,10 +6,10 @@ use App\Services\RekapSetorService;
 
 /**
  * Command to rebuild Setor (Deposit) recapitulation data.
- * 
+ *
  * Extends BaseRebuildCommand to leverage standardized interface and
  * common functionality for all rebuild operations.
- * 
+ *
  * @see Requirements 5.1
  */
 class RebuildRekapSetor extends BaseRebuildCommand
@@ -19,7 +19,6 @@ class RebuildRekapSetor extends BaseRebuildCommand
      *
      * @var string
      */
-
     protected $signature = 'rekap:rebuild-setor 
 
                             {--unit=all : ID unit atau "all" untuk semua unit}
@@ -38,15 +37,11 @@ class RebuildRekapSetor extends BaseRebuildCommand
 
     /**
      * The fully qualified class name of the rekap service to use.
-     *
-     * @var string
      */
     protected string $serviceClass = RekapSetorService::class;
 
     /**
      * Human-readable name of the rekap type for display purposes.
-     *
-     * @var string
      */
     protected string $rekapType = 'Rekapitulasi Setoran';
 }

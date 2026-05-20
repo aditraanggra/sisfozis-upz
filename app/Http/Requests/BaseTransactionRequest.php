@@ -16,7 +16,7 @@ abstract class BaseTransactionRequest extends FormRequest
         return [
             'unit_id' => 'required|exists:unit_zis,id',
             'trx_date' => 'required|date',
-            'desc' => 'nullable|string'
+            'desc' => 'nullable|string',
         ];
     }
 }

@@ -78,6 +78,7 @@ class DistributionController extends Controller
                 ->setStatusCode(Response::HTTP_CREATED);
         } catch (\Exception $e) {
             \Log::error('Error creating Distribution transaction', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'message' => 'Error creating Distribution transaction',
             ], Response::HTTP_BAD_REQUEST);

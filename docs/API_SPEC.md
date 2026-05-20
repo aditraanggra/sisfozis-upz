@@ -1870,6 +1870,186 @@ GET /api/v1/lpz?year=2026
 
 ---
 
+## 11. Laporan Kurban DKM
+
+🔒 **Requires Authentication**
+
+Endpoint untuk mengelola laporan pelaksanaan kurban tingkat DKM (Dewan Kemakmuran Masjid). Berisi data hewan kurban, shohibul, paket daging, dan dokumentasi.
+
+### 11.1 CRUD Laporan Kurban
+
+```
+GET    /api/v1/laporan-kurban          # List
+POST   /api/v1/laporan-kurban          # Create
+GET    /api/v1/laporan-kurban/{id}     # Show
+POST   /api/v1/laporan-kurban/{id}/submit # Submit (ubah status)
+DELETE /api/v1/laporan-kurban/{id}     # Delete
+```
+
+**Request Body (Create/Update):**
+
+| Field               | Type    | Required | Description                                          |
+| ------------------- | ------- | -------- | ---------------------------------------------------- |
+| tahun_hijriah       | string  | Yes      | Tahun Hijriah (max 4 karakter)                       |
+| tahun_masehi        | integer | Yes      | Tahun Masehi (2020-2100)                             |
+| jml_sapi            | integer | Yes      | Jumlah sapi (0-999)                                  |
+| jml_kerbau          | integer | Yes      | Jumlah kerbau (0-999)                                |
+| jml_kambing         | integer | Yes      | Jumlah kambing (0-999)                               |
+| jml_domba           | integer | Yes      | Jumlah domba (0-999)                                 |
+| total_shohibul      | integer | Yes      | Total jumlah shohibul (min: 0)                       |
+| shohibul_dikoreksi  | boolean | No       | Apakah data shohibul dikoreksi                       |
+| alasan_koreksi      | string  | No       | Alasan koreksi (max 255)                             |
+| jml_paket_daging    | integer | No       | Jumlah paket daging (min: 0)                         |
+| jml_penerima        | integer | No       | Jumlah penerima (min: 0)                             |
+| kelompok_penerima   | array   | No       | Kelompok penerima manfaat                            |
+| kelompok_penerima.* | string  | No       | Nilai: `warga`, `fakir_miskin`, `pesantren`, `panti_asuhan`, `luar_daerah` |
+| catatan             | string  | No       | Catatan tambahan (max 1000)                          |
+
+**Query Parameters (List):**
+
+| Parameter | Type   | Description                    |
+| --------- | ------ | ------------------------------ |
+| tahun     | int    | Filter berdasarkan tahun_masehi |
+| status    | string | Filter berdasarkan status      |
+
+**Response (200/201):**
+
+```json
+{
+    "data": {
+        "id": 1,
+        "unit": {
+            "id": 1,
+            "unit_name": "UPZ Masjid Al-Ikhlas",
+            "no_register": "REG001"
+        },
+        "tahun_hijriah": "1446",
+        "tahun_masehi": 2025,
+        "jml_sapi": 2,
+        "jml_kerbau": 0,
+        "jml_kambing": 5,
+        "jml_domba": 0,
+        "total_ekor": 7,
+        "total_shohibul": 10,
+        "shohibul_dikoreksi": false,
+        "alasan_koreksi": null,
+        "jml_paket_daging": 70,
+        "jml_penerima": 70,
+        "kelompok_penerima": ["warga", "fakir_miskin"],
+        "catatan": "Pelaksanaan kurban berjalan lancar",
+        "no_referensi": "LK/2025/001",
+        "status": "draft",
+        "submitted_at": null,
+        "verified_at": null,
+        "dokumentasi": [],
+        "created_at": "2025-06-06T00:00:00.000000Z",
+        "updated_at": "2025-06-06T00:00:00.000000Z"
+    },
+    "success": true,
+    "message": "Laporan berhasil disimpan"
+}
+```
+
+**Response Fields:**
+
+| Field              | Type    | Description                                   |
+| ------------------ | ------- | --------------------------------------------- |
+| id                 | integer | ID laporan kurban                             |
+| unit               | object  | Data unit ZIS terkait                        |
+| tahun_hijriah      | string  | Tahun Hijriah                                 |
+| tahun_masehi       | integer | Tahun Masehi                                  |
+| jml_sapi           | integer | Jumlah sapi                                   |
+| jml_kerbau         | integer | Jumlah kerbau                                 |
+| jml_kambing        | integer | Jumlah kambing                                |
+| jml_domba          | integer | Jumlah domba                                  |
+| total_ekor         | integer | Total hewan (komputasi otomatis)              |
+| total_shohibul     | integer | Total shohibul                                |
+| shohibul_dikoreksi | boolean | Apakah shohibul dikoreksi                     |
+| alasan_koreksi     | string  | Alasan koreksi (nullable)                     |
+| jml_paket_daging   | integer | Jumlah paket daging (nullable)                |
+| jml_penerima       | integer | Jumlah penerima (nullable)                    |
+| kelompok_penerima  | array   | Kelompok penerima (nullable)                  |
+| catatan            | string  | Catatan (nullable)                            |
+| no_referensi       | string  | Nomor referensi laporan (nullable)            |
+| status             | string  | Status: `draft`, `submitted`, `verified`      |
+| submitted_at       | string  | Waktu pengiriman (ISO 8601, nullable)         |
+| verified_at        | string  | Waktu verifikasi (ISO 8601, nullable)         |
+| dokumentasi        | array   | Daftar dokumentasi terkait                   |
+| created_at         | string  | Waktu dibuat (ISO 8601)                       |
+| updated_at         | string  | Waktu diperbarui (ISO 8601)                   |
+
+**Example Request - Create Laporan Kurban:**
+```json
+POST /api/v1/laporan-kurban
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "tahun_hijriah": "1446",
+    "tahun_masehi": 2025,
+    "jml_sapi": 2,
+    "jml_kerbau": 0,
+    "jml_kambing": 5,
+    "jml_domba": 0,
+    "total_shohibul": 10,
+    "jml_paket_daging": 70,
+    "jml_penerima": 70,
+    "kelompok_penerima": ["warga", "fakir_miskin"],
+    "catatan": "Pelaksanaan kurban berjalan lancar"
+}
+```
+
+**Example Request - Submit Laporan Kurban:**
+```json
+POST /api/v1/laporan-kurban/1/submit
+Authorization: Bearer {token}
+```
+
+### 11.2 Dokumentasi Kurban
+
+Sub-resource untuk mengelola file dokumentasi (foto, berita acara) dari laporan kurban.
+
+```
+POST   /api/v1/laporan-kurban/{laporanKurbanId}/dokumentasi           # Upload
+DELETE /api/v1/laporan-kurban/{laporanKurbanId}/dokumentasi/{dokId}   # Delete
+```
+
+**Request Body (multipart/form-data):**
+
+| Field | Type   | Required | Description                                      |
+| ----- | ------ | -------- | ------------------------------------------------ |
+| file  | file   | Yes      | File dokumentasi (max 5MB, tipe: jpg/png/pdf)    |
+| jenis | string | Yes      | Jenis dokumentasi: `foto_kegiatan`, `berita_acara`, `lainnya` |
+
+**Response (201 - Upload):**
+
+```json
+{
+    "data": {
+        "id": 1,
+        "jenis": "foto_kegiatan",
+        "file_path": "dokumentasi/1/1/abc123.jpg",
+        "file_size": 2048576,
+        "mime_type": "image/jpeg",
+        "uploaded_at": "2025-06-06T10:00:00.000000Z"
+    },
+    "success": true,
+    "message": "Dokumentasi berhasil diunggah"
+}
+```
+
+**Response (200 - Delete):**
+
+```json
+{
+    "success": true,
+    "data": null,
+    "message": "Dokumentasi berhasil dihapus"
+}
+```
+
+---
+
 ## Error Responses
 
 ### 400 Bad Request

@@ -444,7 +444,7 @@ class RekapAlokasiService extends BaseRekapService
                         Log::info("No harian data found for unit_id: {$unitId}, year: {$year}. Skipping tahunan rekap_alokasi.");
                         DB::rollBack();
 
-                        return new RekapAlokasi();
+                        return new RekapAlokasi;
                     }
 
                     // Build a synthetic object matching the structure expected below
@@ -459,7 +459,7 @@ class RekapAlokasiService extends BaseRekapService
                     Log::warning("RekapZis record not found for unit_id: {$unitId}, period: {$period}, period_date: {$periodDate}. Skipping.");
                     DB::rollBack();
 
-                    return new RekapAlokasi();
+                    return new RekapAlokasi;
                 }
             }
 

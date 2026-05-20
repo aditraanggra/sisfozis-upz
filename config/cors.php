@@ -20,7 +20,7 @@ return [
         'sanctum/csrf-cookie',
         'filament/*',
         'admin/*',  // Jika admin adalah path kustom Filament
-        'shield/*'  // Jika Shield menggunakan path khusus
+        'shield/*',  // Jika Shield menggunakan path khusus
     ],
 
     'allowed_methods' => ['*'],

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Builder;
 use App\Models\Scopes\ZisScope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class DonationBox extends Model
 {
@@ -16,24 +16,24 @@ class DonationBox extends Model
         'unit_id',
         'trx_date',
         'amount',
-        'desc'
+        'desc',
     ];
 
     protected $casts = [
         'trx_date' => 'date',
-        'amount' => 'integer'
+        'amount' => 'integer',
     ];
 
     protected static function booted()
     {
         static::addGlobalScope('user_access', function (Builder $builder) {
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return;
             }
 
             $user = Auth::user();
 
-            if (!$user) {
+            if (! $user) {
                 return;
             }
 

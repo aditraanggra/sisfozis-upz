@@ -14,7 +14,7 @@ class ListIfs extends ListRecords
     {
         return [
             \EightyNine\ExcelImport\ExcelImportAction::make()
-                ->visible(fn() => Auth::user() && Auth::user()->email === 'sa01@sisfoupz.org')
+                ->visible(fn () => Auth::user() && Auth::user()->email === 'sa01@sisfoupz.org')
                 ->sampleExcel(
                     sampleData: [
                         [
@@ -23,7 +23,7 @@ class ListIfs extends ListRecords
                             'munfiq_name' => 'Nama Munfiq',
                             'amount' => 250000,
                             'total_munfiq' => 1,
-                            'desc' => 'Contoh Transaksi Infak Sedekah'
+                            'desc' => 'Contoh Transaksi Infak Sedekah',
                         ],
                     ],
                     fileName: 'template_ifs.xlsx',

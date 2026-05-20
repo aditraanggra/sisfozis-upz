@@ -6,10 +6,10 @@ use App\Services\RekapHakAmilService;
 
 /**
  * Command to rebuild Hak Amil (Amil Rights) recapitulation data.
- * 
+ *
  * Extends BaseRebuildCommand to leverage standardized interface and
  * common functionality for all rebuild operations.
- * 
+ *
  * @see Requirements 5.1
  */
 class RebuildRekapHakAmil extends BaseRebuildCommand
@@ -19,7 +19,6 @@ class RebuildRekapHakAmil extends BaseRebuildCommand
      *
      * @var string
      */
-
     protected $signature = 'rekap:rebuild-hak-amil 
 
                             {--unit=all : ID unit atau "all" untuk semua unit}
@@ -38,15 +37,11 @@ class RebuildRekapHakAmil extends BaseRebuildCommand
 
     /**
      * The fully qualified class name of the rekap service to use.
-     *
-     * @var string
      */
     protected string $serviceClass = RekapHakAmilService::class;
 
     /**
      * Human-readable name of the rekap type for display purposes.
-     *
-     * @var string
      */
     protected string $rekapType = 'Rekapitulasi Hak Amil';
 }

@@ -33,9 +33,9 @@ class AllocationConfigController extends Controller
 
     public function store(AllocationConfigRequest $request)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -54,9 +54,9 @@ class AllocationConfigController extends Controller
 
     public function update(AllocationConfigRequest $request, AllocationConfig $allocationConfig)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -68,9 +68,9 @@ class AllocationConfigController extends Controller
 
     public function destroy(AllocationConfig $allocationConfig)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -96,7 +96,7 @@ class AllocationConfigController extends Controller
             ->orderBy('effective_year', 'desc')
             ->first();
 
-        if (!$config) {
+        if (! $config) {
             return response()->json([
                 'message' => 'No configuration found, using defaults',
                 'data' => [
@@ -108,7 +108,7 @@ class AllocationConfigController extends Controller
                         ? AllocationConfig::DEFAULT_AMIL_IFS
                         : AllocationConfig::DEFAULT_AMIL_ZF_ZM,
                     'is_default' => true,
-                ]
+                ],
             ]);
         }
 

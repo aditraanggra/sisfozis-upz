@@ -53,10 +53,10 @@ class SetorZisExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Export data Setor ZIS telah selesai dan ' . number_format($export->successful_rows) . ' baris berhasil diekspor.';
+        $body = 'Export data Setor ZIS telah selesai dan '.number_format($export->successful_rows).' baris berhasil diekspor.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' baris gagal diekspor.';
+            $body .= ' '.number_format($failedRowsCount).' baris gagal diekspor.';
         }
 
         return $body;

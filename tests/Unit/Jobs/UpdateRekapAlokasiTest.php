@@ -61,7 +61,7 @@ describe('UpdateRekapAlokasi Job', function () {
         $mockService->shouldReceive('updateOrCreateRekapAlokasi')
             ->once()
             ->with(1, 'tahunan', '2026-01-01')
-            ->andReturn(new \App\Models\RekapAlokasi());
+            ->andReturn(new \App\Models\RekapAlokasi);
 
         $job = new UpdateRekapAlokasi(1, 'tahunan', '2026-01-01');
         $job->handle($mockService);
@@ -74,7 +74,7 @@ describe('UpdateRekapAlokasi Job', function () {
         $mockService->shouldReceive('updateOrCreateRekapAlokasi')
             ->once()
             ->with(1, 'harian', null)
-            ->andReturn(new \App\Models\RekapAlokasi());
+            ->andReturn(new \App\Models\RekapAlokasi);
 
         $job = new UpdateRekapAlokasi(1, 'harian');
         $job->handle($mockService);

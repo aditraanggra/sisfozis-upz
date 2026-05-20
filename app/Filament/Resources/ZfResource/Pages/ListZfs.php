@@ -14,7 +14,7 @@ class ListZfs extends ListRecords
     {
         return [
             \EightyNine\ExcelImport\ExcelImportAction::make()
-                ->visible(fn() => User::currentIsSuperAdmin())
+                ->visible(fn () => User::currentIsSuperAdmin())
                 ->sampleExcel(
                     sampleData: [
                         ['unit_id' => 1, 'trx_date' => '2025-03-28', 'zf_rice' => 0, 'zf_amount' => 38000, 'total_muzakki' => 1, 'muzakki_name' => 'John Doe', 'desc' => 'Contoh Transaksi'],

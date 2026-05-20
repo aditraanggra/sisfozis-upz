@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 class AllocationConfigService
 {
     private const CACHE_KEY = 'allocation_configs';
+
     private const CACHE_TTL = 86400; // 24 hours
 
     /**
@@ -72,6 +73,7 @@ class AllocationConfigService
         if (bccomp($kelolaAmount, '0', $scale) === 0) {
             return '0';
         }
+
         return bcdiv(bcmul($kelolaAmount, $amilPercentage, $scale + 2), '100', $scale);
     }
 
@@ -84,6 +86,7 @@ class AllocationConfigService
         if (bccomp($kelolaAmount, '0', $scale) === 0) {
             return '0';
         }
+
         return bcsub($kelolaAmount, $hakAmilAmount, $scale);
     }
 
@@ -96,7 +99,7 @@ class AllocationConfigService
 
         // Filter configs for this ZIS type and find the applicable one
         $applicable = collect($configs)
-            ->filter(fn($c) => $c['zis_type'] === $zisType && $c['effective_year'] <= $year)
+            ->filter(fn ($c) => $c['zis_type'] === $zisType && $c['effective_year'] <= $year)
             ->sortByDesc('effective_year')
             ->first();
 

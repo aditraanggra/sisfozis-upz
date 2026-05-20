@@ -6,10 +6,10 @@ use App\Services\RekapZisService;
 
 /**
  * Command to rebuild ZIS (Zakat, Infak, Sedekah) recapitulation data.
- * 
+ *
  * Extends BaseRebuildCommand to leverage standardized interface and
  * common functionality for all rebuild operations.
- * 
+ *
  * @see Requirements 5.1
  */
 class RebuildRekapitulasi extends BaseRebuildCommand
@@ -19,7 +19,6 @@ class RebuildRekapitulasi extends BaseRebuildCommand
      *
      * @var string
      */
-
     protected $signature = 'rekap:rebuild-zis 
 
                             {--unit=all : ID unit atau "all" untuk semua unit}
@@ -38,15 +37,11 @@ class RebuildRekapitulasi extends BaseRebuildCommand
 
     /**
      * The fully qualified class name of the rekap service to use.
-     *
-     * @var string
      */
     protected string $serviceClass = RekapZisService::class;
 
     /**
      * Human-readable name of the rekap type for display purposes.
-     *
-     * @var string
      */
     protected string $rekapType = 'Rekapitulasi ZIS';
 }

@@ -4,7 +4,6 @@ namespace App\Filament\Clusters\Dskl\Resources;
 
 use App\Filament\Clusters\Dskl;
 use App\Filament\Clusters\Dskl\Resources\KurbanResource\Pages;
-use App\Filament\Clusters\Dskl\Resources\KurbanResource\RelationManagers;
 use App\Models\District;
 use App\Models\Kurban;
 use App\Models\UnitZis;
@@ -17,7 +16,6 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KurbanResource extends Resource
 {
@@ -102,19 +100,17 @@ class KurbanResource extends Resource
             ->filters([
                 SelectFilter::make('animal_types')
                     ->label('Jenis Hewan')
-                    ->options(fn() => Kurban::distinct()->pluck('animal_types', 'animal_types')->filter()),
+                    ->options(fn () => Kurban::distinct()->pluck('animal_types', 'animal_types')->filter()),
                 SelectFilter::make('district')
                     ->label('Kecamatan')
-                    ->options(fn() => District::pluck('name', 'id'))
+                    ->options(fn () => District::pluck('name', 'id'))
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when(
+                        fn (Builder $query, array $data): Builder => $query->when(
                             $data['value'] ?? null,
-                            fn(Builder $q, $districtId) =>
-                            $q->whereHas('unit', fn($q) => $q->where('district_id', $districtId))
+                            fn (Builder $q, $districtId) => $q->whereHas('unit', fn ($q) => $q->where('district_id', $districtId))
                         )
                     )
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin()),
                 SelectFilter::make('village')
                     ->label('Desa')
                     ->options(function () {
@@ -122,18 +118,17 @@ class KurbanResource extends Resource
                         if ($user && $user->isUpzKecamatan() && $user->district_id) {
                             return Village::where('district_id', $user->district_id)->pluck('name', 'id');
                         }
+
                         return Village::pluck('name', 'id');
                     })
                     ->searchable()
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when(
+                        fn (Builder $query, array $data): Builder => $query->when(
                             $data['value'] ?? null,
-                            fn(Builder $q, $villageId) =>
-                            $q->whereHas('unit', fn($q) => $q->where('village_id', $villageId))
+                            fn (Builder $q, $villageId) => $q->whereHas('unit', fn ($q) => $q->where('village_id', $villageId))
                         )
                     )
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
                 SelectFilter::make('unit_id')
                     ->label('Unit UPZ')
                     ->options(function () {
@@ -141,10 +136,11 @@ class KurbanResource extends Resource
                         if ($user && $user->isUpzKecamatan() && $user->district_id) {
                             return UnitZis::where('district_id', $user->district_id)->pluck('unit_name', 'id');
                         }
+
                         return UnitZis::pluck('unit_name', 'id');
                     })
                     ->searchable()
-                    ->visible(fn() => !User::currentIsUpzDesa()),
+                    ->visible(fn () => ! User::currentIsUpzDesa()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -7,7 +7,6 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class MuzakiChart extends ChartWidget
 {
-
     use InteractsWithPageFilters;
 
     protected static ?string $heading = 'Grafik Muzakki & Munfik';
@@ -49,15 +48,15 @@ class MuzakiChart extends ChartWidget
         $year = $this->filters['year'] ?? null;
 
         $data = $model::selectRaw("EXTRACT(MONTH FROM trx_date) as month, COUNT({$amountField}) as total")
-            ->when($year, fn($query) => $query->whereYear('trx_date', $year))
+            ->when($year, fn ($query) => $query->whereYear('trx_date', $year))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
         foreach ($data as $item) {
             // Index array dimulai dari 0, sedangkan bulan dimulai dari 1
-            $monthIndex = (int)$item->month - 1;
-            $monthlyData[$monthIndex] = (int)$item->total;
+            $monthIndex = (int) $item->month - 1;
+            $monthlyData[$monthIndex] = (int) $item->total;
         }
 
         return $monthlyData;
@@ -69,20 +68,19 @@ class MuzakiChart extends ChartWidget
         $year = $this->filters['year'] ?? null;
 
         $data = $model::selectRaw("EXTRACT(MONTH FROM trx_date) as month, SUM({$amountField}) as total")
-            ->when($year, fn($query) => $query->whereYear('trx_date', $year))
+            ->when($year, fn ($query) => $query->whereYear('trx_date', $year))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
         foreach ($data as $item) {
             // Index array dimulai dari 0, sedangkan bulan dimulai dari 1
-            $monthIndex = (int)$item->month - 1;
-            $monthlyData[$monthIndex] = (int)$item->total;
+            $monthIndex = (int) $item->month - 1;
+            $monthlyData[$monthIndex] = (int) $item->total;
         }
 
         return $monthlyData;
     }
-
 
     protected function getType(): string
     {

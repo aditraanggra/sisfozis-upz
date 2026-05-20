@@ -10,7 +10,7 @@ class ZfRequest extends BaseTransactionRequest
             'muzakki_name' => 'required|string|max:255',
             'zf_rice' => 'required|numeric|min:0',
             'zf_amount' => 'required|integer|min:0',
-            'total_muzakki' => 'required|integer|min:1'
+            'total_muzakki' => 'required|integer|min:1',
         ]);
     }
 }

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UnitZisResource;
-use Illuminate\Http\Request;
-use App\Models\UnitZis;
 use App\Http\Requests\UnitZisRequest;
+use App\Http\Resources\UnitZisResource;
+use App\Models\UnitZis;
+use Illuminate\Http\Request;
 
 class UnitZisController extends Controller
 {
@@ -30,7 +30,7 @@ class UnitZisController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Data UPZ Tidak Tersedia',
-                'data' => []
+                'data' => [],
             ], 200);
         }
 
@@ -62,10 +62,10 @@ class UnitZisController extends Controller
             'unit_finance' => 'required|string',
             'operator_phone' => 'required|string',
             'rice_price' => 'required|integer',
-            'is_verified' => 'boolean'
+            'is_verified' => 'boolean',
         ]);
 
-        // Membuat produk baru    
+        // Membuat produk baru
         $unitZis = UnitZis::create($validatedData);
 
         // Load relasi setelah membuat unitZis
@@ -83,7 +83,7 @@ class UnitZisController extends Controller
 
         return response()->json([
             'message' => 'Data berhasil diupdate',
-            'data' => $unitZis
+            'data' => $unitZis,
         ], 200);
     }
 

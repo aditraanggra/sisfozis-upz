@@ -45,27 +45,27 @@ class SetorZisOverview extends BaseWidget
         $totalRiceSold = $query->sum('zf_rice_sold_amount');
 
         return [
-            Stat::make('Total Setoran', 'Rp ' . number_format($totalDeposit, 0, ',', '.'))
-                ->description($totalTransactions . ' transaksi')
+            Stat::make('Total Setoran', 'Rp '.number_format($totalDeposit, 0, ',', '.'))
+                ->description($totalTransactions.' transaksi')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('primary'),
 
-            Stat::make('Setoran Zakat Fitrah (Uang)', 'Rp ' . number_format($totalZfAmount, 0, ',', '.'))
+            Stat::make('Setoran Zakat Fitrah (Uang)', 'Rp '.number_format($totalZfAmount, 0, ',', '.'))
                 ->description('Zakat Fitrah')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('success'),
 
-            Stat::make('Beras Belum Terjual', number_format($unsoldRice, 2, ',', '.') . ' Kg')
+            Stat::make('Beras Belum Terjual', number_format($unsoldRice, 2, ',', '.').' Kg')
                 ->description('Masih dalam bentuk beras')
                 ->descriptionIcon('heroicon-m-cube')
                 ->color($unsoldRice > 0 ? 'warning' : 'gray'),
 
-            Stat::make('Konversi Beras ke Uang', 'Rp ' . number_format($totalRiceSold, 0, ',', '.'))
+            Stat::make('Konversi Beras ke Uang', 'Rp '.number_format($totalRiceSold, 0, ',', '.'))
                 ->description('Beras yang sudah terjual')
                 ->descriptionIcon('heroicon-m-arrow-path')
                 ->color('info'),
 
-            Stat::make('Setoran ZM + IFS', 'Rp ' . number_format($totalZmAmount + $totalIfsAmount, 0, ',', '.'))
+            Stat::make('Setoran ZM + IFS', 'Rp '.number_format($totalZmAmount + $totalIfsAmount, 0, ',', '.'))
                 ->description('Zakat Maal & Infak/Sedekah')
                 ->descriptionIcon('heroicon-m-wallet')
                 ->color('info'),

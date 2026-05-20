@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-
 class SetorZisResource extends BaseTransactionResource
 {
     /**

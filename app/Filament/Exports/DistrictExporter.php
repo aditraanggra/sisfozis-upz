@@ -6,7 +6,6 @@ use App\Models\District;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
-use Illuminate\Contracts\Database\Query\Builder;
 
 class DistrictExporter extends Exporter
 {
@@ -24,19 +23,20 @@ class DistrictExporter extends Exporter
                 ->label('Total ZIS')
                 ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
                     $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
-                    $periodDate = $tahun . '-01-01';
+                    $periodDate = $tahun.'-01-01';
+
                     return $record->rekapZis
                         ->where('period', 'tahunan')
                         ->where('period_date', $periodDate)
                         ->sum('total_zf_amount') +
                         $record->rekapZis
-                        ->where('period', 'tahunan')
-                        ->where('period_date', $periodDate)
-                        ->sum('total_zm_amount') +
+                            ->where('period', 'tahunan')
+                            ->where('period_date', $periodDate)
+                            ->sum('total_zm_amount') +
                         $record->rekapZis
-                        ->where('period', 'tahunan')
-                        ->where('period_date', $periodDate)
-                        ->sum('total_ifs_amount');
+                            ->where('period', 'tahunan')
+                            ->where('period_date', $periodDate)
+                            ->sum('total_ifs_amount');
                 }),
 
             // Zakat Fitrah (Rice)
@@ -44,7 +44,8 @@ class DistrictExporter extends Exporter
                 ->label('Zakat Fitrah (Beras)')
                 ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
                     $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
-                    $periodDate = $tahun . '-01-01';
+                    $periodDate = $tahun.'-01-01';
+
                     return $record->rekapZis
                         ->where('period', 'tahunan')
                         ->where('period_date', $periodDate)
@@ -56,7 +57,8 @@ class DistrictExporter extends Exporter
                 ->label('Zakat Fitrah (Uang)')
                 ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
                     $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
-                    $periodDate = $tahun . '-01-01';
+                    $periodDate = $tahun.'-01-01';
+
                     return $record->rekapZis
                         ->where('period', 'tahunan')
                         ->where('period_date', $periodDate)
@@ -68,7 +70,8 @@ class DistrictExporter extends Exporter
                 ->label('Zakat Mal')
                 ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
                     $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
-                    $periodDate = $tahun . '-01-01';
+                    $periodDate = $tahun.'-01-01';
+
                     return $record->rekapZis
                         ->where('period', 'tahunan')
                         ->where('period_date', $periodDate)
@@ -80,7 +83,8 @@ class DistrictExporter extends Exporter
                 ->label('Infak Sedekah')
                 ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
                     $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
-                    $periodDate = $tahun . '-01-01';
+                    $periodDate = $tahun.'-01-01';
+
                     return $record->rekapZis
                         ->where('period', 'tahunan')
                         ->where('period_date', $periodDate)
@@ -92,7 +96,8 @@ class DistrictExporter extends Exporter
                 ->label('Muzakki Zakat Fitrah')
                 ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
                     $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
-                    $periodDate = $tahun . '-01-01';
+                    $periodDate = $tahun.'-01-01';
+
                     return $record->rekapZis
                         ->where('period', 'tahunan')
                         ->where('period_date', $periodDate)
@@ -104,7 +109,8 @@ class DistrictExporter extends Exporter
                 ->label('Muzakki Zakat Mal')
                 ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
                     $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
-                    $periodDate = $tahun . '-01-01';
+                    $periodDate = $tahun.'-01-01';
+
                     return $record->rekapZis
                         ->where('period', 'tahunan')
                         ->where('period_date', $periodDate)
@@ -116,7 +122,8 @@ class DistrictExporter extends Exporter
                 ->label('Munfiq')
                 ->getStateUsing(function (District $record, \Filament\Actions\Exports\Exporter $exporter) {
                     $tahun = $exporter->getOptions()['tahun'] ?? date('Y');
-                    $periodDate = $tahun . '-01-01';
+                    $periodDate = $tahun.'-01-01';
+
                     return $record->rekapZis
                         ->where('period', 'tahunan')
                         ->where('period_date', $periodDate)
@@ -127,10 +134,10 @@ class DistrictExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your district export has completed and ' . number_format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
+        $body = 'Your district export has completed and '.number_format($export->successful_rows).' '.str('row')->plural($export->successful_rows).' exported.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to export.';
         }
 
         return $body;

@@ -25,7 +25,7 @@ class UnitZis extends Model
         'operator_phone',
         'rice_price',
         'is_verified',
-        'profile_completion'
+        'profile_completion',
     ];
 
     public function user()
@@ -121,5 +121,10 @@ class UnitZis extends Model
     public function lpzs()
     {
         return $this->hasMany(Lpz::class, 'unit_id');
+    }
+
+    public function laporanKurbans()
+    {
+        return $this->hasMany(LaporanKurban::class, 'unit_id');
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class AllocationConfig extends Model
 {
@@ -29,7 +29,9 @@ class AllocationConfig extends Model
 
     // ZIS type enum values
     public const TYPE_ZF = 'zf';
+
     public const TYPE_ZM = 'zm';
+
     public const TYPE_IFS = 'ifs';
 
     public const TYPES = [
@@ -40,7 +42,10 @@ class AllocationConfig extends Model
 
     // Default fallback percentages (matching current hardcoded values)
     public const DEFAULT_SETOR = 30.00;
+
     public const DEFAULT_KELOLA = 70.00;
+
     public const DEFAULT_AMIL_ZF_ZM = 12.50;
+
     public const DEFAULT_AMIL_IFS = 20.00;
 }

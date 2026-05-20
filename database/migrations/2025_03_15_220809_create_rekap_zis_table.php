@@ -17,14 +17,14 @@ return new class extends Migration
             $table->string('transaction_type');
             $table->string('period');
             $table->date('period_date');
-            //Zakat FItrah
+            // Zakat FItrah
             $table->float('total_zf_rice')->default(0)->nullable();
             $table->integer('total_zf_amount')->default(0)->nullable();
             $table->integer('total_zf_muzakki')->default(0)->nullable();
-            //Zakat Mal
+            // Zakat Mal
             $table->integer('total_zm_amount')->default(0)->nullable();
             $table->integer('total_zm_muzakki')->default(0)->nullable();
-            //Infak Sedekah
+            // Infak Sedekah
             $table->integer('total_ifs_amount')->default(0)->nullable();
             $table->integer('total_ifs_munfiq')->default(0)->nullable();
             $table->timestamps();

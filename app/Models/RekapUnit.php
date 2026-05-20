@@ -20,7 +20,7 @@ class RekapUnit extends Model
         't_pendistribusian',
         't_setor',
         'muzakki',
-        'mustahik'
+        'mustahik',
     ];
 
     protected $casts = [
@@ -30,7 +30,7 @@ class RekapUnit extends Model
         't_pendistribusian' => 'integer',
         't_setor' => 'integer',
         'muzakki' => 'integer',
-        'mustahik' => 'integer'
+        'mustahik' => 'integer',
     ];
 
     public function unit()

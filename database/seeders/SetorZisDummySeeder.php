@@ -2,13 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Zf;
-use App\Models\Zm;
+use App\Models\AllocationConfig;
 use App\Models\Ifs;
 use App\Models\SetorZis;
-use App\Models\AllocationConfig;
+use App\Models\Zf;
+use App\Models\Zm;
 use App\Services\AllocationConfigService;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class SetorZisDummySeeder extends Seeder
@@ -40,7 +40,7 @@ class SetorZisDummySeeder extends Seeder
         // Proses Zakat Fitrah
         foreach ($zfTransactions as $zf) {
             $date = $zf->trx_date->format('Y-m-d');
-            if (!isset($transactionsByDate[$date])) {
+            if (! isset($transactionsByDate[$date])) {
                 $transactionsByDate[$date] = [
                     'zf_amount' => 0,
                     'zf_rice' => 0,
@@ -55,7 +55,7 @@ class SetorZisDummySeeder extends Seeder
         // Proses Zakat Maal
         foreach ($zmTransactions as $zm) {
             $date = $zm->trx_date->format('Y-m-d');
-            if (!isset($transactionsByDate[$date])) {
+            if (! isset($transactionsByDate[$date])) {
                 $transactionsByDate[$date] = [
                     'zf_amount' => 0,
                     'zf_rice' => 0,
@@ -69,7 +69,7 @@ class SetorZisDummySeeder extends Seeder
         // Proses Infak/Sedekah
         foreach ($ifsTransactions as $ifs) {
             $date = $ifs->trx_date->format('Y-m-d');
-            if (!isset($transactionsByDate[$date])) {
+            if (! isset($transactionsByDate[$date])) {
                 $transactionsByDate[$date] = [
                     'zf_amount' => 0,
                     'zf_rice' => 0,
@@ -123,11 +123,11 @@ class SetorZisDummySeeder extends Seeder
             // Insert data baru
             DB::table('setor_zis')->insert($setorData);
 
-            $this->command->info('✓ Berhasil membuat ' . count($setorData) . ' transaksi setor_zis untuk unit_id ' . $unitId);
-            $this->command->info('✓ Total deposit: Rp ' . number_format(array_sum(array_column($setorData, 'total_deposit'))));
+            $this->command->info('✓ Berhasil membuat '.count($setorData).' transaksi setor_zis untuk unit_id '.$unitId);
+            $this->command->info('✓ Total deposit: Rp '.number_format(array_sum(array_column($setorData, 'total_deposit'))));
             $this->command->info('✓ Persentase setor diambil dari AllocationConfigService berdasarkan tanggal transaksi');
         } else {
-            $this->command->warn('⚠ Tidak ada transaksi ZIS untuk unit_id ' . $unitId);
+            $this->command->warn('⚠ Tidak ada transaksi ZIS untuk unit_id '.$unitId);
         }
     }
 }

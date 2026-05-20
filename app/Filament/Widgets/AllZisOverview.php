@@ -13,7 +13,6 @@ use Illuminate\Support\Carbon;
 
 class AllZisOverview extends BaseWidget
 {
-
     use InteractsWithPageFilters;
 
     protected function getStats(): array
@@ -61,7 +60,7 @@ class AllZisOverview extends BaseWidget
         return [
             Stat::make(
                 'Total Penerimaan Zakat Fitrah',
-                'Rp ' . number_format($zakatFitrahCurrent, 0, ',', '.')
+                'Rp '.number_format($zakatFitrahCurrent, 0, ',', '.')
             )
                 ->description($zakatFitrahDescription)
                 ->descriptionIcon($zakatFitrahIcon)
@@ -69,7 +68,7 @@ class AllZisOverview extends BaseWidget
                 ->color('primary'),
             Stat::make(
                 'Total Penerimaan Zakat Mal',
-                'Rp ' . number_format($zakatMalCurrent, 0, ',', '.')
+                'Rp '.number_format($zakatMalCurrent, 0, ',', '.')
             )
                 ->description($zakatMalDescription)
                 ->descriptionIcon($zakatMalIcon)
@@ -77,7 +76,7 @@ class AllZisOverview extends BaseWidget
                 ->color('primary'),
             Stat::make(
                 'Total Penerimaan Infaq/Shodaqoh',
-                'Rp ' . number_format($infaqCurrent, 0, ',', '.')
+                'Rp '.number_format($infaqCurrent, 0, ',', '.')
             )
                 ->description($infaqDescription)
                 ->descriptionIcon($infaqIcon)
@@ -89,27 +88,27 @@ class AllZisOverview extends BaseWidget
     protected function calculateZakatFitrahTotal(?string $startDate, ?string $endDate, ?string $year): float
     {
         return (float) Zf::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('zf_amount');
     }
 
     protected function calculateZakatMalTotal(?string $startDate, ?string $endDate, ?string $year): float
     {
         return (float) Zm::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('amount');
     }
 
     protected function calculateInfaqTotal(?string $startDate, ?string $endDate, ?string $year): float
     {
         return (float) Ifs::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('amount');
     }
 
@@ -181,7 +180,7 @@ class AllZisOverview extends BaseWidget
             $percentage = ($difference / $previousTotal) * 100;
 
             return [
-                'Naik ' . number_format($percentage, 2, ',', '.') . '% dibanding tahun lalu',
+                'Naik '.number_format($percentage, 2, ',', '.').'% dibanding tahun lalu',
                 'heroicon-m-arrow-trending-up',
                 'success',
             ];
@@ -191,7 +190,7 @@ class AllZisOverview extends BaseWidget
             $percentage = abs($difference) / $previousTotal * 100;
 
             return [
-                'Turun ' . number_format($percentage, 2, ',', '.') . '% dibanding tahun lalu',
+                'Turun '.number_format($percentage, 2, ',', '.').'% dibanding tahun lalu',
                 'heroicon-m-arrow-trending-down',
                 'danger',
             ];

@@ -43,7 +43,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL') . '/storage',
+            'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -65,7 +65,7 @@ return [
         'cloudinary' => [
             'driver' => 'cloudinary',
             'url' => env('CLOUDINARY_URL'),
-            //'notification_url' => env('CLOUDINARY_NOTIFICATION_URL'),
+            // 'notification_url' => env('CLOUDINARY_NOTIFICATION_URL'),
             'throw' => false,
             'report' => false,
         ],

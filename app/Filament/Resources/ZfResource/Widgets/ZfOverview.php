@@ -27,8 +27,8 @@ class ZfOverview extends BaseWidget
         $totalMuzakki = (clone $baseQuery)->sum('total_muzakki');
 
         return [
-            Stat::make('Total Zakat Fitrah Uang', 'Rp.' . number_format($totalAmount, 0, ',', '.')),
-            Stat::make('Total Zakat Fitrah Beras (Kg)', number_format($totalRice, 2, ',', '.') . ' Kg'),
+            Stat::make('Total Zakat Fitrah Uang', 'Rp.'.number_format($totalAmount, 0, ',', '.')),
+            Stat::make('Total Zakat Fitrah Beras (Kg)', number_format($totalRice, 2, ',', '.').' Kg'),
             Stat::make('Total Muzakki', $totalMuzakki),
         ];
     }

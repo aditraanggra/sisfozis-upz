@@ -11,23 +11,25 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Service for rebuilding Hak Amil (Amil Rights) recapitulation data.
- * 
+ *
  * Extends BaseRekapService to leverage chunked processing and bulk upsert
  * for optimized performance when processing large datasets.
  */
 class RekapHakAmilService extends BaseRekapService
 {
     protected string $rekapTable = 'rekap_hak_amil';
+
     protected string $periodColumn = 'periode';
+
     protected string $periodDateColumn = 'periode_date';
 
     /**
      * Rebuild rekap for given parameters using batch processing
      *
-     * @param string $unitId Unit ID or 'all' for all units
-     * @param string $periode Period type: harian, bulanan, tahunan, or all
-     * @param Carbon|null $startDate Start date for rebuild
-     * @param Carbon|null $endDate End date for rebuild
+     * @param  string  $unitId  Unit ID or 'all' for all units
+     * @param  string  $periode  Period type: harian, bulanan, tahunan, or all
+     * @param  Carbon|null  $startDate  Start date for rebuild
+     * @param  Carbon|null  $endDate  End date for rebuild
      * @return array Results with 'processed' count and 'errors' array
      */
     public function rebuild(
@@ -50,11 +52,6 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Rebuild rekap for a specific unit
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      */
     protected function rebuildForUnit(
         int $unitId,
@@ -76,18 +73,13 @@ class RekapHakAmilService extends BaseRekapService
             $records = array_merge($records, $this->buildYearlyRecords($unitId, $startDate, $endDate));
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             $this->bulkUpsert($records);
         }
     }
 
     /**
      * Build daily records using aggregated GROUP BY query
-     *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function buildDailyRecords(int $unitId, Carbon $startDate, Carbon $endDate): array
     {
@@ -100,11 +92,6 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Build monthly records using aggregated GROUP BY query
-     *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function buildMonthlyRecords(int $unitId, Carbon $startDate, Carbon $endDate): array
     {
@@ -117,11 +104,6 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Build yearly records using aggregated GROUP BY query
-     *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function buildYearlyRecords(int $unitId, Carbon $startDate, Carbon $endDate): array
     {
@@ -134,11 +116,6 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Build a single rekap record from aggregated data
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param object $data
-     * @return array
      */
     protected function buildRekapRecord(int $unitId, string $periode, object $data): array
     {
@@ -158,14 +135,10 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Get aggregated data for a unit using GROUP BY queries
-     * 
+     *
      * Uses database-level aggregation instead of PHP loops for better performance.
      *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @param string $groupBy Grouping type: daily, monthly, yearly
-     * @return array
+     * @param  string  $groupBy  Grouping type: daily, monthly, yearly
      */
     protected function getAggregatedData(
         int $unitId,
@@ -185,7 +158,7 @@ class RekapHakAmilService extends BaseRekapService
             ->selectRaw("COALESCE(SUM(CASE WHEN fund_type='zakat fitrah' AND asnaf='amil' AND total_rice > 0 THEN total_rice ELSE 0 END), 0) as t_pendis_ha_zf_rice")
             ->selectRaw("COALESCE(SUM(CASE WHEN fund_type='zakat mal' AND asnaf='amil' THEN total_amount ELSE 0 END), 0) as t_pendis_ha_zm")
             ->selectRaw("COALESCE(SUM(CASE WHEN fund_type='infak' AND program='operasional' THEN total_amount ELSE 0 END), 0) as t_pendis_ha_ifs")
-            ->selectRaw("SUM(beneficiary) as total_pm")
+            ->selectRaw('SUM(beneficiary) as total_pm')
             ->groupByRaw($dateFormat)
             ->get()
             ->toArray();
@@ -193,16 +166,12 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Get the date format expression for GROUP BY based on database driver
-     *
-     * @param string $groupBy
-     * @param string $driver
-     * @return string
      */
     protected function getDateFormatExpression(string $groupBy, string $driver): string
     {
         if ($driver === 'pgsql') {
             return match ($groupBy) {
-                'daily' => "DATE(trx_date)",
+                'daily' => 'DATE(trx_date)',
                 'monthly' => "DATE_TRUNC('month', trx_date)",
                 'yearly' => "DATE_TRUNC('year', trx_date)",
             };
@@ -210,7 +179,7 @@ class RekapHakAmilService extends BaseRekapService
 
         // MySQL/MariaDB
         return match ($groupBy) {
-            'daily' => "DATE(trx_date)",
+            'daily' => 'DATE(trx_date)',
             'monthly' => "DATE_FORMAT(trx_date, '%Y-%m-01')",
             'yearly' => "DATE_FORMAT(trx_date, '%Y-01-01')",
         };
@@ -218,10 +187,6 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Get the period date expression for SELECT based on database driver
-     *
-     * @param string $groupBy
-     * @param string $driver
-     * @return string
      */
     protected function getPeriodDateExpression(string $groupBy, string $driver): string
     {
@@ -248,12 +213,12 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Update rekapitulasi harian untuk tanggal dan unit tertentu
-     * 
+     *
      * This method is kept for backward compatibility with observers.
      * It does NOT trigger periodic recalculation to avoid redundant processing.
-     * 
-     * @param string|Carbon $date
-     * @param int $unitId
+     *
+     * @param  string|Carbon  $date
+     * @param  int  $unitId
      * @return RekapHakAmil
      */
     public function updateDailyRekapHakAmil($date, $unitId)
@@ -281,17 +246,17 @@ class RekapHakAmilService extends BaseRekapService
 
             return $rekapitulasi;
         } catch (\Exception $e) {
-            Log::error('Error updating rekapitulasi: ' . $e->getMessage());
+            Log::error('Error updating rekapitulasi: '.$e->getMessage());
             throw $e;
         }
     }
 
     /**
      * Update rekapitulasi bulanan
-     * 
-     * @param int $month
-     * @param int $year
-     * @param int $unitId
+     *
+     * @param  int  $month
+     * @param  int  $year
+     * @param  int  $unitId
      * @return RekapHakAmil
      */
     public function updateMonthlyRekapHakAmil($month, $year, $unitId)
@@ -315,16 +280,16 @@ class RekapHakAmilService extends BaseRekapService
 
             return $rekapitulasi;
         } catch (\Exception $e) {
-            Log::error('Error updating monthly rekapitulasi: ' . $e->getMessage());
+            Log::error('Error updating monthly rekapitulasi: '.$e->getMessage());
             throw $e;
         }
     }
 
     /**
      * Update rekapitulasi tahunan
-     * 
-     * @param int $year
-     * @param int $unitId
+     *
+     * @param  int  $year
+     * @param  int  $unitId
      * @return RekapHakAmil
      */
     public function updateYearlyRekapHakAmil($year, $unitId)
@@ -348,17 +313,15 @@ class RekapHakAmilService extends BaseRekapService
 
             return $rekapitulasi;
         } catch (\Exception $e) {
-            Log::error('Error updating yearly rekapitulasi: ' . $e->getMessage());
+            Log::error('Error updating yearly rekapitulasi: '.$e->getMessage());
             throw $e;
         }
     }
 
     /**
      * Ambil data HakAmil untuk rentang tanggal tertentu (legacy method)
-     * 
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @param int $unitId
+     *
+     * @param  int  $unitId
      * @return object
      */
     protected function getHakAmilData(Carbon $startDate, Carbon $endDate, $unitId)
@@ -377,8 +340,8 @@ class RekapHakAmilService extends BaseRekapService
 
     /**
      * Menyiapkan data untuk update rekapitulasi (legacy method)
-     * 
-     * @param object $HakAmilData
+     *
+     * @param  object  $HakAmilData
      * @return array
      */
     protected function prepareRekapitulasiData($HakAmilData)

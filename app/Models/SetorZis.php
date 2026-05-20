@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class SetorZis extends Model
 {
@@ -32,13 +32,13 @@ class SetorZis extends Model
     protected static function booted()
     {
         static::addGlobalScope('user_access', function (Builder $builder) {
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return;
             }
 
             $user = Auth::user();
 
-            if (!$user) {
+            if (! $user) {
                 return;
             }
 
@@ -117,10 +117,10 @@ class SetorZis extends Model
     public function scopeUnsoldRice(Builder $query): Builder
     {
         return $query->where('zf_rice_deposit', '>', 0)
-                     ->where(function ($q) {
-                         $q->where('zf_rice_sold_amount', 0)
-                           ->orWhereNull('zf_rice_sold_amount');
-                     });
+            ->where(function ($q) {
+                $q->where('zf_rice_sold_amount', 0)
+                    ->orWhereNull('zf_rice_sold_amount');
+            });
     }
 
     /**

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Scopes\ZisScope;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Zf extends Model
 {
@@ -19,19 +19,19 @@ class Zf extends Model
         'zf_rice',
         'zf_amount',
         'total_muzakki',
-        'desc'
+        'desc',
     ];
 
     protected static function booted()
     {
         static::addGlobalScope('user_access', function (Builder $builder) {
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return;
             }
 
             $user = Auth::user();
 
-            if (!$user) {
+            if (! $user) {
                 return;
             }
 
@@ -55,7 +55,7 @@ class Zf extends Model
         'trx_date' => 'date',
         'zf_rice' => 'float',
         'zf_amount' => 'integer',
-        'total_muzakki' => 'integer'
+        'total_muzakki' => 'integer',
     ];
 
     public function unit()

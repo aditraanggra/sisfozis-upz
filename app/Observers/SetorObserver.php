@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\SetorZis;
 use App\Jobs\UpdateRekapSetor;
+use App\Models\SetorZis;
 
 class SetorObserver
 {

@@ -31,7 +31,7 @@ class Top10DesaChart extends ChartWidget
         if ($topDesa->isEmpty()) {
             return [
                 'datasets' => [],
-                'labels'   => [],
+                'labels' => [],
             ];
         }
 
@@ -40,20 +40,20 @@ class Top10DesaChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label'           => 'Total Uang (Rp)',
-                    'data'            => $topDesa->pluck('total_zis')->toArray(),
+                    'label' => 'Total Uang (Rp)',
+                    'data' => $topDesa->pluck('total_zis')->toArray(),
                     'backgroundColor' => 'rgba(16, 185, 129, 0.8)',
-                    'borderColor'     => '#059669',
-                    'borderWidth'     => 1,
-                    'yAxisID'         => 'y',
+                    'borderColor' => '#059669',
+                    'borderWidth' => 1,
+                    'yAxisID' => 'y',
                 ],
                 [
-                    'label'           => 'Total Beras (kg)',
-                    'data'            => $topDesa->pluck('total_beras')->toArray(),
+                    'label' => 'Total Beras (kg)',
+                    'data' => $topDesa->pluck('total_beras')->toArray(),
                     'backgroundColor' => 'rgba(245, 158, 11, 0.8)',
-                    'borderColor'     => '#d97706',
-                    'borderWidth'     => 1,
-                    'yAxisID'         => 'y1',
+                    'borderColor' => '#d97706',
+                    'borderWidth' => 1,
+                    'yAxisID' => 'y1',
                 ],
             ],
             'labels' => $labels,
@@ -124,11 +124,11 @@ class Top10DesaChart extends ChartWidget
             ->whereNotNull('unit_zis.village_id')
             ->when(
                 User::currentIsUpzKecamatan() && $user?->district_id,
-                fn($q) => $q->where('unit_zis.district_id', $user->district_id)
+                fn ($q) => $q->where('unit_zis.district_id', $user->district_id)
             )
             ->when(
                 User::currentIsUpzDesa() && $user?->village_id,
-                fn($q) => $q->where('unit_zis.village_id', $user->village_id)
+                fn ($q) => $q->where('unit_zis.village_id', $user->village_id)
             )
             ->groupBy('villages.id', 'villages.name')
             ->havingRaw('SUM(COALESCE(rekap_zis.total_zf_amount, 0) + COALESCE(rekap_zis.total_zm_amount, 0) + COALESCE(rekap_zis.total_ifs_amount, 0)) > 0')

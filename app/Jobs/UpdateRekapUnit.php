@@ -34,7 +34,9 @@ class UpdateRekapUnit implements ShouldQueue
      * @var int
      */
     public $tries = 3;
+
     public $backoff = [30, 60, 120];
+
     public $timeout = 120;
 
     /**

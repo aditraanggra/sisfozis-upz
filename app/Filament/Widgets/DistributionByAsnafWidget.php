@@ -24,9 +24,9 @@ class DistributionByAsnafWidget extends ChartWidget
 
         $data = Distribution::query()
             ->selectRaw('asnaf, SUM(total_amount) as total_amount, SUM(total_rice) as total_rice')
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->whereNotNull('asnaf')
             ->groupBy('asnaf')
             ->orderBy('asnaf')
@@ -51,7 +51,7 @@ class DistributionByAsnafWidget extends ChartWidget
                     'yAxisID' => 'y1',
                 ],
             ],
-            'labels' => $data->pluck('asnaf')->map(fn($asnaf) => Str::title($asnaf))->toArray(),
+            'labels' => $data->pluck('asnaf')->map(fn ($asnaf) => Str::title($asnaf))->toArray(),
         ];
     }
 

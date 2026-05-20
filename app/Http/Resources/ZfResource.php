@@ -10,7 +10,7 @@ class ZfResource extends BaseTransactionResource
             'muzakki_name' => $this->muzakki_name,
             'zf_rice' => $this->zf_rice,
             'zf_amount' => $this->zf_amount,
-            'total_muzakki' => $this->total_muzakki
+            'total_muzakki' => $this->total_muzakki,
         ]);
     }
 }

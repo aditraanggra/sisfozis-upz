@@ -60,12 +60,12 @@ class DistributionStatsWidget extends BaseWidget
         );
 
         return [
-            Stat::make('Total Pendistribusian (Uang)', 'Rp ' . number_format($totalAmountCurrent, 0, ',', '.'))
+            Stat::make('Total Pendistribusian (Uang)', 'Rp '.number_format($totalAmountCurrent, 0, ',', '.'))
                 ->description($amountDescription)
                 ->descriptionIcon($amountIcon)
                 ->color($amountColor),
 
-            Stat::make('Total Pendistribusian (Beras)', number_format($totalRiceCurrent, 2, ',', '.') . ' Kg')
+            Stat::make('Total Pendistribusian (Beras)', number_format($totalRiceCurrent, 2, ',', '.').' Kg')
                 ->description($riceDescription)
                 ->descriptionIcon($riceIcon)
                 ->color($riceColor),
@@ -80,27 +80,27 @@ class DistributionStatsWidget extends BaseWidget
     protected function calculateAmount(?string $startDate, ?string $endDate, ?string $year): float
     {
         return (float) Distribution::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('total_amount');
     }
 
     protected function calculateRice(?string $startDate, ?string $endDate, ?string $year): float
     {
         return (float) Distribution::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('total_rice');
     }
 
     protected function calculateBeneficiaries(?string $startDate, ?string $endDate, ?string $year): float
     {
         return (float) Distribution::query()
-            ->when($startDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
-            ->when($endDate, fn(EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
-            ->when($year, fn(EloquentBuilder $query) => $query->whereYear('trx_date', $year))
+            ->when($startDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '>=', $startDate))
+            ->when($endDate, fn (EloquentBuilder $query) => $query->whereDate('trx_date', '<=', $endDate))
+            ->when($year, fn (EloquentBuilder $query) => $query->whereYear('trx_date', $year))
             ->sum('beneficiary');
     }
 
@@ -138,7 +138,7 @@ class DistributionStatsWidget extends BaseWidget
         try {
             return Carbon::parse($dateString)->subYear()->toDateString();
         } catch (\Exception $e) {
-            Log::warning('Invalid date string for parsing: ' . $dateString, ['error' => $e->getMessage()]);
+            Log::warning('Invalid date string for parsing: '.$dateString, ['error' => $e->getMessage()]);
 
             return null;
         }
@@ -187,7 +187,7 @@ class DistributionStatsWidget extends BaseWidget
             $percentage = ($difference / $previousTotal) * 100;
 
             return [
-                'Naik ' . number_format($percentage, 2, ',', '.') . '% dibanding tahun lalu',
+                'Naik '.number_format($percentage, 2, ',', '.').'% dibanding tahun lalu',
                 'heroicon-m-arrow-trending-up',
                 'success',
             ];
@@ -197,7 +197,7 @@ class DistributionStatsWidget extends BaseWidget
             $percentage = abs($difference) / $previousTotal * 100;
 
             return [
-                'Turun ' . number_format($percentage, 2, ',', '.') . '% dibanding tahun lalu',
+                'Turun '.number_format($percentage, 2, ',', '.').'% dibanding tahun lalu',
                 'heroicon-m-arrow-trending-down',
                 'danger',
             ];

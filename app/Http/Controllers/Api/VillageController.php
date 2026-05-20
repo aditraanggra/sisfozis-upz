@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Village;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VillageResorces;
+use App\Models\Village;
 use Illuminate\Http\Request;
 
 class VillageController extends Controller
@@ -12,7 +12,6 @@ class VillageController extends Controller
     /**
      * index
      *
-     * @param Request $request
      * @return void
      */
     public function index(Request $request)

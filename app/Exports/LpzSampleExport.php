@@ -7,9 +7,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class LpzSampleExport implements FromArray, WithHeadings
 {
-    public function __construct(protected array $data)
-    {
-    }
+    public function __construct(protected array $data) {}
 
     public function array(): array
     {

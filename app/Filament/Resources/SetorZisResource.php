@@ -2,30 +2,26 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\SetorZisExporter;
 use App\Filament\Resources\SetorZisResource\Pages;
-use App\Filament\Resources\SetorZisResource\RelationManagers;
 use App\Models\District;
 use App\Models\SetorZis;
 use App\Models\UnitZis;
 use App\Models\User;
 use App\Models\Village;
 use Filament\Forms;
-use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
+use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
-use Filament\Notifications\Notification;
-use App\Filament\Exports\SetorZisExporter;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ExportBulkAction;
 
 class SetorZisResource extends Resource
 {
@@ -38,7 +34,7 @@ class SetorZisResource extends Resource
      */
     private static function getCloudinaryUrl(?string $path): ?string
     {
-        if (!$path) {
+        if (! $path) {
             return null;
         }
         try {
@@ -52,6 +48,7 @@ class SetorZisResource extends Resource
                 }
             }
             $cloudinary = app(\Cloudinary\Cloudinary::class);
+
             return (string) $cloudinary->image($publicId)->toUrl();
         } catch (\Exception $e) {
             return str_starts_with($path, 'http') ? $path : null;
@@ -64,11 +61,12 @@ class SetorZisResource extends Resource
     private static function getCloudinaryDownloadUrl(?string $path): ?string
     {
         $url = self::getCloudinaryUrl($path);
-        if (!$url) {
+        if (! $url) {
             return null;
         }
         $separator = str_contains($url, '?') ? '&' : '?';
-        return $url . $separator . 'fl_attachment=true';
+
+        return $url.$separator.'fl_attachment=true';
     }
 
     protected static ?string $navigationGroup = 'Rekap & Transaksi';
@@ -137,18 +135,18 @@ class SetorZisResource extends Resource
                 Forms\Components\Placeholder::make('current_upload')
                     ->label('Gambar Bukti Setor Saat Ini')
                     ->content(function ($record) {
-                        if (!$record || !$record->upload) {
+                        if (! $record || ! $record->upload) {
                             return 'Belum ada gambar';
                         }
-                        
+
                         $url = self::getCloudinaryUrl($record->upload);
-                        
-                        if (!$url) {
+
+                        if (! $url) {
                             return 'Gambar tidak ditemukan atau URL tidak valid';
                         }
 
                         return new \Illuminate\Support\HtmlString(
-                            '<img src="' . e($url) . '" style="max-width: 400px; max-height: 300px; border-radius: 8px; object-fit: contain;" />'
+                            '<img src="'.e($url).'" style="max-width: 400px; max-height: 300px; border-radius: 8px; object-fit: contain;" />'
                         );
                     })
                     ->visible(fn ($record) => $record !== null),
@@ -171,24 +169,26 @@ class SetorZisResource extends Resource
                         $tanggal = date('Ymd');
                         $timestamp = time();
                         $extension = $file->getClientOriginalExtension();
+
                         return "setor_{$tanggal}_{$noRegister}_{$namaUnit}_{$timestamp}.{$extension}";
                     }),
                 Forms\Components\Placeholder::make('current_zf_rice_sold_proof')
                     ->label('Berita Acara Penjualan Saat Ini (PDF)')
                     ->content(function ($record) {
-                        if (!$record || empty($record->zf_rice_sold_proof)) {
+                        if (! $record || empty($record->zf_rice_sold_proof)) {
                             return 'Belum ada file';
                         }
+
                         return new \Illuminate\Support\HtmlString(
                             '<div class="flex items-center gap-2">
                                 <x-heroicon-o-document-text class="w-6 h-6 text-primary-500" />
-                                <a href="' . self::getCloudinaryUrl($record->zf_rice_sold_proof) . '" target="_blank" class="text-primary-600 hover:underline">
+                                <a href="'.self::getCloudinaryUrl($record->zf_rice_sold_proof).'" target="_blank" class="text-primary-600 hover:underline">
                                     Buka File
                                 </a>
                             </div>'
                         );
                     })
-                    ->visible(fn ($record) => $record !== null && !empty($record->zf_rice_sold_proof)),
+                    ->visible(fn ($record) => $record !== null && ! empty($record->zf_rice_sold_proof)),
                 Forms\Components\FileUpload::make('zf_rice_sold_proof')
                     ->label('Upload Berita Acara Penjualan Baru')
                     ->disk('cloudinary')
@@ -208,6 +208,7 @@ class SetorZisResource extends Resource
                         $tanggal = date('Ymd');
                         $timestamp = time();
                         $extension = $file->getClientOriginalExtension();
+
                         return "bap_{$tanggal}_{$noRegister}_{$namaUnit}_{$timestamp}.{$extension}";
                     }),
             ]);
@@ -283,11 +284,11 @@ class SetorZisResource extends Resource
                     ->label('Tujuan')
                     ->badge()
                     ->color(fn (?string $state): string => match ($state) {
-         'upz_desa' => 'success',
-         'upz_kecamatan' => 'info',
-         'baznas', 'BAZNAS' => 'gray',
-         default => 'primary',
-     })
+                        'upz_desa' => 'success',
+                        'upz_kecamatan' => 'info',
+                        'baznas', 'BAZNAS' => 'gray',
+                        default => 'primary',
+                    })
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'upz_desa' => 'UPZ Desa',
                         'upz_kecamatan' => 'UPZ Kecamatan',
@@ -348,19 +349,19 @@ class SetorZisResource extends Resource
                         for ($year = $currentYear; $year >= 2020; $year--) {
                             $years[$year] = (string) $year;
                         }
+
                         return $years;
                     })
                     ->default(now()->year)
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when($data['value'] ?? null, fn(Builder $q, $year) => $q->whereYear('trx_date', $year))
+                        fn (Builder $query, array $data): Builder => $query->when($data['value'] ?? null, fn (Builder $q, $year) => $q->whereYear('trx_date', $year))
                     ),
                 SelectFilter::make('status')
                     ->label('Status')
-                    ->options(fn() => SetorZis::distinct()->pluck('status', 'status')->filter()),
+                    ->options(fn () => SetorZis::distinct()->pluck('status', 'status')->filter()),
                 SelectFilter::make('validation')
                     ->label('Validasi')
-                    ->options(fn() => SetorZis::distinct()->pluck('validation', 'validation')->filter()),
+                    ->options(fn () => SetorZis::distinct()->pluck('validation', 'validation')->filter()),
                 SelectFilter::make('deposit_destination')
                     ->label('Tujuan Setoran')
                     ->options([
@@ -384,16 +385,14 @@ class SetorZisResource extends Resource
                     }),
                 SelectFilter::make('district')
                     ->label('Kecamatan')
-                    ->options(fn() => District::pluck('name', 'id'))
+                    ->options(fn () => District::pluck('name', 'id'))
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when(
+                        fn (Builder $query, array $data): Builder => $query->when(
                             $data['value'] ?? null,
-                            fn(Builder $q, $districtId) =>
-                            $q->whereHas('unit', fn($q) => $q->where('district_id', $districtId))
+                            fn (Builder $q, $districtId) => $q->whereHas('unit', fn ($q) => $q->where('district_id', $districtId))
                         )
                     )
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin()),
                 SelectFilter::make('village')
                     ->label('Desa')
                     ->options(function () {
@@ -401,18 +400,17 @@ class SetorZisResource extends Resource
                         if ($user && $user->isUpzKecamatan() && $user->district_id) {
                             return Village::where('district_id', $user->district_id)->pluck('name', 'id');
                         }
+
                         return Village::pluck('name', 'id');
                     })
                     ->searchable()
                     ->query(
-                        fn(Builder $query, array $data): Builder =>
-                        $query->when(
+                        fn (Builder $query, array $data): Builder => $query->when(
                             $data['value'] ?? null,
-                            fn(Builder $q, $villageId) =>
-                            $q->whereHas('unit', fn($q) => $q->where('village_id', $villageId))
+                            fn (Builder $q, $villageId) => $q->whereHas('unit', fn ($q) => $q->where('village_id', $villageId))
                         )
                     )
-                    ->visible(fn() => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
+                    ->visible(fn () => User::currentIsSuperAdmin() || User::currentIsAdmin() || User::currentIsUpzKecamatan()),
                 SelectFilter::make('unit_id')
                     ->label('Unit UPZ')
                     ->options(function () {
@@ -420,10 +418,11 @@ class SetorZisResource extends Resource
                         if ($user && $user->isUpzKecamatan() && $user->district_id) {
                             return UnitZis::where('district_id', $user->district_id)->pluck('unit_name', 'id');
                         }
+
                         return UnitZis::pluck('unit_name', 'id');
                     })
                     ->searchable()
-                    ->visible(fn() => !User::currentIsUpzDesa()),
+                    ->visible(fn () => ! User::currentIsUpzDesa()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -475,7 +474,7 @@ class SetorZisResource extends Resource
                             ->label('Bukti Setor')
                             ->disk('cloudinary')
                             ->height(300)
-                            ->visible(fn ($record) => $record->upload && !str_ends_with(strtolower($record->upload), '.pdf')),
+                            ->visible(fn ($record) => $record->upload && ! str_ends_with(strtolower($record->upload), '.pdf')),
                         Infolists\Components\TextEntry::make('upload')
                             ->label('Bukti Setor')
                             ->formatStateUsing(fn ($state) => $state ? 'Download Bukti Setor' : '-')
@@ -489,7 +488,7 @@ class SetorZisResource extends Resource
                             ->url(fn ($state) => self::getCloudinaryDownloadUrl($state), shouldOpenInNewTab: true)
                             ->color('primary')
                             ->icon(fn ($state) => $state ? 'heroicon-m-arrow-down-tray' : null)
-                            ->visible(fn ($record) => !empty($record->zf_rice_sold_proof)),
+                            ->visible(fn ($record) => ! empty($record->zf_rice_sold_proof)),
                     ]),
             ])
             ->bulkActions([
@@ -512,7 +511,7 @@ class SetorZisResource extends Resource
                         ->deselectRecordsAfterCompletion()
                         ->requiresConfirmation()
                         ->modalHeading('Jual Beras')
-                        ->modalDescription(fn (Collection $records) => 'Anda akan menjual beras dari ' . $records->count() . ' record. Total beras: ' . number_format($records->sum('zf_rice_deposit'), 2, ',', '.') . ' Kg')
+                        ->modalDescription(fn (Collection $records) => 'Anda akan menjual beras dari '.$records->count().' record. Total beras: '.number_format($records->sum('zf_rice_deposit'), 2, ',', '.').' Kg')
                         ->form([
                             Forms\Components\TextInput::make('harga_per_kg')
                                 ->label('Harga Beras per Kg (Rp)')
@@ -548,7 +547,7 @@ class SetorZisResource extends Resource
                                         'resource_type' => 'auto',
                                     ]);
 
-                                    return $result['public_id'] . '.' . ($result['format'] ?? $extension);
+                                    return $result['public_id'].'.'.($result['format'] ?? $extension);
                                 }),
                         ])
                         ->action(function (Collection $records, array $data): void {
@@ -564,6 +563,7 @@ class SetorZisResource extends Resource
                                     ->title('Tidak ada beras yang bisa dijual')
                                     ->body('Semua record yang dipilih sudah terjual atau tidak memiliki beras.')
                                     ->send();
+
                                 return;
                             }
 
@@ -588,8 +588,8 @@ class SetorZisResource extends Resource
                                 ->success()
                                 ->title('Beras berhasil dijual')
                                 ->body(
-                                    $eligibleRecords->count() . ' record diproses. ' .
-                                    'Total: ' . number_format($totalKg, 2, ',', '.') . ' Kg = Rp ' . number_format($totalRp, 0, ',', '.')
+                                    $eligibleRecords->count().' record diproses. '.
+                                    'Total: '.number_format($totalKg, 2, ',', '.').' Kg = Rp '.number_format($totalRp, 0, ',', '.')
                                 )
                                 ->send();
                         }),
@@ -597,7 +597,7 @@ class SetorZisResource extends Resource
             ])
             ->headerActions([
                 ExportAction::make()
-                    ->exporter(SetorZisExporter::class)
+                    ->exporter(SetorZisExporter::class),
             ]);
     }
 

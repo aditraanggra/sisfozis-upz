@@ -74,6 +74,7 @@ class SetorZisController extends Controller
                 ->setStatusCode(Response::HTTP_CREATED);
         } catch (\Exception $e) {
             \Log::error('Error creating SetorZis transaction', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'message' => 'Error creating SetorZis transaction',
             ], Response::HTTP_BAD_REQUEST);
@@ -172,13 +173,13 @@ class SetorZisController extends Controller
             // Admin sees all data - no filter
         } elseif (User::currentIsUpzKecamatan()) {
             $user = Auth::user();
-            $query->whereHas('unit', fn($q) => $q->where('district_id', $user->district_id));
+            $query->whereHas('unit', fn ($q) => $q->where('district_id', $user->district_id));
         } elseif (User::currentIsUpzDesa()) {
             $user = Auth::user();
-            $query->whereHas('unit', fn($q) => $q->where('village_id', $user->village_id));
+            $query->whereHas('unit', fn ($q) => $q->where('village_id', $user->village_id));
         } else {
             // Fallback: restrict to user's own units
-            $query->whereHas('unit', fn($q) => $q->where('user_id', Auth::id()));
+            $query->whereHas('unit', fn ($q) => $q->where('user_id', Auth::id()));
         }
 
         // Year filter

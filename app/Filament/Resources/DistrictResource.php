@@ -2,29 +2,24 @@
 
 namespace App\Filament\Resources;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Filament\Exports\DistrictExporter;
 use App\Filament\Resources\DistrictResource\Pages;
-use App\Filament\Resources\DistrictResource\RelationManagers;
 use App\Models\District;
 use App\Models\User;
-use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Collection;
-use Filament\Forms;
 use Filament\Forms\Form;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ExportAction as ActionsExportAction;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Enums\ActionsPosition;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Actions\ExportAction as ActionsExportAction;
-use Filament\Tables\Columns\Summarizers\Count;
-use Filament\Tables\Columns\Summarizers\Sum;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DistrictResource extends Resource
 {
@@ -52,7 +47,7 @@ class DistrictResource extends Resource
 
     protected static function filteredRekap(District $district, ?string $periodDate = null): Collection
     {
-        $periodDate = $periodDate ?? now()->format('Y') . '-01-01';
+        $periodDate = $periodDate ?? now()->format('Y').'-01-01';
 
         $rekap = $district->relationLoaded('rekapZis')
             ? $district->rekapZis
@@ -66,7 +61,7 @@ class DistrictResource extends Resource
 
     protected static function summarizeRekapColumn(QueryBuilder $districtQuery, string $column): float
     {
-        $currentPeriodDate = now()->format('Y') . '-01-01';
+        $currentPeriodDate = now()->format('Y').'-01-01';
         $expressions = [
             'total_zf_rice' => 'COALESCE(rekap_zis.total_zf_rice, 0)',
             'total_zf_amount' => 'COALESCE(rekap_zis.total_zf_amount, 0)',
@@ -86,7 +81,7 @@ class DistrictResource extends Resource
 
     protected static function summarizeTotal(QueryBuilder $districtQuery): float
     {
-        $currentPeriodDate = now()->format('Y') . '-01-01';
+        $currentPeriodDate = now()->format('Y').'-01-01';
         $expression = implode(' + ', [
             'COALESCE(rekap_zis.total_zf_amount, 0)',
             'COALESCE(rekap_zis.total_zm_amount, 0)',
@@ -99,7 +94,7 @@ class DistrictResource extends Resource
 
     protected static function summarizeExpression(QueryBuilder $districtQuery, string $expression, ?string $periodDate = null): float
     {
-        $periodDate = $periodDate ?? now()->format('Y') . '-01-01';
+        $periodDate = $periodDate ?? now()->format('Y').'-01-01';
         $baseQuery = clone $districtQuery;
 
         $summary = DB::query()
@@ -134,7 +129,7 @@ class DistrictResource extends Resource
                     ->label('Total ZIS')
                     ->getStateUsing(function (District $record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
                         $prefetchedTotal = $record->{static::TOTAL_ALIAS} ?? null;
 
                         // Use prefetch only if filter matches current year (default)
@@ -160,14 +155,15 @@ class DistrictResource extends Resource
                     ->numeric()
                     ->sortable(
                         true,
-                        fn(Builder $query, string $direction): Builder => $query->orderBy(static::TOTAL_ALIAS, $direction)
+                        fn (Builder $query, string $direction): Builder => $query->orderBy(static::TOTAL_ALIAS, $direction)
                     ),
 
                 Tables\Columns\TextColumn::make('total_zf_rice')
                     ->label('Zakat Fitrah (Beras)')
                     ->getStateUsing(function (District $record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return static::filteredRekap($record, $periodDate)->sum('total_zf_rice');
                     })
                     ->numeric(),
@@ -176,7 +172,8 @@ class DistrictResource extends Resource
                     ->label('Zakat Fitrah (Uang)')
                     ->getStateUsing(function (District $record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return static::filteredRekap($record, $periodDate)->sum('total_zf_amount');
                     })
                     ->numeric(),
@@ -185,7 +182,8 @@ class DistrictResource extends Resource
                     ->label('Zakat Mal')
                     ->getStateUsing(function (District $record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return static::filteredRekap($record, $periodDate)->sum('total_zm_amount');
                     })
                     ->numeric(),
@@ -194,7 +192,8 @@ class DistrictResource extends Resource
                     ->label('Infak Sedekah')
                     ->getStateUsing(function (District $record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return static::filteredRekap($record, $periodDate)->sum('total_ifs_amount');
                     })
                     ->numeric(),
@@ -203,7 +202,8 @@ class DistrictResource extends Resource
                     ->label('Muzakki ZF')
                     ->getStateUsing(function (District $record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return static::filteredRekap($record, $periodDate)->sum('total_zf_muzakki');
                     })
                     ->numeric(),
@@ -212,7 +212,8 @@ class DistrictResource extends Resource
                     ->label('Muzakki ZM')
                     ->getStateUsing(function (District $record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return static::filteredRekap($record, $periodDate)->sum('total_zm_muzakki');
                     })
                     ->numeric(),
@@ -221,7 +222,8 @@ class DistrictResource extends Resource
                     ->label('Munfiq')
                     ->getStateUsing(function (District $record, $livewire) {
                         $selectedYear = $livewire->tableFilters['tahun']['value'] ?? date('Y');
-                        $periodDate = $selectedYear . '-01-01';
+                        $periodDate = $selectedYear.'-01-01';
+
                         return static::filteredRekap($record, $periodDate)->sum('total_ifs_munfiq');
                     })
                     ->numeric(),
@@ -231,8 +233,8 @@ class DistrictResource extends Resource
                     ->label('Tahun')
                     ->options(
                         collect(range(0, 4))
-                            ->mapWithKeys(fn($i) => [
-                                now()->subYears($i)->format('Y') => now()->subYears($i)->format('Y')
+                            ->mapWithKeys(fn ($i) => [
+                                now()->subYears($i)->format('Y') => now()->subYears($i)->format('Y'),
                             ])
                             ->toArray()
                     )
@@ -246,13 +248,13 @@ class DistrictResource extends Resource
                         ->label('Rekap Per Desa')
                         ->color('success')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->url(fn(Model $record, $livewire) => route('district.rekap-desa.pdf', $record) . '?' . http_build_query([
+                        ->url(fn (Model $record, $livewire) => route('district.rekap-desa.pdf', $record).'?'.http_build_query([
                             'year' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
                         ]))
                         ->openUrlInNewTab(),
                 ])
                     ->icon('heroicon-o-cloud-arrow-down')
-                    ->size('lg')
+                    ->size('lg'),
             ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 //
@@ -261,8 +263,8 @@ class DistrictResource extends Resource
                 ActionsExportAction::make()
                     ->exporter(DistrictExporter::class)
                     ->options(fn ($livewire) => [
-                        'tahun' => $livewire->tableFilters['tahun']['value'] ?? date('Y')
-                    ])
+                        'tahun' => $livewire->tableFilters['tahun']['value'] ?? date('Y'),
+                    ]),
             ])
             ->defaultSort(static::TOTAL_ALIAS, 'desc')
             ->recordUrl(null)
@@ -278,7 +280,7 @@ class DistrictResource extends Resource
             $query->where('district_id', $user->district_id);
         }
 
-        $currentPeriodDate = now()->format('Y') . '-01-01';
+        $currentPeriodDate = now()->format('Y').'-01-01';
 
         $query->select('districts.*')
             ->selectSub(function ($subQuery) use ($currentPeriodDate) {
@@ -308,7 +310,7 @@ class DistrictResource extends Resource
     {
         return view('filament.resources.district-resource.pages.view-district', [
             'record' => $record,
-            'rekapZis' => $record->rekapZis
+            'rekapZis' => $record->rekapZis,
         ]);
     }
 

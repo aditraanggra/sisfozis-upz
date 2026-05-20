@@ -102,7 +102,7 @@ class AllocationConfigResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('zis_type')
                     ->label('Jenis ZIS')
-                    ->formatStateUsing(fn($state) => AllocationConfig::TYPES[$state] ?? $state)
+                    ->formatStateUsing(fn ($state) => AllocationConfig::TYPES[$state] ?? $state)
                     ->sortable()
                     ->searchable(),
 

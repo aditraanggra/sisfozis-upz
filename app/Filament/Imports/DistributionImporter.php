@@ -49,15 +49,15 @@ class DistributionImporter extends Importer
 
     public function resolveRecord(): ?Distribution
     {
-        return new Distribution();
+        return new Distribution;
     }
 
     public static function getCompletedNotificationBody(Import $import): string
     {
-        $body = 'Import data Pendistribusian berhasil dan ' . number_format($import->successful_rows) . ' ' . str('row')->plural($import->successful_rows) . ' imported.';
+        $body = 'Import data Pendistribusian berhasil dan '.number_format($import->successful_rows).' '.str('row')->plural($import->successful_rows).' imported.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' gagal diimport.';
+            $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' gagal diimport.';
         }
 
         return $body;

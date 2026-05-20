@@ -18,7 +18,7 @@ class RekapSetor extends Model
         't_setor_zf_amount',
         't_setor_zf_rice',
         't_setor_zm',
-        't_setor_ifs'
+        't_setor_ifs',
     ];
 
     protected $casts = [
@@ -26,7 +26,7 @@ class RekapSetor extends Model
         't_setor_zf_amount' => 'integer',
         't_setor_zf_rice' => 'float',
         't_setor_zm' => 'integer',
-        't_setor_ifs' => 'integer'
+        't_setor_ifs' => 'integer',
     ];
 
     public function unit()

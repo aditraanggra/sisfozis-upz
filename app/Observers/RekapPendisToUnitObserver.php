@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\RekapPendis;
 use App\Jobs\UpdateRekapUnit;
+use App\Models\RekapPendis;
 use Illuminate\Support\Facades\Log;
 
 class RekapPendisToUnitObserver
@@ -16,7 +16,6 @@ class RekapPendisToUnitObserver
     /**
      * Handle the RekapPendis "updated" event.
      *
-     * @param  \App\Models\RekapPendis  $RekapPendis
      * @return void
      */
     public function updated(RekapPendis $RekapPendis)
@@ -27,12 +26,11 @@ class RekapPendisToUnitObserver
     /**
      * Handle the RekapPendis "deleted" event.
      *
-     * @param  \App\Models\RekapPendis  $RekapPendis
      * @return void
      */
     public function deleted(RekapPendis $RekapPendis)
     {
-        // When a rekap_zis record is deleted, we might want to remove the corresponding 
+        // When a rekap_zis record is deleted, we might want to remove the corresponding
         // rekap_alokasi record or update it to reflect zero values
         $this->dispatchUpdateJob($RekapPendis);
     }
@@ -58,20 +56,21 @@ class RekapPendisToUnitObserver
     /**
      * Dispatch the update job
      *
-     * @param RekapPendis $RekapPendis
      * @return void
      */
     private function dispatchUpdateJob(RekapPendis $RekapPendis)
     {
         try {
             // Validasi tambahan
-            if (!$RekapPendis->unit_id) {
-                Log::warning("Cannot dispatch UpdateRekapUnit: Missing unit_id");
+            if (! $RekapPendis->unit_id) {
+                Log::warning('Cannot dispatch UpdateRekapUnit: Missing unit_id');
+
                 return;
             }
 
-            if (!$RekapPendis->periode) {
+            if (! $RekapPendis->periode) {
                 Log::warning("Cannot dispatch UpdateRekapUnit: Missing periode for unit {$RekapPendis->unit_id}");
+
                 return;
             }
 
@@ -80,7 +79,7 @@ class RekapPendisToUnitObserver
                 $RekapPendis->periode
             );
         } catch (\Exception $e) {
-            Log::error("Error dispatching UpdateRekapUnit: " . $e->getMessage());
+            Log::error('Error dispatching UpdateRekapUnit: '.$e->getMessage());
         }
     }
 }

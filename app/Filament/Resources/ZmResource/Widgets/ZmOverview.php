@@ -26,7 +26,7 @@ class ZmOverview extends BaseWidget
         $totalMuzakki = (clone $baseQuery)->count('muzakki_name');
 
         return [
-            Stat::make('Total Zakat Mal', 'Rp ' . number_format($totalAmount, 0, ',', '.')),
+            Stat::make('Total Zakat Mal', 'Rp '.number_format($totalAmount, 0, ',', '.')),
             Stat::make('Total Muzakki', $totalMuzakki),
         ];
     }

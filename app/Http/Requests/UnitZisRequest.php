@@ -19,14 +19,14 @@ class UnitZisRequest extends FormRequest
             'district_id' => 'required|exists:districts,id',
             'no_sk' => 'required|string|max:255',
             'unit_name' => 'required|string|max:255',
-            'no_register' => 'required|string|max:255|unique:unit_zis,no_register,' . $this->id,
+            'no_register' => 'required|string|max:255|unique:unit_zis,no_register,'.$this->id,
             'address' => 'required|string',
             'unit_leader' => 'required|string|max:255',
             'unit_assistant' => 'required|string|max:255',
             'unit_finance' => 'required|string|max:255',
             'operator_phone' => 'required|string|max:255',
             'rice_price' => 'required|integer|min:0',
-            'is_verified' => 'boolean'
+            'is_verified' => 'boolean',
         ];
     }
 }

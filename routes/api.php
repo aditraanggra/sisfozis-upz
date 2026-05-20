@@ -3,9 +3,11 @@
 use App\Http\Controllers\Api\AllocationConfigController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DistributionController;
+use App\Http\Controllers\Api\DokumentasiKurbanController;
 use App\Http\Controllers\Api\DonationBoxController;
 use App\Http\Controllers\Api\FidyahController;
 use App\Http\Controllers\Api\IfsController;
+use App\Http\Controllers\Api\LaporanKurbanController;
 use App\Http\Controllers\Api\LpzController;
 use App\Http\Controllers\Api\SetorZisController;
 use App\Http\Controllers\Api\UnitZisController;
@@ -59,7 +61,17 @@ Route::middleware('auth:sanctum')->group(function () {
         'lpz' => LpzController::class,
     ]);
 
+    // Laporan Kurban DKM
+    Route::prefix('laporan-kurban')->group(function () {
+        Route::get('/', [LaporanKurbanController::class, 'index']);
+        Route::post('/', [LaporanKurbanController::class, 'store']);
+        Route::get('/{id}', [LaporanKurbanController::class, 'show']);
+        Route::post('/{id}/submit', [LaporanKurbanController::class, 'submit']);
+        Route::delete('/{id}', [LaporanKurbanController::class, 'destroy']);
 
+        Route::post('/{laporanKurbanId}/dokumentasi', [DokumentasiKurbanController::class, 'store']);
+        Route::delete('/{laporanKurbanId}/dokumentasi/{dokId}', [DokumentasiKurbanController::class, 'destroy']);
+    });
 
     // Jenis Pembayaran ZF (CUD - admin only)
     Route::post('/zf-payment-types', [ZfPaymentTypeController::class, 'store']);

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Scopes\ZisScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Scopes\ZisScope;
 
 class Fidyah extends Model
 {
@@ -18,25 +18,25 @@ class Fidyah extends Model
         'name',
         'total_day',
         'amount',
-        'desc'
+        'desc',
     ];
 
     protected $casts = [
         'trx_date' => 'date',
         'total_day' => 'integer',
-        'amount' => 'integer'
+        'amount' => 'integer',
     ];
 
     protected static function booted()
     {
         static::addGlobalScope('user_access', function (Builder $builder) {
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return;
             }
 
             $user = Auth::user();
 
-            if (!$user) {
+            if (! $user) {
                 return;
             }
 

@@ -7,14 +7,12 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class ZisChart extends ChartWidget
 {
-
     use InteractsWithPageFilters;
 
     protected static ?string $heading = 'Grafik Penerimaan Dana ZIS (Zakat, Infaq, Sedekah)';
 
     protected function getData(): array
     {
-
 
         // Inisialisasi array 12 bulan dengan nilai 0
         $initMonthlyData = array_fill(0, 12, 0);
@@ -50,15 +48,15 @@ class ZisChart extends ChartWidget
         $year = $this->filters['year'] ?? null;
 
         $data = $model::selectRaw("EXTRACT(MONTH FROM trx_date) as month, SUM({$amountField}) as total")
-            ->when($year, fn($query) => $query->whereYear('trx_date', $year))
+            ->when($year, fn ($query) => $query->whereYear('trx_date', $year))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
         foreach ($data as $item) {
             // Index array dimulai dari 0, sedangkan bulan dimulai dari 1
-            $monthIndex = (int)$item->month - 1;
-            $monthlyData[$monthIndex] = (int)$item->total;
+            $monthIndex = (int) $item->month - 1;
+            $monthlyData[$monthIndex] = (int) $item->total;
         }
 
         return $monthlyData;
@@ -70,24 +68,23 @@ class ZisChart extends ChartWidget
         $year = $this->filters['year'] ?? null;
 
         $data = \App\Models\Zf::query()
-            ->selectRaw("
+            ->selectRaw('
             EXTRACT(MONTH FROM zfs.trx_date) as month,
             SUM(zfs.zf_amount + zfs.zf_rice * unit_zis.rice_price) as total
-        ")
-            ->when($year, fn($query) => $query->whereYear('trx_date', $year))
+        ')
+            ->when($year, fn ($query) => $query->whereYear('trx_date', $year))
             ->join('unit_zis', 'zfs.unit_id', '=', 'unit_zis.id')
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
         foreach ($data as $item) {
-            $monthIndex = (int)$item->month - 1;
-            $monthlyData[$monthIndex] = (int)$item->total;
+            $monthIndex = (int) $item->month - 1;
+            $monthlyData[$monthIndex] = (int) $item->total;
         }
 
         return $monthlyData;
     }
-
 
     protected function getType(): string
     {

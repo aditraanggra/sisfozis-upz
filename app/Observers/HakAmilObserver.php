@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\Distribution;
 use App\Jobs\UpdateRekapHakAmil;
+use App\Models\Distribution;
 
 class HakAmilObserver
 {

@@ -74,6 +74,7 @@ class FidyahController extends Controller
                 ->setStatusCode(Response::HTTP_CREATED);
         } catch (\Exception $e) {
             \Log::error('Error creating Fidyah transaction', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'message' => 'Error creating Fidyah transaction',
             ], Response::HTTP_BAD_REQUEST);

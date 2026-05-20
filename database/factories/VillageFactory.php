@@ -13,9 +13,9 @@ class VillageFactory extends Factory
     public function definition(): array
     {
         return [
-            'district_id'  => District::factory(),
+            'district_id' => District::factory(),
             'village_code' => $this->faker->unique()->numerify('######'),
-            'name'         => $this->faker->streetName(),
+            'name' => $this->faker->streetName(),
         ];
     }
 }

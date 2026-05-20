@@ -13,7 +13,7 @@ class DistrictFactory extends Factory
     {
         return [
             'district_code' => $this->faker->unique()->numerify('####'),
-            'name'          => $this->faker->city(),
+            'name' => $this->faker->city(),
         ];
     }
 }

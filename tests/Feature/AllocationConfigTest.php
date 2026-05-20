@@ -45,6 +45,7 @@ function createUserWithRole(string $role): User
 {
     $user = User::factory()->create();
     $user->assignRole($role);
+
     return $user;
 }
 
@@ -279,10 +280,9 @@ describe('Permission Restrictions', function () {
     });
 });
 
-
 describe('Seeder Creates Expected Configurations', function () {
     it('seeder creates all expected 2025 configurations', function () {
-        $seeder = new AllocationConfigSeeder();
+        $seeder = new AllocationConfigSeeder;
         $seeder->run();
 
         $this->assertDatabaseHas('allocation_configs', [
@@ -311,7 +311,7 @@ describe('Seeder Creates Expected Configurations', function () {
     });
 
     it('seeder creates all expected 2026 configurations', function () {
-        $seeder = new AllocationConfigSeeder();
+        $seeder = new AllocationConfigSeeder;
         $seeder->run();
 
         $this->assertDatabaseHas('allocation_configs', [
@@ -340,14 +340,14 @@ describe('Seeder Creates Expected Configurations', function () {
     });
 
     it('seeder creates exactly 6 configurations', function () {
-        $seeder = new AllocationConfigSeeder();
+        $seeder = new AllocationConfigSeeder;
         $seeder->run();
 
         expect(AllocationConfig::count())->toBe(6);
     });
 
     it('seeder is idempotent (can run multiple times)', function () {
-        $seeder = new AllocationConfigSeeder();
+        $seeder = new AllocationConfigSeeder;
         $seeder->run();
         $seeder->run();
 
@@ -364,7 +364,7 @@ describe('Seeder Creates Expected Configurations', function () {
             'description' => 'Old description',
         ]);
 
-        $seeder = new AllocationConfigSeeder();
+        $seeder = new AllocationConfigSeeder;
         $seeder->run();
 
         $config = AllocationConfig::where('zis_type', AllocationConfig::TYPE_ZF)
@@ -378,7 +378,7 @@ describe('Seeder Creates Expected Configurations', function () {
     });
 
     it('seeded configs work correctly with AllocationConfigService', function () {
-        $seeder = new AllocationConfigSeeder();
+        $seeder = new AllocationConfigSeeder;
         $seeder->run();
 
         $service = app(AllocationConfigService::class);
@@ -515,7 +515,7 @@ describe('Database Constraints', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        expect(fn() => AllocationConfig::create([
+        expect(fn () => AllocationConfig::create([
             'zis_type' => AllocationConfig::TYPE_ZF,
             'effective_year' => 2025,
             'setor_percentage' => '40.00',

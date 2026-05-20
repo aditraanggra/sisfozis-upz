@@ -89,6 +89,7 @@ class LpzController extends Controller
             ], Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
             \Log::error('Error retrieving LPZ record', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'message' => 'Error retrieving LPZ record',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);

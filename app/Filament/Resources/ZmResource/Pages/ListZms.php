@@ -14,7 +14,7 @@ class ListZms extends ListRecords
     {
         return [
             \EightyNine\ExcelImport\ExcelImportAction::make()
-                ->visible(fn() => Auth::user() && Auth::user()->email === 'sa01@sisfoupz.org')
+                ->visible(fn () => Auth::user() && Auth::user()->email === 'sa01@sisfoupz.org')
                 ->sampleExcel(
                     sampleData: [
                         [
@@ -23,7 +23,7 @@ class ListZms extends ListRecords
                             'category_maal' => 'Pendapatan',
                             'muzakki_name' => 'muzakki',
                             'amount' => 250000,
-                            'desc' => 'Contoh Transaksi Zakat Mal'
+                            'desc' => 'Contoh Transaksi Zakat Mal',
                         ],
                     ],
                     fileName: 'template_zm.xlsx',

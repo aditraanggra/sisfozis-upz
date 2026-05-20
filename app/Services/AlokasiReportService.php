@@ -20,7 +20,7 @@ class AlokasiReportService
      * Generate the allocation report for a given unit and year.
      *
      * @param  int  $unitId  The UPZ unit ID
-     * @param  int  $year    The fiscal year
+     * @param  int  $year  The fiscal year
      * @return array Structured allocation data
      */
     public function generateReport(int $unitId, int $year): array

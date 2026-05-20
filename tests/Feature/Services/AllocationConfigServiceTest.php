@@ -27,7 +27,7 @@ describe('getAllocation', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $allocation = $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
 
         expect($allocation['setor'])->toBe('30.00');
@@ -45,7 +45,7 @@ describe('getAllocation', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $allocation = $service->getAllocation(AllocationConfig::TYPE_ZM, '2025-06-15');
 
         expect($allocation['setor'])->toBe('30.00');
@@ -63,7 +63,7 @@ describe('getAllocation', function () {
             'amil_percentage' => '20.00',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $allocation = $service->getAllocation(AllocationConfig::TYPE_IFS, Carbon::create(2025, 6, 15));
 
         expect($allocation['amil'])->toBe('20.00');
@@ -98,7 +98,7 @@ describe('year-based rule resolution', function () {
             'amil_percentage' => '15.00',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // Transaction in 2025 should use 2025 rule
         $allocation2025 = $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
@@ -133,7 +133,7 @@ describe('year-based rule resolution', function () {
             'amil_percentage' => '15.00',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // Transaction in 2025 should NOT use 2026 rule, should fall back to defaults
         $allocation = $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
@@ -143,7 +143,7 @@ describe('year-based rule resolution', function () {
 
 describe('fallback to defaults', function () {
     it('returns default values when no config exists', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // ZF/ZM defaults
         $zfAllocation = $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
@@ -170,7 +170,7 @@ describe('fallback to defaults', function () {
             'amil_percentage' => '15.00',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // Transaction in 2025 should fall back to defaults
         $allocation = $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
@@ -191,25 +191,25 @@ describe('individual percentage methods', function () {
     });
 
     it('getSetorPercentage returns correct value', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $setor = $service->getSetorPercentage(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
         expect($setor)->toBe('30.00');
     });
 
     it('getKelolaPercentage returns correct value', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $kelola = $service->getKelolaPercentage(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
         expect($kelola)->toBe('70.00');
     });
 
     it('getAmilPercentage returns correct value', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $amil = $service->getAmilPercentage(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
         expect($amil)->toBe('12.50');
     });
 
     it('getPenyaluranPercentage returns correct value', function () {
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $penyaluran = $service->getPenyaluranPercentage(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
         expect($penyaluran)->toBe('87.50');
     });
@@ -225,7 +225,7 @@ describe('cache behavior', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // First call - should load from database
         $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
@@ -243,7 +243,7 @@ describe('cache behavior', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // First call
         $allocation1 = $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
@@ -268,7 +268,7 @@ describe('cache behavior', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // Load into cache
         $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
@@ -288,7 +288,7 @@ describe('cache behavior', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
 
         // First call
         $service->getAllocation(AllocationConfig::TYPE_ZF, Carbon::create(2025, 6, 15));
@@ -317,7 +317,7 @@ describe('zero kelola case with database', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $allocation = $service->getAllocation(AllocationConfig::TYPE_ZM, Carbon::create(2026, 6, 15));
 
         expect($allocation['setor'])->toBe('100.00');
@@ -337,7 +337,7 @@ describe('zero kelola case with database', function () {
             'amil_percentage' => '12.50',
         ]);
 
-        $service = new AllocationConfigService();
+        $service = new AllocationConfigService;
         $allocation = $service->getAllocation(AllocationConfig::TYPE_ZM, Carbon::create(2026, 6, 15));
 
         // Simulate calculation with 100000 total amount

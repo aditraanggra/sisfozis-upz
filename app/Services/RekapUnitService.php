@@ -2,37 +2,39 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
-use App\Models\RekapZis;
 use App\Models\RekapPendis;
 use App\Models\RekapSetor;
 use App\Models\RekapUnit;
+use App\Models\RekapZis;
 use App\Models\UnitZis;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Service for rebuilding Unit recapitulation data.
- * 
+ *
  * This service aggregates data from other rekap tables (RekapZis, RekapPendis, RekapSetor)
  * to create a unified unit-level summary.
- * 
+ *
  * Extends BaseRekapService to leverage chunked processing and bulk upsert
  * for optimized performance when processing large datasets.
  */
 class RekapUnitService extends BaseRekapService
 {
     protected string $rekapTable = 'rekap_dkm';
+
     protected string $periodColumn = 'periode';
+
     protected string $periodDateColumn = 'periode_date';
 
     /**
      * Rebuild rekap for given parameters using batch processing
      *
-     * @param string $unitId Unit ID or 'all' for all units
-     * @param string $periode Period type: harian, bulanan, tahunan, or all
-     * @param Carbon|null $startDate Start date for rebuild
-     * @param Carbon|null $endDate End date for rebuild
+     * @param  string  $unitId  Unit ID or 'all' for all units
+     * @param  string  $periode  Period type: harian, bulanan, tahunan, or all
+     * @param  Carbon|null  $startDate  Start date for rebuild
+     * @param  Carbon|null  $endDate  End date for rebuild
      * @return array Results with 'processed' count and 'errors' array
      */
     public function rebuild(
@@ -55,11 +57,6 @@ class RekapUnitService extends BaseRekapService
 
     /**
      * Rebuild rekap for a specific unit
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      */
     protected function rebuildForUnit(
         int $unitId,
@@ -81,19 +78,13 @@ class RekapUnitService extends BaseRekapService
             $records = array_merge($records, $this->buildRecordsForPeriode($unitId, 'tahunan', $startDate, $endDate));
         }
 
-        if (!empty($records)) {
+        if (! empty($records)) {
             $this->bulkUpsert($records);
         }
     }
 
     /**
      * Build records for a specific periode by joining rekap tables
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function buildRecordsForPeriode(
         int $unitId,
@@ -110,11 +101,6 @@ class RekapUnitService extends BaseRekapService
 
     /**
      * Build a single rekap record from aggregated data
-     *
-     * @param int $unitId
-     * @param string $periode
-     * @param object $data
-     * @return array
      */
     protected function buildRekapRecord(int $unitId, string $periode, object $data): array
     {
@@ -153,14 +139,10 @@ class RekapUnitService extends BaseRekapService
 
     /**
      * Get aggregated data by joining rekap tables
-     * 
+     *
      * Uses database-level joins to aggregate data from RekapZis, RekapPendis, and RekapSetor.
      *
-     * @param int $unitId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @param string $periode Period type: harian, bulanan, tahunan
-     * @return array
+     * @param  string  $periode  Period type: harian, bulanan, tahunan
      */
     protected function getAggregatedData(
         int $unitId,
@@ -177,12 +159,12 @@ class RekapUnitService extends BaseRekapService
         $setorDateColumn = 'periode_date';
 
         return DB::table('rekap_zis as rz')
-            ->leftJoin('rekap_pendis as rp', function ($join) use ($unitId, $periode, $pendisPerioColumn, $pendisDateColumn) {
+            ->leftJoin('rekap_pendis as rp', function ($join) use ($periode, $pendisPerioColumn, $pendisDateColumn) {
                 $join->on('rz.unit_id', '=', 'rp.unit_id')
                     ->on('rz.period_date', '=', "rp.{$pendisDateColumn}")
                     ->where("rp.{$pendisPerioColumn}", '=', $periode);
             })
-            ->leftJoin('rekap_setor as rs', function ($join) use ($unitId, $periode, $setorPerioColumn, $setorDateColumn) {
+            ->leftJoin('rekap_setor as rs', function ($join) use ($periode, $setorPerioColumn, $setorDateColumn) {
                 $join->on('rz.unit_id', '=', 'rs.unit_id')
                     ->on('rz.period_date', '=', "rs.{$setorDateColumn}")
                     ->where("rs.{$setorPerioColumn}", '=', $periode);
@@ -223,10 +205,10 @@ class RekapUnitService extends BaseRekapService
     /**
      * Rebuild rekap Unit untuk unit dan periode tertentu (legacy method)
      *
-     * @param string $unit unit ID atau 'all'
-     * @param string $periode 'harian', 'mingguan', 'bulanan', 'tahunan', atau 'all'
-     * @param Carbon|null $startDate Tanggal mulai
-     * @param Carbon|null $endDate Tanggal akhir
+     * @param  string  $unit  unit ID atau 'all'
+     * @param  string  $periode  'harian', 'mingguan', 'bulanan', 'tahunan', atau 'all'
+     * @param  Carbon|null  $startDate  Tanggal mulai
+     * @param  Carbon|null  $endDate  Tanggal akhir
      * @return array Informasi proses rebuild
      */
     public function rebuildRekapUnit(
@@ -242,16 +224,12 @@ class RekapUnitService extends BaseRekapService
         return [
             'processed_units' => $result['processed'],
             'processed_periodes' => $result['processed'], // Approximate
-            'errors' => $result['errors']
+            'errors' => $result['errors'],
         ];
     }
 
     /**
      * Update or create rekap Unit based on rekap zis data (legacy method)
-     *
-     * @param int $unitId
-     * @param string $period
-     * @return RekapUnit
      */
     public function updateOrCreateRekapUnit(int $unitId, string $period): RekapUnit
     {
@@ -263,21 +241,21 @@ class RekapUnitService extends BaseRekapService
                 ->where('period', $period)
                 ->first();
 
-            if (!$rekapZis) {
+            if (! $rekapZis) {
                 throw new \Exception("RekapZis record not found for unit_id: {$unitId} and period: {$period}");
             }
 
             // Get rekap_pendis data
             $rekapPendis = RekapPendis::where('unit_id', $unitId)->where('periode', $period)->first();
 
-            if (!$rekapPendis) {
+            if (! $rekapPendis) {
                 throw new \Exception("RekapPendis record not found for unit_id: {$unitId} and period: {$period}");
             }
 
             // Get rekap_setor data
             $rekapSetor = RekapSetor::where('unit_id', $unitId)->where('periode', $period)->first();
 
-            if (!$rekapSetor) {
+            if (! $rekapSetor) {
                 throw new \Exception("RekapSetor record not found for unit_id: {$unitId} and period: {$period}");
             }
 
@@ -318,15 +296,16 @@ class RekapUnitService extends BaseRekapService
                     't_setor' => $totalSetor,
                     't_setor_beras' => $totalSetorBeras,
                     'muzakki' => $totalMuzakki,
-                    'mustahik' => $totalMustahik
+                    'mustahik' => $totalMustahik,
                 ]
             );
 
             DB::commit();
+
             return $rekapUnit;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating rekap Unit: ' . $e->getMessage());
+            Log::error('Error updating rekap Unit: '.$e->getMessage());
             throw $e;
         }
     }

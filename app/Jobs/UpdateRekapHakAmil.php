@@ -86,7 +86,7 @@ class UpdateRekapHakAmil implements ShouldQueue
 
             Log::info("Successfully completed UpdateRekapHakAmil job for date: {$this->date}, unit: {$this->unitId}, period: {$this->period}");
         } catch (\Throwable $e) {
-             Log::error('Error in UpdateRekapHakAmil job: '.$e->getMessage());
+            Log::error('Error in UpdateRekapHakAmil job: '.$e->getMessage());
             Log::error('Error in UpdateRekapHakAmil job: '.$e->getMessage());
             Log::error('Stack trace: '.$e->getTraceAsString());
 
