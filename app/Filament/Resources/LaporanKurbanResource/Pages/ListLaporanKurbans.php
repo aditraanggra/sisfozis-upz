@@ -25,7 +25,7 @@ class ListLaporanKurbans extends ListRecords
                     sampleData: [
                         [
                             'unit_id' => 1,
-                            'tahun_hijriah' => '1446',
+                            'tahun_hijriah' => '1447',
                             'tahun_masehi' => 2025,
                             'jml_sapi' => 0,
                             'jml_kerbau' => 0,

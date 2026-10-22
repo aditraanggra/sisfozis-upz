@@ -1,11 +1,12 @@
 # ---------- Stage 1: Vendor (Composer) ----------
-FROM php:8.3-cli-alpine AS vendor
+FROM php:8.3-fpm-alpine AS vendor
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 WORKDIR /app
 
 # Build deps & libs untuk ekstensi (MySQL + PostgreSQL + GD + ZIP)
-RUN apk add --no-cache \
+RUN apk upgrade --no-cache \
+    && apk add --no-cache \
     git unzip icu-dev oniguruma-dev \
     libpng-dev libjpeg-turbo-dev libwebp-dev freetype-dev \
     mariadb-connector-c-dev postgresql-dev \
@@ -37,7 +38,8 @@ FROM dunglas/frankenphp:1-php8.3-alpine
 WORKDIR /app
 
 # Runtime deps & ekstensi (kedua driver DB dipasang)
-RUN apk add --no-cache \
+RUN apk upgrade --no-cache \
+    && apk add --no-cache \
     git unzip icu-dev oniguruma-dev \
     libpng-dev libjpeg-turbo-dev libwebp-dev freetype-dev \
     mariadb-connector-c-dev postgresql-dev \
